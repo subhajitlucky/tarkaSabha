@@ -247,7 +247,8 @@ export async function orchestrateMessage(
   if (mentionedPersonaId) {
     speaker = participants.find(p => p.id === mentionedPersonaId) || null
   } else if (isAutoMode) {
-    speaker = await getNextSpeaker(chatId, lastSpeakerId, participants)
+    const orchestrator = new DynamicOrchestrator()
+    speaker = await orchestrator.selectNextSpeaker(context, participants)
   } else {
     if (participants.length === 0) {
       return { message: '', error: 'No participants in chat' }
@@ -375,8 +376,17 @@ export async function autoContinueDebate(
 
   console.log(`[Auto-Debate] Starting for chat ${chatId} with ${participants.length} participants`)
 
+  const orchestrator = new DynamicOrchestrator()
+
   while (turns < maxTurns) {
-    const speaker = await getNextSpeaker(chatId, lastSpeakerId, participants)
+    const context: OrchestrationContext = {
+      chatId,
+      topic: chat.topic,
+      isAutoMode: true,
+      lastSpeakerId,
+    }
+
+    const speaker = await orchestrator.selectNextSpeaker(context, participants)
     if (!speaker) break
 
     console.log(`[Auto-Debate] Turn ${turns + 1}: ${speaker.name} is responding`)
