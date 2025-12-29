@@ -113,7 +113,7 @@ function buildSelectionPrompt(
   history: ChatMessage[]
 ): string {
   const participantsList = participants.map(p => `- ${p.name}`).join('\n')
-  const recentHistory = history.slice(-5).map(m => `${m.personaName || m.role}: ${m.content}`).join('\n')
+  const recentHistory = history.slice(-5).map(m => m.content).join('\n')
 
   return `You are a debate moderator. Based on the conversation history below, decide which of the following participants should speak next to move the debate forward.
 
@@ -168,9 +168,14 @@ This is the ONLY topic being discussed. Focus all your responses on this topic.`
 
   for (const msg of previousMessages.slice(-15)) {
     if (msg.role === 'system') continue
+    
+    // Prepend persona name to content so the LLM knows who said what in the history
+    const displayName = msg.role === 'user' ? 'User' : (msg.personaName || 'Unknown')
+    const contentWithName = `${displayName}: ${msg.content}`
+
     context.push({
       role: msg.role === 'user' ? 'user' : 'assistant',
-      content: msg.content,
+      content: contentWithName,
       personaName: msg.personaName || undefined,
     })
   }
@@ -197,7 +202,8 @@ Guidelines:
 - Build upon or challenge the points made by others.
 - Use natural speech patterns suited to your character.
 - If asked about your identity, respond as your character.
-- Stay in character no matter what.`
+- Stay in character no matter what.
+- DO NOT prepend your name to your response. The system will handle your identity. Just speak directly as ${persona.name}.`
 
   return prompt
 }

@@ -1,4 +1,4 @@
-import { buildPersonaPrompt } from './orchestrator'
+import { buildPersonaPrompt, buildConversationContext } from './orchestrator'
 import type { Persona } from '@prisma/client'
 
 const mockPersona: Persona = {
@@ -31,5 +31,19 @@ describe('Prompt Generation', () => {
     // We want to ensure it encourages interaction and debate
     expect(prompt).toContain('DIRECTLY ADDRESS previous speakers')
     expect(prompt).toContain('Build upon or challenge')
+    expect(prompt).toContain('DO NOT prepend your name')
+  })
+})
+
+describe('Conversation Context', () => {
+  it('should prepend persona names to message content', () => {
+    const messages = [
+      { content: 'Hello', role: 'persona', personaName: 'T-1' },
+      { content: 'How are you?', role: 'user', personaName: null }
+    ]
+    const context = buildConversationContext('Test Topic', messages, 'T-2')
+    
+    expect(context[1].content).toBe('T-1: Hello')
+    expect(context[2].content).toBe('User: How are you?')
   })
 })
