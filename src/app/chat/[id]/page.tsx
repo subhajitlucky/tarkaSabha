@@ -37,8 +37,8 @@ export default function ChatPage() {
     }
   }, [session?.user?.name])
 
-  // Get username - use Google name if logged in, otherwise localStorage
-  const username = session?.user?.name || localUsername || 'You'
+  // Get username - use localStorage (if set manually) or Google name, otherwise 'You'
+  const username = localUsername || session?.user?.name || 'You'
 
   // Check ownership
   useEffect(() => {
@@ -49,32 +49,13 @@ export default function ChatPage() {
     }
   }, [chat?.creatorId, session?.user?.id])
 
-  // Poll for messages when in auto mode
-  useEffect(() => {
-    let interval: NodeJS.Timeout
-    let isActive = true
-
-    if (chat?.isAutoMode) {
-      setIsTyping(true) // Assume typing while in auto mode
-      interval = setInterval(async () => {
-        if (!isActive) return
-        await fetchMessages()
-      }, 3000)
-    } else {
-      setIsTyping(false)
-    }
-
-    return () => {
-      isActive = false
-      clearInterval(interval)
-    }
-  }, [chat?.isAutoMode])
-
   const saveUsername = (name: string) => {
-    const trimmed = name.trim() || 'You'
-    localStorage.setItem('tarka_username', trimmed)
-    setLocalUsername(trimmed)
-    setShowUsernameModal(false)
+    const trimmed = name.trim()
+    if (trimmed) {
+      localStorage.setItem('tarka_username', trimmed)
+      setLocalUsername(trimmed)
+      setShowUsernameModal(false)
+    }
   }
 
   // Auto-resize textarea
@@ -490,14 +471,24 @@ export default function ChatPage() {
                   </div>
                 </div>
 
-                {isOwner && (
+                <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="text-red-400 hover:text-red-300 text-sm font-medium px-3 py-1 rounded-lg hover:bg-red-500/10"
+                    onClick={() => setShowUsernameModal(true)}
+                    className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                      isLight ? 'bg-slate-200 hover:bg-slate-300 text-slate-700' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                    }`}
                   >
-                    Delete Chat
+                    Edit Name
                   </button>
-                )}
+                  {isOwner && (
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="text-red-400 hover:text-red-300 text-sm font-medium px-3 py-1 rounded-lg hover:bg-red-500/10"
+                    >
+                      Delete Chat
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           )}
