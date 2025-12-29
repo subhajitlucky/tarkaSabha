@@ -49,9 +49,38 @@ describe('DynamicOrchestrator', () => {
     expect(nextSpeaker?.id).toBe(mockPersona1.id)
   })
 
-  it('should select the next participant in round-robin if no dynamic selection is performed', async () => {
-    context.lastSpeakerId = mockPersona1.id
-    const nextSpeaker = await orchestrator.selectNextSpeaker(context, participants)
-    expect(nextSpeaker?.id).toBe(mockPersona2.id)
+    it('should select the next participant in round-robin if no dynamic selection is performed', async () => {
+
+      context.lastSpeakerId = mockPersona1.id
+
+      const nextSpeaker = await orchestrator.selectNextSpeaker(context, participants)
+
+      expect(nextSpeaker?.id).toBe(mockPersona2.id)
+
+    })
+
+  
+
+    it('should prioritize the mentioned persona if present in the context', async () => {
+
+      context.mentionedPersonaId = mockPersona2.id
+
+      const nextSpeaker = await orchestrator.selectNextSpeaker(context, participants)
+
+      expect(nextSpeaker?.id).toBe(mockPersona2.id)
+
+    })
+
+  
+
+    it('should return null if no participants are provided', async () => {
+
+      const nextSpeaker = await orchestrator.selectNextSpeaker(context, [])
+
+      expect(nextSpeaker).toBeNull()
+
+    })
+
   })
-})
+
+  

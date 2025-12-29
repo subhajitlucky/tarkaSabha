@@ -39,6 +39,12 @@ export class DynamicOrchestrator implements Orchestrator {
   ): Promise<Persona | null> {
     if (participants.length === 0) return null
 
+    // 1. Prioritize mentioned persona
+    if (context.mentionedPersonaId) {
+      const mentioned = participants.find(p => p.id === context.mentionedPersonaId)
+      if (mentioned) return mentioned
+    }
+
     // Fallback to round-robin logic for now, until LLM selection is implemented
     if (!context.lastSpeakerId) return participants[0]
 
