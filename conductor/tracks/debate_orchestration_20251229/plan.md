@@ -22,7 +22,7 @@ This plan outlines the steps to implement dynamic, autonomous debate orchestrati
 - [x] Task: Conductor - User Manual Verification 'Contextual Interaction & Persona Integrity' (Protocol in workflow.md) 3037665
 
 ## Phase 4: Integration & End-to-End Testing
-- [ ] Task: Connect the autonomous orchestrator to the `/api/chat/send` and `/api/chat/history` routes
+- [x] Task: Connect the autonomous orchestrator to the `/api/chat/send` and `/api/chat/history` routes 40a027f
 - [ ] Task: Update the frontend to handle "Autonomous Mode" triggers and real-time updates (auto-polling/SWR)
 - [ ] Task: Implement "Typing..." indicator for active personas in the chat UI
 - [ ] Task: Improve Chat UI aesthetics (remove blandness, better spacing/colors)
