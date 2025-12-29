@@ -32,6 +32,24 @@ export interface Orchestrator {
   ): Promise<Persona | null>
 }
 
+export class DynamicOrchestrator implements Orchestrator {
+  async selectNextSpeaker(
+    context: OrchestrationContext,
+    participants: Persona[]
+  ): Promise<Persona | null> {
+    if (participants.length === 0) return null
+
+    // Fallback to round-robin logic for now, until LLM selection is implemented
+    if (!context.lastSpeakerId) return participants[0]
+
+    const lastIndex = participants.findIndex(p => p.id === context.lastSpeakerId)
+    if (lastIndex === -1) return participants[0]
+
+    const nextIndex = (lastIndex + 1) % participants.length
+    return participants[nextIndex]
+  }
+}
+
 export function extractMention(content: string): string | null {
   const mentionMatch = content.match(/@(\w+[\w-]*\w+)/)
   return mentionMatch ? mentionMatch[1] : null

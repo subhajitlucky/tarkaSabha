@@ -1,4 +1,4 @@
-import { Orchestrator, OrchestrationContext } from './orchestrator'
+import { Orchestrator, OrchestrationContext, DynamicOrchestrator } from './orchestrator'
 import type { Persona } from '@prisma/client'
 
 // Mock Persona
@@ -28,20 +28,30 @@ const mockPersona2: Persona = {
   updatedAt: new Date(),
 }
 
-describe('Orchestrator Interface', () => {
-  // This test serves as a "type check" to ensure the interface is defined correctly
-  // It won't pass until we actually define the interface in the implementation file
-  it('should allow defining an Orchestrator with a selectNextSpeaker method', () => {
-    const mockOrchestrator: Orchestrator = {
-      selectNextSpeaker: async (
-        context: OrchestrationContext,
-        participants: Persona[]
-      ): Promise<Persona | null> => {
-        return participants[0]
-      },
-    }
+describe('DynamicOrchestrator', () => {
+  let orchestrator: DynamicOrchestrator
+  let context: OrchestrationContext
+  let participants: Persona[]
 
-    expect(mockOrchestrator).toBeDefined()
-    expect(typeof mockOrchestrator.selectNextSpeaker).toBe('function')
+  beforeEach(() => {
+    orchestrator = new DynamicOrchestrator()
+    context = {
+      chatId: 'chat1',
+      topic: 'Testing AI',
+      isAutoMode: true,
+      lastSpeakerId: null,
+    }
+    participants = [mockPersona1, mockPersona2]
+  })
+
+  it('should select the first participant if no last speaker is set', async () => {
+    const nextSpeaker = await orchestrator.selectNextSpeaker(context, participants)
+    expect(nextSpeaker?.id).toBe(mockPersona1.id)
+  })
+
+  it('should select the next participant in round-robin if no dynamic selection is performed', async () => {
+    context.lastSpeakerId = mockPersona1.id
+    const nextSpeaker = await orchestrator.selectNextSpeaker(context, participants)
+    expect(nextSpeaker?.id).toBe(mockPersona2.id)
   })
 })
