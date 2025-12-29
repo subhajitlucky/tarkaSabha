@@ -31,14 +31,14 @@ export default function ChatPage() {
   useEffect(() => {
     const saved = localStorage.getItem('tarka_username') || ''
     setLocalUsername(saved)
-    // Only show modal if no saved username AND not logged in with Google
-    if (!saved && !session?.user?.name) {
+    // ALWAYS show modal if no saved local username, to prevent exposing real name to LLMs
+    if (!saved) {
       setShowUsernameModal(true)
     }
-  }, [session?.user?.name])
+  }, [])
 
-  // Get username - use localStorage (if set manually) or Google name, otherwise 'You'
-  const username = localUsername || session?.user?.name || 'You'
+  // Get username - MUST use localUsername to protect privacy from LLMs
+  const username = localUsername || 'Anonymous'
 
   // Check ownership
   useEffect(() => {
@@ -58,65 +58,17 @@ export default function ChatPage() {
     }
   }
 
-  // Auto-resize textarea
-  const adjustTextareaHeight = useCallback(() => {
-    const textarea = textareaRef.current
-    if (textarea) {
-      textarea.style.height = 'auto'
-      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'
-    }
-  }, [])
-
-  const scrollToBottom = useCallback(() => {
-    if (messages.length > 0 && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }
-  }, [messages.length])
-
-  useEffect(() => {
-    if (messages.length > 0) {
-      scrollToBottom()
-    }
-  }, [messages.length, scrollToBottom])
-
-  useEffect(() => {
-    if (chatId) {
-      fetchChat()
-      fetchMessages()
-    }
-  }, [chatId])
-
-  const fetchChat = async () => {
-    try {
-      const res = await fetch(`/api/chats/${chatId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setChat(data)
-      }
-    } catch (e) {
-      console.error('Failed to fetch chat', e)
-    }
-  }
-
-  const fetchMessages = async () => {
-    try {
-      const res = await fetch(`/api/chats/${chatId}/messages`)
-      if (res.ok) {
-        const data = await res.json()
-        setMessages(prev => {
-          if (JSON.stringify(prev) !== JSON.stringify(data)) {
-            return data
-          }
-          return prev
-        })
-      }
-    } catch (e) {
-      console.error('Failed to fetch messages', e)
-    }
-  }
+  // ... (adjusting sendMessage to check for username)
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !chat) return
+    
+    // Safety check: ensure username is set
+    if (!localUsername) {
+      setShowUsernameModal(true)
+      return
+    }
+
     setError(null)
     setIsTyping(true)
 
@@ -248,10 +200,10 @@ export default function ChatPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className={`p-6 rounded-2xl max-w-md w-full mx-4 ${isLight ? 'bg-white' : 'bg-slate-900 border border-slate-800'}`}>
             <h2 className={`text-xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              Welcome to Tarka Sabha
+              Identity Setup
             </h2>
             <p className={`mb-4 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-              What should we call you?
+              Choose a name to represent you in this debate. This name will be shared with the AI personas.
             </p>
             <input
               type="text"
