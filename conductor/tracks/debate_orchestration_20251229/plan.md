@@ -12,7 +12,7 @@ This plan outlines the steps to implement dynamic, autonomous debate orchestrati
 ## Phase 2: Dynamic Speaker Selection
 - [x] Task: Implement the `selectNextSpeaker` logic in `src/lib/orchestrator.ts` 2c1107c
 - [x] Task: Write unit tests for `selectNextSpeaker` with various conversation contexts e082cf8
-- [ ] Task: Implement a lightweight selection prompt to assist the orchestrator
+- [x] Task: Implement a lightweight selection prompt to assist the orchestrator 82ae254
 - [ ] Task: Conductor - User Manual Verification 'Dynamic Speaker Selection' (Protocol in workflow.md)
 
 ## Phase 3: Contextual Interaction & Persona Integrity
