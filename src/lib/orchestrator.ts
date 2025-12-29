@@ -25,6 +25,13 @@ export interface OrchestrationContext {
   mentionedPersonaId?: string
 }
 
+export interface Orchestrator {
+  selectNextSpeaker(
+    context: OrchestrationContext,
+    participants: Persona[]
+  ): Promise<Persona | null>
+}
+
 export function extractMention(content: string): string | null {
   const mentionMatch = content.match(/@(\w+[\w-]*\w+)/)
   return mentionMatch ? mentionMatch[1] : null
