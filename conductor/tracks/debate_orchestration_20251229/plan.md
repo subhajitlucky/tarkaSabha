@@ -17,7 +17,7 @@ This plan outlines the steps to implement dynamic, autonomous debate orchestrati
 
 ## Phase 3: Contextual Interaction & Persona Integrity
 - [x] Task: Refine persona system prompts to better handle "autonomous" context (knowing they are in a debate) 6301914
-- [ ] Task: Implement state management for "debate intent" to keep personas on topic
+- [x] Task: Implement state management for "debate intent" to keep personas on topic 9fff7a9
 - [ ] Task: Write unit tests for refined prompt generation
 - [ ] Task: Conductor - User Manual Verification 'Contextual Interaction & Persona Integrity' (Protocol in workflow.md)
 
