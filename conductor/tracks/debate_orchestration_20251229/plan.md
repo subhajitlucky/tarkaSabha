@@ -1,0 +1,28 @@
+# Track Plan: Autonomous Debate Orchestration
+
+This plan outlines the steps to implement dynamic, autonomous debate orchestration between AI personas.
+
+---
+
+## Phase 1: Foundation & Analysis
+- [ ] Task: Analyze existing `src/lib/orchestrator.ts` and `src/lib/llm.ts` to identify gaps in autonomous logic
+- [ ] Task: Define the `Orchestrator` interface for dynamic speaker selection
+- [ ] Task: Conductor - User Manual Verification 'Foundation & Analysis' (Protocol in workflow.md)
+
+## Phase 2: Dynamic Speaker Selection
+- [ ] Task: Implement the `selectNextSpeaker` logic in `src/lib/orchestrator.ts`
+- [ ] Task: Write unit tests for `selectNextSpeaker` with various conversation contexts
+- [ ] Task: Implement a lightweight selection prompt to assist the orchestrator
+- [ ] Task: Conductor - User Manual Verification 'Dynamic Speaker Selection' (Protocol in workflow.md)
+
+## Phase 3: Contextual Interaction & Persona Integrity
+- [ ] Task: Refine persona system prompts to better handle "autonomous" context (knowing they are in a debate)
+- [ ] Task: Implement state management for "debate intent" to keep personas on topic
+- [ ] Task: Write unit tests for refined prompt generation
+- [ ] Task: Conductor - User Manual Verification 'Contextual Interaction & Persona Integrity' (Protocol in workflow.md)
+
+## Phase 4: Integration & End-to-End Testing
+- [ ] Task: Connect the autonomous orchestrator to the `/api/chat/send` and `/api/chat/history` routes
+- [ ] Task: Update the frontend to handle "Autonomous Mode" triggers and real-time updates
+- [ ] Task: Perform end-to-end testing of a full debate (10+ messages)
+- [ ] Task: Conductor - User Manual Verification 'Integration & End-to-End Testing' (Protocol in workflow.md)
