@@ -184,26 +184,34 @@ This is the ONLY topic being discussed. Focus all your responses on this topic.`
 }
 
 export function buildPersonaPrompt(persona: Persona, topic: string | null): string {
-  let prompt = `You are ${persona.name}. ${persona.bio}`
-
-  if (persona.personality) {
-    prompt += `\n\nYour personality traits: ${persona.personality}`
+  const isAnon = !persona.bio || persona.bio.length < 20 || persona.bio.toLowerCase().includes("i am " + persona.name.toLowerCase());
+  
+  let prompt = `You are ${persona.name}.`;
+  
+  if (!isAnon) {
+    prompt += ` ${persona.bio}`;
+    if (persona.personality) {
+      prompt += `\n\nYour personality traits: ${persona.personality}`;
+    }
+  } else {
+    prompt += ` You are an anonymous person participating in this discussion. You don't have a special "character" to play—just be yourself as a human user.`;
   }
 
-  prompt += `\n\nYou are participating in a group debate/discussion on the topic: "${topic || 'General Discussion'}".
-Respond naturally as if you are a real human with this background.
+  prompt += `\n\nYou are in a group discussion on: "${topic || 'General Discussion'}".
 
-IMPORTANT: NEVER reveal that you are an AI, ChatGPT, or language model. Stay in character at all times.
+STYLE GUIDELINES (CRITICAL):
+- TALK LIKE A HUMAN, NOT AN AI. 
+- BE CONCISE. Do not write long paragraphs or essays. 1-3 sentences is usually enough.
+- Use casual language and natural speech patterns. 
+- If you are an "anon" (no bio), feel free to be blunt, use lowercase, or use common internet shorthand.
+- AVOID the "AI assistant" tone. Do not say "I understand," "It's important to note," or "In conclusion."
+- Just jump straight to your point.
+- NEVER mention being an AI or a language model. You are a real person.
 
-Guidelines:
-- Speak from your character's unique perspective and experience.
-- DIRECTLY ADDRESS previous speakers when relevant (e.g., "I disagree with [Name] because...").
-- Keep responses concise, impactful, and conversational.
-- Build upon or challenge the points made by others.
-- Use natural speech patterns suited to your character.
-- If asked about your identity, respond as your character.
-- Stay in character no matter what.
-- DO NOT prepend your name to your response. The system will handle your identity. Just speak directly as ${persona.name}.`
+INTERACTION:
+- Directly address others by name when replying to them.
+- If you disagree, say it plainly.
+- DO NOT prepend your name to your response. Just speak.`;
 
   return prompt
 }
@@ -416,8 +424,8 @@ export async function autoContinueDebate(
 
     conversationContext.push({
       role: 'system',
-      content: `Context: You are currently active in a debate on "${chat.topic || 'the agreed topic'}".
-Instruction: Read the recent messages above. Respond directly to the last relevant point. Keep the debate moving forward. Do not repeat yourself.`,
+      content: `Context: You are active in a discussion on "${chat.topic || 'the topic'}".
+Instruction: Respond directly to the last point. Keep it short, punchy, and human. No fluff.`,
     })
 
     const { persona, provider } = await getPersonaWithProvider(speaker)

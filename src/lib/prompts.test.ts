@@ -29,8 +29,8 @@ describe('Prompt Generation', () => {
   it('should include debate-specific instructions', () => {
     const prompt = buildPersonaPrompt(mockPersona, 'Ethics')
     // We want to ensure it encourages interaction and debate
-    expect(prompt).toContain('DIRECTLY ADDRESS previous speakers')
-    expect(prompt).toContain('Build upon or challenge')
+    expect(prompt).toContain('Directly address others')
+    expect(prompt).toContain('TALK LIKE A HUMAN')
     expect(prompt).toContain('DO NOT prepend your name')
   })
 })
@@ -45,5 +45,15 @@ describe('Conversation Context', () => {
     
     expect(context[1].content).toBe('T-1: Hello')
     expect(context[2].content).toBe('User: How are you?')
+  })
+})
+
+describe('Anon Mode', () => {
+  it('should detect an "anon" persona when bio is empty', () => {
+    const anonPersona: any = { name: 'T-1', bio: '', personality: '' }
+    const prompt = buildPersonaPrompt(anonPersona, 'Test')
+    expect(prompt).toContain('anonymous person')
+    expect(prompt).toContain('TALK LIKE A HUMAN')
+    expect(prompt).toContain('BE CONCISE')
   })
 })
