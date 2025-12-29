@@ -31,11 +31,14 @@ export default function ChatPage() {
   useEffect(() => {
     const saved = localStorage.getItem('tarka_username') || ''
     setLocalUsername(saved)
-    // ALWAYS show modal if no saved local username, to prevent exposing real name to LLMs
-    if (!saved) {
+  }, [])
+
+  // Show identity setup ONLY for chat owners who haven't set a local username
+  useEffect(() => {
+    if (isOwner && !localUsername) {
       setShowUsernameModal(true)
     }
-  }, [])
+  }, [isOwner, localUsername])
 
   // Get username - MUST use localUsername to protect privacy from LLMs
   const username = localUsername || 'Anonymous'
