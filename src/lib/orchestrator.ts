@@ -45,7 +45,13 @@ export class DynamicOrchestrator implements Orchestrator {
       if (mentioned) return mentioned
     }
 
-    // Fallback to round-robin logic for now, until LLM selection is implemented
+    // 2. Dynamic selection via LLM (if multiple participants and in auto mode)
+    if (participants.length > 2 && context.isAutoMode) {
+      const speaker = await this.selectSpeakerViaLLM(context, participants)
+      if (speaker) return speaker
+    }
+
+    // Fallback to round-robin logic
     if (!context.lastSpeakerId) return participants[0]
 
     const lastIndex = participants.findIndex(p => p.id === context.lastSpeakerId)
@@ -54,6 +60,72 @@ export class DynamicOrchestrator implements Orchestrator {
     const nextIndex = (lastIndex + 1) % participants.length
     return participants[nextIndex]
   }
+
+  private async selectSpeakerViaLLM(
+    context: OrchestrationContext,
+    participants: Persona[]
+  ): Promise<Persona | null> {
+    try {
+      const defaultProvider = await prisma.provider.findFirst({
+        where: { isDefault: true },
+      })
+
+      if (!defaultProvider) return null
+
+      const previousMessages = await prisma.message.findMany({
+        where: { chatId: context.chatId },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      })
+
+      const history: ChatMessage[] = previousMessages.reverse().map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content,
+        personaName: m.personaName || undefined,
+      }))
+
+      const selectionPrompt = buildSelectionPrompt(context.topic, participants, history)
+
+      const response = await getLLMResponse(
+        defaultProvider.apiKey,
+        defaultProvider.provider as any,
+        defaultProvider.model,
+        [{ role: 'user', content: selectionPrompt }],
+        { temperature: 0, maxTokens: 20 }
+      )
+
+      const selectedName = response.content.trim().toLowerCase()
+      // Remove any trailing punctuation
+      const cleanName = selectedName.replace(/[.,!?;:]/g, '')
+      const selected = participants.find(p => p.name.toLowerCase() === cleanName)
+
+      return selected || null
+    } catch (error) {
+      console.error('[Orchestrator] Error during LLM speaker selection:', error)
+      return null
+    }
+  }
+}
+
+function buildSelectionPrompt(
+  topic: string | null,
+  participants: Persona[],
+  history: ChatMessage[]
+): string {
+  const participantsList = participants.map(p => `- ${p.name}`).join('\n')
+  const recentHistory = history.slice(-5).map(m => `${m.personaName || m.role}: ${m.content}`).join('\n')
+
+  return `You are a debate moderator. Based on the conversation history below, decide which of the following participants should speak next to move the debate forward.
+
+Topic: ${topic || 'General Discussion'}
+
+Participants:
+${participantsList}
+
+Recent Conversation History:
+${recentHistory}
+
+Respond ONLY with the name of the participant who should speak next. Do not include any other text.`
 }
 
 export function extractMention(content: string): string | null {
