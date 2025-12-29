@@ -400,8 +400,8 @@ export async function autoContinueDebate(
 
     conversationContext.push({
       role: 'system',
-      content: `Continue the debate on "${chat.topic || 'this topic'}".
-Respond to previous points, build on ideas, or counter-argument if you disagree. Be concise but impactful.`,
+      content: `Context: You are currently active in a debate on "${chat.topic || 'the agreed topic'}".
+Instruction: Read the recent messages above. Respond directly to the last relevant point. Keep the debate moving forward. Do not repeat yourself.`,
     })
 
     const { persona, provider } = await getPersonaWithProvider(speaker)
