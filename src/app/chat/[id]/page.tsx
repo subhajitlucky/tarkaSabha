@@ -564,42 +564,56 @@ export default function ChatPage() {
             return (
               <div
                 key={message.id || idx}
-                className={`mb-4 ${isUserMessage ? 'flex flex-col items-end' : ''}`}
+                className={`mb-6 flex ${isUserMessage ? 'justify-end' : 'justify-start'}`}
               >
-                {showPersonaName && (
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">
+                {!isUserMessage && (
+                  <div className="mr-3 flex-shrink-0">
+                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm font-bold text-white shadow-lg">
                       {(persona?.name || '?').charAt(0).toUpperCase()}
                     </div>
-                    <span className={`text-sm font-medium ${isLight ? 'text-slate-800' : 'text-white'}`}>
-                      {persona?.name || 'Unknown'}
-                    </span>
-                    <span className={`text-xs ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
-                      {formatTime(message.createdAt)}
-                    </span>
                   </div>
                 )}
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                    isUserMessage
-                      ? isLight
-                        ? 'bg-amber-500 text-white'
-                        : 'bg-amber-500 text-white'
-                      : isLight
-                        ? 'bg-white border border-slate-200 text-slate-800'
-                        : 'bg-slate-900 text-slate-100'
-                  }`}
-                >
-                  {isUserMessage && (
-                    <span className={`text-xs font-medium opacity-75 block mb-1 ${isLight ? 'text-white' : 'text-white'}`}>
-                      {username}
-                    </span>
+                
+                <div className={`flex flex-col ${isUserMessage ? 'items-end' : 'items-start'} max-w-[80%]`}>
+                  {showPersonaName && (
+                    <div className="flex items-center gap-2 mb-1 ml-1">
+                      <span className={`text-xs font-bold tracking-wide ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                        {persona?.name || 'Unknown'}
+                      </span>
+                      <span className={`text-[10px] ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+                        {formatTime(message.createdAt)}
+                      </span>
+                    </div>
                   )}
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+
+                  <div
+                    className={`rounded-2xl px-5 py-3 shadow-md ${
+                      isUserMessage
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-br-none'
+                        : isLight
+                          ? 'bg-white border border-slate-100 text-slate-800 rounded-bl-none'
+                          : 'bg-slate-800 border border-slate-700 text-slate-100 rounded-bl-none'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed">{message.content}</p>
+                  </div>
+                  
+                  {isUserMessage && (
+                    <div className={`text-[10px] mt-1 mr-1 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
+                      {username} • {formatTime(message.createdAt)}
+                    </div>
+                  )}
                 </div>
+
                 {isUserMessage && (
-                  <div className={`text-xs mt-1 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
-                    {formatTime(message.createdAt)}
+                  <div className="ml-3 flex-shrink-0">
+                     {session?.user?.image ? (
+                        <img src={session.user.image} alt="" className="w-8 h-8 rounded-full shadow-lg" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-sm font-bold text-white shadow-lg">
+                          {username.charAt(0).toUpperCase()}
+                        </div>
+                      )}
                   </div>
                 )}
               </div>
@@ -608,11 +622,24 @@ export default function ChatPage() {
 
           {/* Typing Indicator */}
           {isTyping && (
-            <div className="flex items-center gap-2 text-sm mt-4">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white animate-pulse">
-                ...
-              </div>
-              <span className={isLight ? 'text-slate-500' : 'text-slate-500'}>Thinking...</span>
+            <div className="flex justify-start mb-6">
+               <div className="mr-3 flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center animate-pulse">
+                    <div className="w-2 h-2 bg-slate-400 rounded-full" />
+                  </div>
+               </div>
+               <div className={`rounded-2xl px-4 py-3 rounded-bl-none flex items-center gap-2 ${
+                 isLight ? 'bg-white border border-slate-100' : 'bg-slate-800 border border-slate-700'
+               }`}>
+                 <div className="flex gap-1">
+                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                   <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                 </div>
+                 <span className={`text-xs font-medium ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                   {chat.participants && chat.participants.length > 0 ? "Someone is typing..." : "Thinking..."}
+                 </span>
+               </div>
             </div>
           )}
 
