@@ -26,6 +26,6 @@ This plan outlines the steps to implement dynamic, autonomous debate orchestrati
 - [x] Task: Update the frontend to handle "Autonomous Mode" triggers and real-time updates (auto-polling/SWR) c7fc735
 - [x] Task: Implement "Typing..." indicator for active personas in the chat UI 8b77136
 - [x] Task: Improve Chat UI aesthetics (remove blandness, better spacing/colors) 8b77136
-- [ ] Task: Update User UI to display "Username" instead of email if available
+- [x] Task: Update User UI to display "Username" instead of email if available 9e41464
 - [ ] Task: Perform end-to-end testing of a full debate (10+ messages)
 - [ ] Task: Conductor - User Manual Verification 'Integration & End-to-End Testing' (Protocol in workflow.md)
