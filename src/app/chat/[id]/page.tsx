@@ -25,7 +25,6 @@ export default function ChatPage() {
   const [localUsername, setLocalUsername] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const isPollingRef = useRef(false)
   const [isOwner, setIsOwner] = useState(false)
 
   // Load username from localStorage on client mount
@@ -49,6 +48,27 @@ export default function ChatPage() {
       setIsOwner(false)
     }
   }, [chat?.creatorId, session?.user?.id])
+
+  // Poll for messages when in auto mode
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    let isActive = true
+
+    if (chat?.isAutoMode) {
+      setIsTyping(true) // Assume typing while in auto mode
+      interval = setInterval(async () => {
+        if (!isActive) return
+        await fetchMessages()
+      }, 3000)
+    } else {
+      setIsTyping(false)
+    }
+
+    return () => {
+      isActive = false
+      clearInterval(interval)
+    }
+  }, [chat?.isAutoMode])
 
   const saveUsername = (name: string) => {
     const trimmed = name.trim() || 'You'
@@ -86,15 +106,32 @@ export default function ChatPage() {
   }, [chatId])
 
   const fetchChat = async () => {
-    const res = await fetch(`/api/chats/${chatId}`)
-    const data = await res.json()
-    setChat(data)
+    try {
+      const res = await fetch(`/api/chats/${chatId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setChat(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch chat', e)
+    }
   }
 
   const fetchMessages = async () => {
-    const res = await fetch(`/api/chats/${chatId}/messages`)
-    const data = await res.json()
-    setMessages(data)
+    try {
+      const res = await fetch(`/api/chats/${chatId}/messages`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(prev => {
+          if (JSON.stringify(prev) !== JSON.stringify(data)) {
+            return data
+          }
+          return prev
+        })
+      }
+    } catch (e) {
+      console.error('Failed to fetch messages', e)
+    }
   }
 
   const sendMessage = async () => {
@@ -115,11 +152,22 @@ export default function ChatPage() {
       }
 
       const data = await res.json()
+      
+      // Refresh messages immediately
+      await fetchMessages()
+      
+      // If auto-debate triggered, ensure we fetch chat to update isAutoMode status if needed
       if (data.autoDebateTriggered) {
-        setTimeout(() => pollMessages(chatId), 2000)
+         // Force a chat refresh to check if auto-mode was enabled on server
+         // (though usually we toggle it explicitly via toggleAutoMode)
+         // Actually, let's just wait for the useEffect to kick in if chat.isAutoMode is true
+         // But if the server enables it, we need to know.
+         // Let's re-fetch chat too.
+         await fetchChat()
       } else {
-        await fetchMessages()
+        setIsTyping(false)
       }
+
       setNewMessage('')
       adjustTextareaHeight()
     } catch (err: any) {
@@ -128,48 +176,7 @@ export default function ChatPage() {
     }
   }
 
-  const pollMessages = async (chatId: string, maxPolls: number = 30) => {
-    // Prevent multiple concurrent polls
-    if (isPollingRef.current) {
-      console.log('[Poll] Already polling, skipping')
-      return
-    }
-
-    isPollingRef.current = true
-    let polls = 0
-
-    const poll = async () => {
-      polls++
-      try {
-        const res = await fetch(`/api/chats/${chatId}/messages`)
-        const data = await res.json()
-
-        if (data.length > messages.length) {
-          setMessages(data)
-          setIsTyping(false)
-          isPollingRef.current = false
-          return true
-        }
-
-        if (polls >= maxPolls) {
-          setIsTyping(false)
-          isPollingRef.current = false
-          return false
-        }
-      } catch (error) {
-        console.error('Poll error:', error)
-      }
-
-      if (polls < maxPolls) {
-        setTimeout(poll, 2000)
-      } else {
-        isPollingRef.current = false
-      }
-      return false
-    }
-
-    poll()
-  }
+  // Removed legacy pollMessages function
 
   const toggleAutoMode = async () => {
     if (!chat) return
@@ -193,7 +200,7 @@ export default function ChatPage() {
             body: JSON.stringify({ content: 'Start the debate on this topic.', isUser: false }),
           })
           if (sendRes.ok) {
-            setTimeout(() => pollMessages(chatId, 60), 3000)
+            // Poll will start automatically due to useEffect dependence on chat.isAutoMode
           } else {
             setIsTyping(false)
           }
