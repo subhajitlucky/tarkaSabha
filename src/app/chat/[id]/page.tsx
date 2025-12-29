@@ -58,7 +58,83 @@ export default function ChatPage() {
     }
   }
 
-  // ... (adjusting sendMessage to check for username)
+  // Poll for messages when in auto mode
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    let isActive = true
+
+    if (chat?.isAutoMode) {
+      setIsTyping(true) // Assume typing while in auto mode
+      interval = setInterval(async () => {
+        if (!isActive) return
+        await fetchMessages()
+      }, 3000)
+    } else {
+      setIsTyping(false)
+    }
+
+    return () => {
+      isActive = false
+      clearInterval(interval)
+    }
+  }, [chat?.isAutoMode])
+
+  // Auto-resize textarea
+  const adjustTextareaHeight = useCallback(() => {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'
+    }
+  }, [])
+
+  const scrollToBottom = useCallback(() => {
+    if (messages.length > 0 && messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    }
+  }, [messages.length])
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollToBottom()
+    }
+  }, [messages.length, scrollToBottom])
+
+  useEffect(() => {
+    if (chatId) {
+      fetchChat()
+      fetchMessages()
+    }
+  }, [chatId])
+
+  const fetchChat = async () => {
+    try {
+      const res = await fetch(`/api/chats/${chatId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setChat(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch chat', e)
+    }
+  }
+
+  const fetchMessages = async () => {
+    try {
+      const res = await fetch(`/api/chats/${chatId}/messages`)
+      if (res.ok) {
+        const data = await res.json()
+        setMessages(prev => {
+          if (JSON.stringify(prev) !== JSON.stringify(data)) {
+            return data
+          }
+          return prev
+        })
+      }
+    } catch (e) {
+      console.error('Failed to fetch messages', e)
+    }
+  }
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !chat) return
