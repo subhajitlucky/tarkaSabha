@@ -1,25 +1,33 @@
 import crypto from 'crypto'
 
 // Environment variable for encryption key (32 bytes for AES-256)
-const ENCRYPTION_KEY_ENV = process.env.ENCRYPTION_KEY
+const getEncryptionKey = () => {
+  const key = process.env.ENCRYPTION_KEY
 
-// Validate encryption key on module load
-if (!ENCRYPTION_KEY_ENV) {
-  throw new Error(
-    'CRITICAL: ENCRYPTION_KEY environment variable is not set. ' +
-    'Please set ENCRYPTION_KEY in your .env file (minimum 32 characters). ' +
-    'Generate one with: openssl rand -base64 32'
-  )
+  // During build time, Next.js might evaluate this module.
+  // We only want to throw if we're actually trying to use the crypto service.
+  if (!key) {
+    if (process.env.NEXT_PHASE === 'phase-production-build') {
+      // Return a dummy key during build phase to prevent crash
+      return 'static_build_key_placeholder_32_chars_long'
+    }
+    throw new Error(
+      'CRITICAL: ENCRYPTION_KEY environment variable is not set. ' +
+      'Please set ENCRYPTION_KEY in your .env file (minimum 32 characters). ' +
+      'Generate one with: openssl rand -base64 32'
+    )
+  }
+
+  if (key.length < 32) {
+    throw new Error(
+      'CRITICAL: ENCRYPTION_KEY must be at least 32 characters long. ' +
+      `Current length: ${key.length}`
+    )
+  }
+
+  return key
 }
 
-if (ENCRYPTION_KEY_ENV.length < 32) {
-  throw new Error(
-    'CRITICAL: ENCRYPTION_KEY must be at least 32 characters long. ' +
-    `Current length: ${ENCRYPTION_KEY_ENV.length}`
-  )
-}
-
-const ENCRYPTION_KEY: string = ENCRYPTION_KEY_ENV
 const IV_LENGTH = 16
 const ALGORITHM = 'aes-256-gcm'
 
@@ -28,8 +36,9 @@ export class CryptoService {
   private key: Buffer
 
   private constructor() {
+    const key = getEncryptionKey()
     // Ensure key is exactly 32 bytes using scrypt
-    this.key = crypto.scryptSync(ENCRYPTION_KEY, 'salt', 32)
+    this.key = crypto.scryptSync(key, 'salt', 32)
   }
 
   static getInstance(): CryptoService {
@@ -88,10 +97,14 @@ export class CryptoService {
 
   /**
    * Validate encryption key strength
-   * Note: Key is now required at startup, so this always returns valid
    */
   static validateKey(): { valid: boolean; message: string } {
-    return { valid: true, message: 'Encryption key configured' }
+    try {
+      getEncryptionKey()
+      return { valid: true, message: 'Encryption key configured' }
+    } catch (error: any) {
+      return { valid: false, message: error.message }
+    }
   }
 }
 
