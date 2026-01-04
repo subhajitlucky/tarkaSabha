@@ -280,27 +280,27 @@ export default function ChatPage() {
 
   if (!chat) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
         <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   // Dynamic style variables to avoid parser errors with forward slashes
-  const themeBg = isLight ? 'bg-slate-50' : 'bg-black';
+  const themeBg = isLight ? 'bg-slate-50' : 'bg-slate-950';
   const themeText = isLight ? 'text-slate-900' : 'text-slate-100';
-  const headerBg = isLight ? 'bg-white border-slate-200' : 'bg-black border-slate-800';
+  const headerBg = isLight ? 'bg-white border-slate-200' : 'bg-slate-950 border-slate-800';
   const sidebarBtn = isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-slate-800 text-slate-400';
   const statusBadge = chat.isAutoMode 
-    ? 'bg-green-500 bg-opacity-10 border-green-500 border-opacity-20 text-green-500' 
-    : 'bg-slate-500 bg-opacity-10 border-slate-500 border-opacity-20 text-slate-400';
+    ? 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400' 
+    : 'bg-slate-500/10 border-slate-500/20 text-slate-500 dark:text-slate-400';
   const identityBtn = isLight 
     ? 'bg-white border-slate-200 hover:border-amber-500 hover:bg-amber-50' 
     : 'bg-slate-900 border-slate-800 hover:border-amber-500 hover:bg-slate-800';
   const actionGroup = isLight ? 'bg-slate-100 border-slate-200' : 'bg-slate-900 border-slate-800';
   const toggleBtn = chat.isAutoMode 
-    ? 'bg-red-500 text-white shadow-lg shadow-red-500 shadow-opacity-20 hover:bg-red-600' 
-    : 'text-slate-500 hover:bg-slate-800';
+    ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20' 
+    : (isLight ? 'text-slate-500 hover:bg-slate-200' : 'text-slate-400 hover:bg-slate-800');
   const settingsBtn = showChatSettings 
     ? (isLight ? 'bg-white shadow-sm' : 'bg-slate-800')
     : (isLight ? 'hover:bg-white' : 'hover:bg-slate-800');
