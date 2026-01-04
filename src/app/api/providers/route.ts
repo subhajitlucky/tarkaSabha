@@ -2,10 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { cryptoService } from '@/lib/crypto'
 import { LLMProviderFactory, ProviderType } from '@/lib/llm-provider'
+import { auth } from '@/auth'
 
 export async function GET() {
   try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const providers = await prisma.provider.findMany({
+      where: { creatorId: session.user.id },
       orderBy: { createdAt: 'desc' },
     })
 
@@ -24,6 +32,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { name, provider, apiUrl, apiKey, model, temperature, isDefault } = body
 
@@ -49,10 +63,13 @@ export async function POST(request: NextRequest) {
     // Encrypt API key
     const encryptedKey = apiKey ? cryptoService.encrypt(apiKey) : ''
 
-    // If setting as default, unset other defaults
+    // If setting as default, unset other defaults for THIS user
     if (isDefault) {
       await prisma.provider.updateMany({
-        where: { isDefault: true },
+        where: { 
+          creatorId: session.user.id,
+          isDefault: true 
+        },
         data: { isDefault: false },
       })
     }
@@ -66,6 +83,7 @@ export async function POST(request: NextRequest) {
         model: model || LLMProviderFactory.getModelsForProvider(provider as ProviderType)[0],
         temperature: temperature || 0.7,
         isDefault: isDefault || false,
+        creatorId: session.user.id,
       },
     })
 

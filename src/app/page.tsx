@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Persona, Chat, Provider } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
+import { useAuth } from '@/components/AuthProvider'
 
 export default function Home() {
   const [personas, setPersonas] = useState<Persona[]>([])
@@ -11,14 +12,17 @@ export default function Home() {
   const [chats, setChats] = useState<Chat[]>([])
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const isLight = theme === 'light'
 
   useEffect(() => {
     setMounted(true)
-    fetchPersonas()
-    fetchProviders()
-    fetchChats()
-  }, [])
+    if (isAuthenticated) {
+      fetchPersonas()
+      fetchProviders()
+      fetchChats()
+    }
+  }, [isAuthenticated])
 
   const fetchPersonas = async () => {
     const res = await fetch('/api/personas')
@@ -116,21 +120,23 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
-            <div className="text-center">
-              <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{chats.length}</div>
-              <div className="text-sm text-slate-500">Debates Created</div>
+          {/* Stats - Only show when authenticated */}
+          {isAuthenticated && (
+            <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto pb-16">
+              <div className="text-center">
+                <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{chats.length}</div>
+                <div className="text-sm text-slate-500">Your Debates</div>
+              </div>
+              <div className="text-center">
+                <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{personas.length}</div>
+                <div className="text-sm text-slate-500">Your Personas</div>
+              </div>
+              <div className="text-center">
+                <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{providers.length}</div>
+                <div className="text-sm text-slate-500">Your Providers</div>
+              </div>
             </div>
-            <div className="text-center">
-              <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{personas.length}</div>
-              <div className="text-sm text-slate-500">Personas</div>
-            </div>
-            <div className="text-center">
-              <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{providers.length}</div>
-              <div className="text-sm text-slate-500">Providers</div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 

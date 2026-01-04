@@ -44,6 +44,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   chats         Chat[]
+  personas      Persona[]
+  providers     Provider[]
 }
 
 model VerificationToken {
@@ -65,6 +67,8 @@ model Provider {
   isDefault   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  creatorId   String?
+  creator     User?     @relation(fields: [creatorId], references: [id], onDelete: SetNull)
 
   personas    Persona[]
 }
@@ -80,6 +84,8 @@ model Persona {
   avatarUrl   String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  creatorId   String?
+  creator     User?     @relation(fields: [creatorId], references: [id], onDelete: SetNull)
 
   messages    Message[]
   chats       PersonaOnChat[]

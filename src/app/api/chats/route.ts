@@ -32,14 +32,20 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
-    const { title, topic, participantIds, creatorId } = body
+    const { title, topic, participantIds } = body
 
     const chat = await prisma.chat.create({
       data: {
         title: title || 'New Discussion',
         topic: topic?.trim() || null,
-        creatorId: creatorId || null,
+        creatorId: session.user.id,
         participants: participantIds?.length > 0
           ? {
               create: participantIds.map((id: string) => ({

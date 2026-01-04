@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 
 export async function GET() {
   try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const personas = await prisma.persona.findMany({
+      where: { creatorId: session.user.id },
       orderBy: { createdAt: 'desc' },
       include: {
         provider: true,
@@ -18,6 +26,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth()
+    
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const body = await request.json()
     const { name, bio, personality, providerId, model, temperature } = body
 
@@ -35,13 +49,16 @@ export async function POST(request: NextRequest) {
     const finalBio = bio?.trim() || `I am ${normalizedName}, a participant in this discussion.`
     const finalPersonality = personality?.trim() || 'Friendly and conversational.'
 
-    // If provider is specified, verify it exists
+    // If provider is specified, verify it exists and belongs to user
     if (providerId) {
-      const provider = await prisma.provider.findUnique({
-        where: { id: providerId },
+      const provider = await prisma.provider.findFirst({
+        where: { 
+          id: providerId,
+          creatorId: session.user.id
+        },
       })
       if (!provider) {
-        return NextResponse.json({ error: 'Provider not found' }, { status: 400 })
+        return NextResponse.json({ error: 'Provider not found or access denied' }, { status: 400 })
       }
     }
 
@@ -53,6 +70,7 @@ export async function POST(request: NextRequest) {
         providerId: providerId || null,
         model: model || null,
         temperature: temperature ?? null,
+        creatorId: session.user.id,
       },
       include: {
         provider: true,
