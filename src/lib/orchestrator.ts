@@ -394,17 +394,26 @@ export function cleanResponse(content: string, personaName: string): string {
   return cleaned.trim();
 }
 
-async function getPersonaWithProvider(persona: Persona) {
+async function getPersonaWithProvider(persona: Persona, userId?: string | null) {
   if (persona.providerId) {
-    const provider = await prisma.provider.findUnique({
-      where: { id: persona.providerId },
+    const provider = await prisma.provider.findFirst({
+      where: { 
+        id: persona.providerId,
+        OR: [
+          { creatorId: userId || undefined },
+          { creatorId: null } // Fallback for legacy data
+        ]
+      },
     })
     return { persona, provider }
   }
 
-  // Use default provider
+  // Use default provider for THIS user
   const defaultProvider = await prisma.provider.findFirst({
-    where: { isDefault: true },
+    where: { 
+      isDefault: true,
+      creatorId: userId || undefined
+    },
   })
 
   return { persona, provider: defaultProvider }
@@ -414,7 +423,8 @@ export async function orchestrateMessage(
   context: OrchestrationContext,
   messageContent: string,
   isUserMessage: boolean,
-  participants: Persona[]
+  participants: Persona[],
+  userId?: string | null
 ): Promise<{ message: string; speakerId?: string; error?: string }> {
   const { chatId, topic, isAutoMode, lastSpeakerId, mentionedPersonaId } = context
 
@@ -453,10 +463,13 @@ export async function orchestrateMessage(
   }
 
   // Get provider config
-  const { persona, provider } = await getPersonaWithProvider(speaker)
+  const { persona, provider } = await getPersonaWithProvider(speaker, userId)
 
   if (!provider) {
-    return { message: '', error: 'No LLM provider configured' }
+    return { 
+      message: '', 
+      error: `No LLM provider configured for ${speaker.name}. Please check your persona settings.` 
+    }
   }
 
   // Check circuit breaker

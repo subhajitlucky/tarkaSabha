@@ -92,7 +92,8 @@ export async function POST(
       },
       sanitizedContent,
       false,
-      participants
+      participants,
+      session.user.id
     )
 
     if (result.error) {

@@ -216,31 +216,41 @@ export default function ChatPage() {
 
   const toggleAutoMode = async () => {
     if (!chat) return
+    setError(null)
     try {
       const res = await fetch(`/api/chats/${chatId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isAutoMode: !chat.isAutoMode }),
       })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to toggle auto mode')
+      }
       const data = await res.json()
       setChat(data.chat)
-    } catch (error) {
-      setError('Failed to toggle auto mode')
+    } catch (error: any) {
+      setError(error.message || 'Failed to toggle auto mode')
     }
   }
 
   const stopDebate = async () => {
     if (!chat) return
+    setError(null)
     try {
-      await fetch(`/api/chats/${chatId}`, {
+      const res = await fetch(`/api/chats/${chatId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isAutoMode: false }),
       })
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || 'Failed to stop debate')
+      }
       setChat({ ...chat, isAutoMode: false })
       setIsTyping(false)
-    } catch (error) {
-      setError('Failed to stop debate')
+    } catch (error: any) {
+      setError(error.message || 'Failed to stop debate')
     }
   }
 
@@ -625,6 +635,21 @@ export default function ChatPage() {
       {/* Input Area */}
       <footer className={`p-6 ${themeBg}`}>
         <div className="max-w-3xl mx-auto">
+          {error && (
+            <div className="mb-4 p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-sm animate-in fade-in slide-in-from-bottom-2 duration-300 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="font-medium">{error}</p>
+              </div>
+              <button onClick={() => setError(null)} className="p-1 hover:bg-red-500/10 rounded-lg transition-colors">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          )}
           {isOwner ? (
             <div className={`relative group p-1 rounded-[2rem] transition-all shadow-2xl ${messageInputBg}`}>
               <textarea
