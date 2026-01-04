@@ -17,6 +17,7 @@ export interface ChatMessage {
   role: 'system' | 'user' | 'assistant'
   content: string
   personaName?: string
+  name?: string
 }
 
 export interface LLMResponse {
@@ -66,10 +67,17 @@ class OpenAIProvider extends BaseLLMProvider {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: messages.map(m => {
+          const msg: any = {
+            role: m.role,
+            content: m.content,
+          }
+          if (m.name) {
+             // Sanitize name for OpenAI (only letters, numbers, underscores, max 64 chars)
+             msg.name = m.name.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 64)
+          }
+          return msg
+        }),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
       })

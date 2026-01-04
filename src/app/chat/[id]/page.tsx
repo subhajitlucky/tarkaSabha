@@ -18,10 +18,14 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [isSending, setIsSending] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [manualTurnsLeft, setManualTurnsLeft] = useState(0)
   const [showChatSettings, setShowChatSettings] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showUsernameModal, setShowUsernameModal] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showWipeConfirm, setShowWipeConfirm] = useState(false)
   const [localUsername, setLocalUsername] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -30,18 +34,15 @@ export default function ChatPage() {
   // Load username from localStorage on client mount
   useEffect(() => {
     const saved = localStorage.getItem('tarka_username') || ''
-    setLocalUsername(saved)
-  }, [])
-
-  // Show identity setup ONLY for chat owners who haven't set a local username
-  useEffect(() => {
-    if (isOwner && !localUsername) {
+    if (saved && saved !== 'You') {
+      setLocalUsername(saved)
+    } else {
       setShowUsernameModal(true)
     }
-  }, [isOwner, localUsername])
+  }, [])
 
-  // Get username - MUST use localUsername to protect privacy from LLMs
-  const username = localUsername || 'Anonymous'
+  // Get username
+  const username = localUsername || 'Guest'
 
   // Check ownership
   useEffect(() => {
@@ -61,28 +62,63 @@ export default function ChatPage() {
     }
   }
 
-  // Poll for messages when in auto mode
+  // Poll for messages continuously
   useEffect(() => {
     let interval: NodeJS.Timeout
     let isActive = true
 
-    if (chat?.isAutoMode) {
-      setIsTyping(true) // Assume typing while in auto mode
-      interval = setInterval(async () => {
-        if (!isActive) return
-        await fetchMessages()
-      }, 3000)
-    } else {
-      setIsTyping(false)
-    }
+    // Poll every 3 seconds
+    interval = setInterval(async () => {
+      if (!isActive) return
+      await fetchMessages()
+    }, 3000)
 
     return () => {
       isActive = false
       clearInterval(interval)
     }
-  }, [chat?.isAutoMode])
+  }, [])
 
-  // Auto-resize textarea
+  // Client-driven Debate Loop (Vercel Stable)
+  useEffect(() => {
+    // Should we trigger a persona response?
+    const shouldTrigger = chat?.isAutoMode || manualTurnsLeft > 0;
+    if (!shouldTrigger || isProcessing || isSending) return;
+
+    const timer = setTimeout(async () => {
+      // Re-verify conditions
+      if ((!chat?.isAutoMode && manualTurnsLeft <= 0) || isProcessing || isSending) return;
+
+      setIsProcessing(true);
+      setIsTyping(true);
+
+      try {
+        const res = await fetch(`/api/chats/${chatId}/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isUser: false }),
+        });
+
+        if (res.ok) {
+          await fetchMessages();
+          if (manualTurnsLeft > 0) {
+            setManualTurnsLeft(prev => prev - 1);
+          }
+        } else {
+          // If error (e.g. rate limit), stop the manual loop
+          setManualTurnsLeft(0);
+        }
+      } catch (err) {
+        console.error("Failed to trigger persona", err);
+        setManualTurnsLeft(0);
+      } finally {
+        setIsProcessing(false);
+        setIsTyping(false);
+      }
+    }, 4000); // 4 second wait between turns
+
+    return () => clearTimeout(timer);
+  }, [chat?.isAutoMode, manualTurnsLeft, messages.length, isProcessing, isSending]);
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current
     if (textarea) {
@@ -141,21 +177,19 @@ export default function ChatPage() {
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !chat) return
-    
-    // Safety check: ensure username is set
     if (!localUsername) {
       setShowUsernameModal(true)
       return
     }
 
     setError(null)
-    setIsTyping(true)
+    setIsSending(true)
 
     try {
       const res = await fetch(`/api/chats/${chatId}/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newMessage, isUser: true }),
+        body: JSON.stringify({ content: newMessage, isUser: true, userName: localUsername }),
       })
 
       if (!res.ok) {
@@ -164,28 +198,24 @@ export default function ChatPage() {
       }
 
       const data = await res.json()
-      
-      // Refresh messages immediately
       await fetchMessages()
       
-      // If auto-debate triggered, ensure we fetch chat to update isAutoMode status if needed
-      if (data.autoDebateTriggered) {
-         await fetchChat()
-      } else {
-        setIsTyping(false)
+      // If manual mode, trigger one round of persona responses
+      if (!chat.isAutoMode) {
+        setManualTurnsLeft(chat.participants?.length || 0)
       }
 
       setNewMessage('')
       adjustTextareaHeight()
     } catch (err: any) {
       setError(err.message || 'Failed to send message')
-      setIsTyping(false)
+    } finally {
+      setIsSending(false)
     }
   }
 
   const toggleAutoMode = async () => {
     if (!chat) return
-
     try {
       const res = await fetch(`/api/chats/${chatId}`, {
         method: 'PUT',
@@ -193,25 +223,7 @@ export default function ChatPage() {
         body: JSON.stringify({ isAutoMode: !chat.isAutoMode }),
       })
       const data = await res.json()
-      const newAutoState = data.chat.isAutoMode
       setChat(data.chat)
-
-      if (newAutoState && messages.length === 0) {
-        setIsTyping(true)
-        try {
-          const sendRes = await fetch(`/api/chats/${chatId}/send`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: 'Start the debate on this topic.', isUser: false }),
-          })
-          if (!sendRes.ok) {
-            setIsTyping(false)
-          }
-        } catch (err) {
-          setIsTyping(false)
-          setError('Failed to start auto-debate')
-        }
-      }
     } catch (error) {
       setError('Failed to toggle auto mode')
     }
@@ -234,12 +246,23 @@ export default function ChatPage() {
 
   const deleteChat = async () => {
     if (!confirm('Are you sure you want to delete this chat?')) return
-
     try {
       await fetch(`/api/chats/${chatId}`, { method: 'DELETE' })
       router.push('/history')
     } catch (error) {
       setError('Failed to delete chat')
+    }
+  }
+
+  const wipeMessages = async () => {
+    if (!chat) return
+    try {
+      await fetch(`/api/chats/${chatId}/messages`, { method: 'DELETE' })
+      setMessages([])
+      setShowWipeConfirm(false)
+      setShowChatSettings(false)
+    } catch (error) {
+      setError('Failed to wipe messages')
     }
   }
 
@@ -257,25 +280,49 @@ export default function ChatPage() {
 
   if (!chat) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-slate-50' : 'bg-[#050505]'}`}>
-        <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-black">
+        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
+  // Dynamic style variables to avoid parser errors with forward slashes
+  const themeBg = isLight ? 'bg-slate-50' : 'bg-black';
+  const themeText = isLight ? 'text-slate-900' : 'text-slate-100';
+  const headerBg = isLight ? 'bg-white border-slate-200' : 'bg-black border-slate-800';
+  const sidebarBtn = isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-slate-800 text-slate-400';
+  const statusBadge = chat.isAutoMode 
+    ? 'bg-green-500 bg-opacity-10 border-green-500 border-opacity-20 text-green-500' 
+    : 'bg-slate-500 bg-opacity-10 border-slate-500 border-opacity-20 text-slate-400';
+  const identityBtn = isLight 
+    ? 'bg-white border-slate-200 hover:border-amber-500 hover:bg-amber-50' 
+    : 'bg-slate-900 border-slate-800 hover:border-amber-500 hover:bg-slate-800';
+  const actionGroup = isLight ? 'bg-slate-100 border-slate-200' : 'bg-slate-900 border-slate-800';
+  const toggleBtn = chat.isAutoMode 
+    ? 'bg-red-500 text-white shadow-lg shadow-red-500 shadow-opacity-20 hover:bg-red-600' 
+    : 'text-slate-500 hover:bg-slate-800';
+  const settingsBtn = showChatSettings 
+    ? (isLight ? 'bg-white shadow-sm' : 'bg-slate-800')
+    : (isLight ? 'hover:bg-white' : 'hover:bg-slate-800');
+  const trayBg = isLight ? 'bg-white border-slate-200 shadow-xl' : 'bg-slate-900 border-slate-800 shadow-2xl';
+  const trayItem = isLight ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-slate-800 text-slate-300';
+  const deleteBtn = 'bg-red-500 bg-opacity-10 text-red-500 hover:bg-red-500 hover:text-white';
+  const signOutBtn = isLight ? 'hover:bg-slate-50 text-slate-400 hover:text-slate-600' : 'hover:bg-slate-800 text-slate-500 hover:text-slate-300';
+  const messageInputBg = isLight ? 'bg-white shadow-slate-200' : 'bg-slate-900 shadow-black shadow-opacity-50';
+
   return (
-    <div className={`min-h-screen flex flex-col font-sans ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#050505] text-slate-100'}`}>
+    <div className={`min-h-screen flex flex-col font-sans ${themeBg} ${themeText}`}>
       {/* Username Modal */}
       {showUsernameModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className={`p-8 rounded-3xl max-w-md w-full shadow-2xl ${isLight ? 'bg-white' : 'bg-slate-900 border border-slate-800'}`}>
-            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-amber-500/20">
+            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
               <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
             <h2 className="text-2xl font-bold mb-2">Identity Setup</h2>
-            <p className={`mb-6 text-sm ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+            <p className="mb-6 text-sm opacity-60">
               Choose a name to represent you in this debate. This name will be shared with the AI personas.
             </p>
             <input
@@ -283,8 +330,8 @@ export default function ChatPage() {
               placeholder="Your display name"
               className={`w-full px-5 py-4 rounded-2xl border-2 focus:ring-4 transition-all mb-6 text-lg font-medium ${
                 isLight 
-                  ? 'bg-slate-50 border-slate-100 focus:border-amber-500 focus:ring-amber-500/10 text-slate-900' 
-                  : 'bg-slate-800 border-slate-700 focus:border-amber-500 focus:ring-amber-500/10 text-white'
+                  ? 'bg-slate-50 border-slate-100 focus:border-amber-500 focus:ring-amber-500 focus:ring-opacity-10 text-slate-900' 
+                  : 'bg-slate-800 border-slate-700 focus:border-amber-500 focus:ring-amber-500 focus:ring-opacity-10 text-white'
               }`}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
@@ -298,7 +345,7 @@ export default function ChatPage() {
                 const input = (e.target as HTMLElement).parentElement?.querySelector('input')
                 if (input) saveUsername(input.value)
               }}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-4 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500/25"
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-4 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
             >
               Start Chatting
             </button>
@@ -308,17 +355,17 @@ export default function ChatPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className={`p-8 rounded-3xl max-w-md w-full shadow-2xl ${isLight ? 'bg-white' : 'bg-slate-900 border border-slate-800'}`}>
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-red-500 bg-opacity-10 flex items-center justify-center flex-shrink-0">
                 <svg className="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
               <div>
                 <h3 className="text-xl font-bold">Delete Debate?</h3>
-                <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>This action cannot be undone.</p>
+                <p className="text-sm opacity-60">This action cannot be undone.</p>
               </div>
             </div>
 
@@ -333,7 +380,7 @@ export default function ChatPage() {
               </button>
               <button
                 onClick={deleteChat}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white px-6 py-3.5 rounded-2xl text-sm font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500/25"
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white px-6 py-3.5 rounded-2xl text-sm font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500 shadow-opacity-25"
               >
                 Delete
               </button>
@@ -342,128 +389,165 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* Header */}
-      <header className={`sticky top-0 z-30 border-b backdrop-blur-xl ${
-        isLight ? 'bg-white/80 border-slate-200' : 'bg-[#050505]/80 border-slate-800'
-      }`}>
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/history')}
-              className={`p-2.5 rounded-xl transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-slate-800 text-slate-400'}`}
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight truncate max-w-[200px] sm:max-w-md">
-                {chat.topic || chat.title}
-              </h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <div className="flex -space-x-1.5">
-                  {chat.participants?.slice(0, 3).map((p, i) => (
-                    <div key={i} className="w-5 h-5 rounded-full ring-2 ring-white dark:ring-[#050505] bg-gradient-to-br from-indigo-500 to-purple-600" />
-                  ))}
-                </div>
-                <span className={`text-[11px] font-medium uppercase tracking-wider ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {chat.participants?.length || 0} Agents
-                </span>
-                {chat.isAutoMode && (
-                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-widest">
-                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                    Auto
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-2xl bg-slate-500/5 border border-slate-500/10">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-xs font-bold text-white shadow-sm">
-                {username.charAt(0).toUpperCase()}
-              </div>
-              <span className="text-sm font-bold">{username}</span>
-            </div>
-
-            <div className="flex items-center gap-1">
-              {isOwner && (
-                <button
-                  onClick={chat.isAutoMode ? stopDebate : toggleAutoMode}
-                  className={`p-2.5 rounded-xl transition-all ${
-                    chat.isAutoMode 
-                      ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20' 
-                      : 'bg-green-500/10 text-green-500 hover:bg-green-500/20'
-                  }`}
-                  title={chat.isAutoMode ? "Stop Auto-Debate" : "Start Auto-Debate"}
-                >
-                  {chat.isAutoMode ? (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v6a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" /></svg>
-                  ) : (
-                    <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>
-                  )}
-                </button>
-              )}
-
-              <button
-                onClick={() => setShowChatSettings(!showChatSettings)}
-                className={`p-2.5 rounded-xl transition-all ${isLight ? 'hover:bg-slate-100 text-slate-600' : 'hover:bg-slate-800 text-slate-400'}`}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+      {/* Wipe Confirmation Modal */}
+      {showWipeConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className={`p-8 rounded-3xl max-w-md w-full shadow-2xl ${isLight ? 'bg-white' : 'bg-slate-900 border border-slate-800'}`}>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-14 h-14 rounded-2xl bg-amber-500 bg-opacity-10 flex items-center justify-center flex-shrink-0">
+                <svg className="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Wipe Messages?</h3>
+                <p className="text-sm opacity-60">This will delete all messages. The debate will remain.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowWipeConfirm(false)}
+                className={`flex-1 px-6 py-3.5 rounded-2xl text-sm font-bold transition-all ${
+                  isLight ? 'bg-slate-100 hover:bg-slate-200 text-slate-700' : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
+                }`}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={wipeMessages}
+                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3.5 rounded-2xl text-sm font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500 shadow-opacity-25"
+              >
+                Wipe
               </button>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Dropdown Menu */}
-        {showChatSettings && (
-          <div className="max-w-5xl mx-auto px-6 pb-4">
-            <div className={`p-4 rounded-3xl border shadow-xl ${isLight ? 'bg-white border-slate-100' : 'bg-slate-900 border-slate-800'}`}>
-              <div className="flex flex-wrap gap-4 items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={() => setShowUsernameModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold bg-amber-500/10 text-amber-600 hover:bg-amber-500/20 transition-all"
-                  >
-                    Change Identity
-                  </button>
-                  {isOwner && (
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
-                    >
-                      Delete Debate
-                    </button>
-                  )}
+      {/* Header */}
+      <header className={`sticky top-0 z-30 border-b transition-colors duration-300 ${headerBg} backdrop-blur-md`}>
+        <div className="max-w-5xl mx-auto px-6 py-4 text-inherit">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4 min-w-0">
+              <button
+                onClick={() => router.push('/history')}
+                className={`p-2.5 rounded-xl transition-all hover:scale-105 active:scale-95 ${sidebarBtn}`}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <div className="min-w-0">
+                <h1 className="text-xl font-bold tracking-tight truncate leading-tight mb-0.5">
+                  {chat.topic || chat.title}
+                </h1>
+                <div className="flex items-center gap-2">
+                  <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusBadge}`}>
+                    {chat.isAutoMode && <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />}
+                    {chat.isAutoMode ? 'Autonomous' : 'Manual Mode'}
+                  </div>
+                  <span className="text-[10px] font-medium opacity-50">
+                    {chat.participants?.length || 0} Agents active
+                  </span>
                 </div>
-                <button 
-                  onClick={() => signOut()}
-                  className={`text-sm font-bold ${isLight ? 'text-slate-400 hover:text-slate-600' : 'text-slate-500 hover:text-slate-300'}`}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={() => setShowUsernameModal(true)}
+                className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl transition-all border group cursor-pointer ${identityBtn}`}
+              >
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-[11px] font-black text-white shadow-sm transition-transform group-hover:scale-110">
+                  {username.charAt(0).toUpperCase()}
+                </div>
+                <span className="text-sm font-bold tracking-tight">{username}</span>
+              </button>
+
+              <div className={`flex items-center p-1 rounded-xl border ${actionGroup}`}>
+                {isOwner && (
+                  <button
+                    onClick={chat.isAutoMode ? stopDebate : toggleAutoMode}
+                    className={`p-2 rounded-lg transition-all cursor-pointer ${toggleBtn}`}
+                    title={chat.isAutoMode ? "Stop Debate" : "Start Debate"}
+                  >
+                    {chat.isAutoMode ? (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v6a1 1 0 001 1h4a1 1 0 001-1V8a1 1 0 00-1-1H8z" clipRule="evenodd" /></svg>
+                    ) : (
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" /></svg>
+                    )}
+                  </button>
+                )}
+
+                <button
+                  onClick={() => setShowChatSettings(!showChatSettings)}
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${settingsBtn} ${isLight ? 'text-slate-600' : 'text-slate-400'}`}
                 >
-                  Sign Out
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                  </svg>
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {showChatSettings && (
+          <div className="max-w-5xl mx-auto px-6 pb-4 animate-in slide-in-from-top-2 duration-200">
+            <div className={`p-2 rounded-2xl border flex flex-col sm:flex-row gap-1 ${trayBg}`}>
+              <button
+                onClick={() => setShowUsernameModal(true)}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${trayItem}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                Change Identity
+              </button>
+              
+              {isOwner && (
+                <>
+                  <button
+                    onClick={() => setShowWipeConfirm(true)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${trayItem}`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Wipe Messages
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${deleteBtn}`}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    Delete Debate
+                  </button>
+                </>
+              )}
+
+              <button 
+                onClick={() => signOut()}
+                className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${signOutBtn}`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                Sign Out
+              </button>
             </div>
           </div>
         )}
       </header>
 
       {/* Chat Messages */}
-      <main className="flex-1 overflow-y-auto px-6 py-8">
+      <main className="flex-1 overflow-y-auto px-6 py-8 bg-inherit">
         <div className="max-w-3xl mx-auto space-y-8">
           {messages.length === 0 && (
             <div className="py-20 text-center space-y-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-amber-400/20 to-orange-600/20 rounded-3xl flex items-center justify-center mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-amber-400 to-orange-600 bg-opacity-20 rounded-3xl flex items-center justify-center mx-auto">
                 <svg className="w-10 h-10 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </div>
               <div className="space-y-2">
                 <h3 className="text-xl font-bold">New Debate Session</h3>
-                <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Start the conversation or enable auto-mode to watch agents interact.</p>
+                <p className="text-sm opacity-50">Start the conversation or enable auto-mode to watch agents interact.</p>
               </div>
             </div>
           )}
@@ -475,7 +559,6 @@ export default function ChatPage() {
             return (
               <div key={message.id || idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 <div className={`flex gap-4 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
-                  {/* Avatar */}
                   <div className="flex-shrink-0 mt-1">
                     <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-md ${
                       isUser 
@@ -486,12 +569,11 @@ export default function ChatPage() {
                     </div>
                   </div>
 
-                  {/* Message Bubble */}
                   <div className={`space-y-1.5 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
                     {!isUser && (
                       <div className="flex items-center gap-2 px-1">
-                        <span className="text-[11px] font-black uppercase tracking-widest text-slate-500">{persona?.name || 'Agent'}</span>
-                        <span className="text-[10px] font-medium text-slate-400">{formatTime(message.createdAt)}</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest opacity-50">{persona?.name || 'Agent'}</span>
+                        <span className="text-[10px] font-medium opacity-40">{formatTime(message.createdAt)}</span>
                       </div>
                     )}
                     
@@ -507,8 +589,8 @@ export default function ChatPage() {
 
                     {isUser && (
                       <div className="flex items-center gap-2 px-1">
-                        <span className="text-[10px] font-medium text-slate-400">{formatTime(message.createdAt)}</span>
-                        <span className="text-[11px] font-black uppercase tracking-widest text-amber-500/80">You</span>
+                        <span className="text-[10px] font-medium opacity-40">{formatTime(message.createdAt)}</span>
+                        <span className="text-[11px] font-black uppercase tracking-widest text-amber-500 opacity-80">You</span>
                       </div>
                     )}
                   </div>
@@ -520,18 +602,18 @@ export default function ChatPage() {
           {isTyping && (
             <div className="flex justify-start animate-in fade-in duration-500">
               <div className="flex gap-4">
-                <div className="w-9 h-9 rounded-2xl bg-slate-500/10 flex items-center justify-center flex-shrink-0 animate-pulse">
+                <div className="w-9 h-9 rounded-2xl bg-slate-500 bg-opacity-10 flex items-center justify-center flex-shrink-0 animate-pulse">
                   <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
                 </div>
                 <div className={`px-5 py-4 rounded-3xl rounded-tl-none flex items-center gap-3 ${
-                  isLight ? 'bg-slate-100' : 'bg-slate-900/50'
+                  isLight ? 'bg-slate-100' : 'bg-slate-900 bg-opacity-50'
                 }`}>
                   <div className="flex gap-1.5">
                     <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
                     <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
                     <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" />
                   </div>
-                  <span className="text-[11px] font-bold uppercase tracking-tighter text-slate-500">Processing Round</span>
+                  <span className="text-[11px] font-bold uppercase tracking-tighter opacity-50">Processing Round</span>
                 </div>
               </div>
             </div>
@@ -541,12 +623,10 @@ export default function ChatPage() {
       </main>
 
       {/* Input Area */}
-      <footer className={`p-6 ${isLight ? 'bg-slate-50' : 'bg-[#050505]'}`}>
+      <footer className={`p-6 ${themeBg}`}>
         <div className="max-w-3xl mx-auto">
           {isOwner ? (
-            <div className={`relative group p-1 rounded-[2rem] transition-all shadow-2xl ${
-              isLight ? 'bg-white shadow-slate-200' : 'bg-slate-900 shadow-black/50'
-            }`}>
+            <div className={`relative group p-1 rounded-[2rem] transition-all shadow-2xl ${messageInputBg}`}>
               <textarea
                 ref={textareaRef}
                 value={newMessage}
@@ -556,18 +636,16 @@ export default function ChatPage() {
                 }}
                 onKeyDown={handleKeyPress}
                 placeholder="Message the debate room..."
-                className={`w-full bg-transparent pl-6 pr-16 py-5 rounded-[1.8rem] focus:outline-none resize-none text-[15px] font-medium leading-relaxed ${
-                  isLight ? 'text-slate-900' : 'text-white'
-                }`}
+                className={`w-full bg-transparent pl-6 pr-16 py-5 rounded-[1.8rem] focus:outline-none resize-none text-[15px] font-medium leading-relaxed ${themeText}`}
                 rows={1}
               />
               <button
                 onClick={sendMessage}
-                disabled={!newMessage.trim() || isTyping}
+                disabled={!newMessage.trim() || isSending}
                 className={`absolute right-3 bottom-3 w-12 h-12 rounded-[1.2rem] flex items-center justify-center transition-all ${
-                  !newMessage.trim() || isTyping 
-                    ? 'bg-slate-500/10 text-slate-500 opacity-50 cursor-not-allowed' 
-                    : 'bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-95 shadow-lg shadow-amber-500/20'
+                  !newMessage.trim() || isSending 
+                    ? 'bg-slate-500 bg-opacity-10 text-slate-500 opacity-50 cursor-not-allowed' 
+                    : 'bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-95 shadow-lg'
                 }`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -576,11 +654,11 @@ export default function ChatPage() {
               </button>
             </div>
           ) : (
-            <div className={`py-4 text-center rounded-3xl border-2 border-dashed ${isLight ? 'border-slate-200 text-slate-400' : 'border-slate-800 text-slate-500'}`}>
+            <div className="py-4 text-center rounded-3xl border-2 border-dashed border-opacity-20 border-slate-500 opacity-50">
               <p className="text-sm font-bold uppercase tracking-widest">Read Only Mode</p>
             </div>
           )}
-          <p className="text-[10px] text-center mt-4 uppercase tracking-[0.2em] font-black opacity-30">
+          <p className="text-[10px] text-center mt-4 uppercase tracking-[0.2em] font-black opacity-20">
             Powered by Tarka Sabha Orchestrator v2.0
           </p>
         </div>

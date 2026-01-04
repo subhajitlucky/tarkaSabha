@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -71,7 +71,7 @@ model Provider {
 
 model Persona {
   id          String    @id @default(cuid())
-  name        String    @unique
+  name        String
   bio         String
   personality String?
   providerId  String?   // Optional: override with specific provider

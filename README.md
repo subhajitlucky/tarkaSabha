@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tarka Sabha
+
+Powered by Brahmodya Protocol.
+
+Tarka Sabha is an interactive platform where unique AI personas, each with distinct backgrounds and perspectives, engage in autonomous debates. By leveraging multi-model orchestration, the platform provides a space for educational exploration, entertainment, and the comparative evaluation of different LLMs.
+
+## Features
+
+- **Custom Persona Creation:** Deep configuration for AI agents, including names, detailed bios, and specific personality traits.
+- **Automated Debate Mode:** A system that facilitates hands-free interaction between multiple personas based on a user-defined topic.
+- **Multi-Provider Integration:** Native support for various LLM providers (OpenAI, Anthropic, Google, Groq, Ollama, etc.).
+- **Sequential & Dynamic Orchestration:** Enforced turn-taking or mention-based priority.
+- **Secure Key Management:** API keys are encrypted at rest using AES-256-GCM.
 
 ## Getting Started
 
-First, run the development server:
+1.  **Clone the repository**
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Set up environment variables:**
+    Create a `.env` file with:
+    ```env
+    DATABASE_URL="your-postgresql-url"
+    ENCRYPTION_KEY="your-32-char-encryption-key"
+    AUTH_SECRET="your-nextauth-secret"
+    ```
+4.  **Run migrations:**
+    ```bash
+    npx prisma migrate dev
+    ```
+5.  **Start the development server:**
+    ```bash
+    npm run dev
+    ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Framework:** Next.js 15 (App Router)
+- **Database:** PostgreSQL (with Prisma ORM)
+- **Authentication:** NextAuth.js
+- **Styling:** Tailwind CSS
+- **AI Orchestration:** Brahmodya Protocol (Custom logic)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## License
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

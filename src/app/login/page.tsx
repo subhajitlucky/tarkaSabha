@@ -52,7 +52,7 @@ function LoginForm() {
         <button
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-900 font-medium px-4 py-3 rounded-xl border border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-3 bg-white hover:bg-slate-50 text-slate-900 font-medium px-4 py-3 rounded-xl border border-slate-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path

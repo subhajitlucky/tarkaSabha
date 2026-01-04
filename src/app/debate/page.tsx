@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Persona, Chat, Provider, ProviderType } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
+import { useTheme } from '@/components/ThemeProvider'
 
 const PROVIDER_TYPES: { value: ProviderType; label: string; requiresKey: boolean; defaultUrl: string }[] = [
   { value: 'openai', label: 'OpenAI', requiresKey: true, defaultUrl: 'https://api.openai.com/v1' },
@@ -89,6 +90,8 @@ const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = 
 export default function DebatePage() {
   const router = useRouter()
   const { session, isAuthenticated, isLoading: authLoading, signIn } = useAuth()
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
   const [providers, setProviders] = useState<Provider[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [createdChatId, setCreatedChatId] = useState<string | null>(null)
@@ -138,7 +141,7 @@ export default function DebatePage() {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
         <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
       </div>
     )
@@ -274,18 +277,18 @@ export default function DebatePage() {
 
   if (createdChatId) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
         <div className="text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
             <svg className="w-10 h-10 text-amber-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">Debate Created!</h2>
-          <p className="text-slate-400 mb-6">Your debate is ready</p>
+          <h2 className={`text-2xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Debate Created!</h2>
+          <p className={`mb-6 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Your debate is ready</p>
           <button
             onClick={goToChat}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-semibold px-8 py-4 rounded-xl transition-all shadow-lg"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-semibold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
           >
             Enter Debate Room
           </button>
@@ -294,30 +297,38 @@ export default function DebatePage() {
     )
   }
 
+  const cardClass = isLight 
+    ? 'bg-white border border-slate-200 shadow-sm' 
+    : 'bg-slate-900 border border-slate-800'
+  
+  const inputClass = isLight
+    ? 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-amber-500'
+    : 'bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50'
+
   return (
-    <div className="min-h-screen bg-slate-950 py-12">
+    <div className={`min-h-screen py-12 ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
             Start a New Debate
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p className={`text-lg ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
             Create agents with unique identities and watch them discuss
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Step 1: Topic */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div className={`${cardClass} rounded-2xl p-6`}>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <span className="text-amber-400 font-bold">1</span>
+                <span className="text-amber-500 font-bold">1</span>
               </div>
-              <h3 className="text-xl font-semibold text-white">Discussion Topic</h3>
+              <h3 className={`text-xl font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>Discussion Topic</h3>
             </div>
 
             <div>
-              <label className="block text-sm text-slate-400 mb-2">
+              <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
                 What should they discuss?
               </label>
               <input
@@ -325,7 +336,7 @@ export default function DebatePage() {
                 value={topic}
                 onChange={e => setTopic(e.target.value)}
                 placeholder="e.g., Should AI replace doctors?"
-                className="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none transition-colors"
+                className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
               />
               <p className="text-xs text-slate-500 mt-2">
                 Personas will only remember messages related to this topic
@@ -334,35 +345,35 @@ export default function DebatePage() {
           </div>
 
           {/* Step 2: Add Agents */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+          <div className={`${cardClass} rounded-2xl p-6`}>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
-                <span className="text-orange-400 font-bold">2</span>
+                <span className="text-orange-500 font-bold">2</span>
               </div>
-              <h3 className="text-xl font-semibold text-white">Add Agents</h3>
+              <h3 className={`text-xl font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>Add Agents</h3>
             </div>
 
             {/* Agent Form */}
-            <div className="bg-slate-800/50 rounded-xl p-4 mb-4">
+            <div className={`${isLight ? 'bg-slate-50 border border-slate-100' : 'bg-slate-800/50'} rounded-xl p-4 mb-4`}>
               <div className="grid gap-4">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Agent Name *</label>
+                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Agent Name *</label>
                   <input
                     type="text"
                     value={newAgent.name}
                     onChange={e => setNewAgent({ ...newAgent, name: e.target.value })}
                     placeholder="e.g., Dr. Sharma (village doctor)"
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none"
+                    className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none ${inputClass}`}
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Provider</label>
+                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Provider</label>
                     <select
                       value={newAgent.providerType}
                       onChange={e => handleProviderTypeChange(e.target.value as ProviderType)}
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-500/50 focus:outline-none"
+                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none ${inputClass}`}
                     >
                       {PROVIDER_TYPES.map(p => (
                         <option key={p.value} value={p.value}>{p.label}</option>
@@ -370,66 +381,70 @@ export default function DebatePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Model Name</label>
+                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Model Name</label>
                     <input
                       type="text"
                       value={newAgent.model}
                       onChange={e => setNewAgent({ ...newAgent, model: e.target.value })}
                       placeholder="e.g., gpt-4, claude-opus-4"
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none font-mono"
+                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none font-mono ${inputClass}`}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">API URL</label>
+                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>API URL</label>
                   <input
                     type="text"
                     value={newAgent.apiUrl}
                     onChange={e => setNewAgent({ ...newAgent, apiUrl: e.target.value })}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none font-mono"
+                    className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none font-mono ${inputClass}`}
                   />
                 </div>
 
                 {PROVIDER_TYPES.find(p => p.value === newAgent.providerType)?.requiresKey && (
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">API Key</label>
+                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>API Key</label>
                     <input
                       type="password"
                       value={newAgent.apiKey}
                       onChange={e => setNewAgent({ ...newAgent, apiKey: e.target.value })}
                       placeholder="sk-..."
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none font-mono"
+                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none font-mono ${inputClass}`}
                     />
                   </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Bio (optional)</label>
+                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Bio (optional)</label>
                     <input
                       type="text"
                       value={newAgent.bio}
                       onChange={e => setNewAgent({ ...newAgent, bio: e.target.value })}
                       placeholder="19 year old village boy..."
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none"
+                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none ${inputClass}`}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs text-slate-400 mb-1">Personality (optional)</label>
+                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Personality (optional)</label>
                     <input
                       type="text"
                       value={newAgent.personality}
                       onChange={e => setNewAgent({ ...newAgent, personality: e.target.value })}
                       placeholder="Calm, wise..."
-                      className="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:border-amber-500/50 focus:outline-none"
+                      className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none ${inputClass}`}
                     />
                   </div>
                 </div>
 
                 <button
                   onClick={addAgent}
-                  className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg text-sm transition-colors"
+                  className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-medium ${
+                    isLight 
+                      ? 'bg-slate-200 hover:bg-slate-300 text-slate-800' 
+                      : 'bg-slate-700 hover:bg-slate-600 text-white'
+                  }`}
                 >
                   + Add Agent
                 </button>
@@ -440,19 +455,21 @@ export default function DebatePage() {
             {agents.length > 0 && (
               <div className="space-y-2 mb-4">
                 {agents.map((agent) => (
-                  <div key={agent.id} className="flex items-center justify-between bg-slate-800/50 rounded-lg px-3 py-2">
+                  <div key={agent.id} className={`flex items-center justify-between rounded-lg px-3 py-2 ${
+                    isLight ? 'bg-slate-50 border border-slate-100' : 'bg-slate-800/50'
+                  }`}>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">
                         {(agent.name || '?').charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-white">{agent.name}</div>
+                        <div className={`text-sm font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}>{agent.name}</div>
                         <div className="text-xs text-slate-500">{agent.providerType} · {agent.model}</div>
                       </div>
                     </div>
                     <button
                       onClick={() => removeAgent(agent.id)}
-                      className="text-red-400 hover:text-red-300 p-1"
+                      className="text-red-400 hover:text-red-300 p-1 cursor-pointer transition-colors"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -472,7 +489,7 @@ export default function DebatePage() {
             <button
               onClick={createDebate}
               disabled={isCreating || agents.length < 2}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-slate-900 font-semibold px-4 py-3 rounded-xl transition-all shadow-lg"
+              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-slate-900 font-semibold px-4 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer disabled:cursor-not-allowed disabled:transform-none"
             >
               {isCreating ? 'Creating...' : `Start Debate with ${agents.length} Agents`}
             </button>

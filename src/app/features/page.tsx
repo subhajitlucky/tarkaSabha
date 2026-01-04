@@ -1,6 +1,11 @@
 'use client'
 
+import { useTheme } from '@/components/ThemeProvider'
+
 export default function FeaturesPage() {
+  const { theme } = useTheme()
+  const isLight = theme === 'light'
+
   const features = [
     {
       icon: (
@@ -65,22 +70,22 @@ export default function FeaturesPage() {
   ]
 
   const colorClasses: Record<string, { bg: string; text: string }> = {
-    amber: { bg: 'bg-amber-500/20', text: 'text-amber-400' },
-    orange: { bg: 'bg-orange-500/20', text: 'text-orange-400' },
-    green: { bg: 'bg-green-500/20', text: 'text-green-400' },
-    blue: { bg: 'bg-blue-500/20', text: 'text-blue-400' },
-    purple: { bg: 'bg-purple-500/20', text: 'text-purple-400' },
-    red: { bg: 'bg-red-500/20', text: 'text-red-400' },
+    amber: { bg: 'bg-amber-500/20', text: 'text-amber-500' },
+    orange: { bg: 'bg-orange-500/20', text: 'text-orange-500' },
+    green: { bg: 'bg-green-500/20', text: 'text-green-500' },
+    blue: { bg: 'bg-blue-500/20', text: 'text-blue-500' },
+    purple: { bg: 'bg-purple-500/20', text: 'text-purple-500' },
+    red: { bg: 'bg-red-500/20', text: 'text-red-500' },
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 py-12">
+    <div className={`min-h-screen py-12 ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
             Features
           </h1>
-          <p className="text-slate-400 text-lg">
+          <p className={`text-lg ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
             Everything you need for intelligent discussions
           </p>
         </div>
@@ -89,13 +94,17 @@ export default function FeaturesPage() {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-slate-700 transition-colors"
+              className={`rounded-xl p-6 transition-all border hover:shadow-lg ${
+                isLight 
+                  ? 'bg-white border-slate-200 hover:border-amber-500/30' 
+                  : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+              }`}
             >
               <div className={`w-12 h-12 rounded-xl ${colorClasses[feature.color].bg} flex items-center justify-center mb-4`}>
                 <span className={colorClasses[feature.color].text}>{feature.icon}</span>
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">{feature.title}</h3>
-              <p className="text-slate-400 text-sm">
+              <h3 className={`text-xl font-semibold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{feature.title}</h3>
+              <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
                 {feature.description}
               </p>
             </div>
@@ -103,55 +112,65 @@ export default function FeaturesPage() {
         </div>
 
         {/* Protocol Info */}
-        <div className="mt-20 bg-slate-900/50 border border-slate-800 rounded-2xl p-8">
+        <div className={`mt-20 rounded-2xl p-8 border ${
+          isLight ? 'bg-white border-slate-200' : 'bg-slate-900/50 border-slate-800'
+        }`}>
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-full px-4 py-2 mb-4">
               <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-              <span className="text-sm text-amber-400">Brahmodya Protocol v1.0</span>
+              <span className="text-sm text-amber-500 font-medium">Brahmodya Protocol v1.0</span>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Advanced Multi-Agent Architecture</h2>
-            <p className="text-slate-400">Secure, scalable, and intelligent discussion platform</p>
+            <h2 className={`text-2xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Advanced Multi-Agent Architecture</h2>
+            <p className={isLight ? 'text-slate-500' : 'text-slate-400'}>Secure, scalable, and intelligent discussion platform</p>
           </div>
 
           <div className="grid md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-800 flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center ${
+                isLight ? 'bg-slate-100' : 'bg-slate-800'
+              }`}>
+                <svg className={`w-6 h-6 ${isLight ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-white mb-1">AES-256 Encryption</h4>
-              <p className="text-xs text-slate-500">End-to-end encryption for all API keys</p>
+              <h4 className={`font-semibold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>AES-256 Encryption</h4>
+              <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>End-to-end encryption for all API keys</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-800 flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center ${
+                isLight ? 'bg-slate-100' : 'bg-slate-800'
+              }`}>
+                <svg className={`w-6 h-6 ${isLight ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-white mb-1">Multi-Provider</h4>
-              <p className="text-xs text-slate-500">Support for 6+ LLM providers</p>
+              <h4 className={`font-semibold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>Multi-Provider</h4>
+              <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>Support for 6+ LLM providers</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-800 flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center ${
+                isLight ? 'bg-slate-100' : 'bg-slate-800'
+              }`}>
+                <svg className={`w-6 h-6 ${isLight ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-white mb-1">Auto Mode</h4>
-              <p className="text-xs text-slate-500">Round-robin speaker selection</p>
+              <h4 className={`font-semibold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>Auto Mode</h4>
+              <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>Round-robin speaker selection</p>
             </div>
 
             <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-xl bg-slate-800 flex items-center justify-center">
-                <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-xl flex items-center justify-center ${
+                isLight ? 'bg-slate-100' : 'bg-slate-800'
+              }`}>
+                <svg className={`w-6 h-6 ${isLight ? 'text-slate-500' : 'text-slate-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <h4 className="font-semibold text-white mb-1">Rate Limiting</h4>
-              <p className="text-xs text-slate-500">Per-provider rate limit handling</p>
+              <h4 className={`font-semibold mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>Rate Limiting</h4>
+              <p className={`text-xs ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>Per-provider rate limit handling</p>
             </div>
           </div>
         </div>

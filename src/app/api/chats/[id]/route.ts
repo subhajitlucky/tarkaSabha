@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { addParticipants, removeParticipants } from '@/lib/orchestrator'
+import { addParticipants, removeParticipants, autoContinueDebate } from '@/lib/orchestrator'
 import { auth } from '@/auth'
+
+// In-memory lock to prevent concurrent auto-debate calls per chat
+// (Note: This map is local to this file/module. If the server is serverless/lambda, this might not be perfect but sufficient for now)
+const debateLocks = new Map<string, boolean>()
 
 export async function GET(
   request: NextRequest,
@@ -9,6 +13,12 @@ export async function GET(
 ) {
   try {
     const { id } = await params
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const chat = await prisma.chat.findUnique({
       where: { id },
       include: {
@@ -24,6 +34,10 @@ export async function GET(
 
     if (!chat) {
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
+    }
+
+    if (chat.creatorId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     return NextResponse.json(chat)

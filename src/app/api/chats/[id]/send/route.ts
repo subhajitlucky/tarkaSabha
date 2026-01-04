@@ -19,7 +19,7 @@ export async function POST(
   try {
     const { id: chatId } = await params
     const body = await request.json()
-    const { content, isUser } = body
+    const { content, isUser, userName } = body
 
     // Validate content
     const validation = validateMessageLength(content)
@@ -48,8 +48,8 @@ export async function POST(
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
     }
 
-    // Only the chat creator can send user messages
-    if (isUser && chat.creatorId !== session?.user?.id) {
+    // Only the chat creator can send messages or trigger agents
+    if (chat.creatorId !== session?.user?.id) {
       return NextResponse.json(
         { error: 'Only the chat creator can send messages' },
         { status: 403 }
@@ -69,6 +69,7 @@ export async function POST(
           content: sanitizedContent,
           role: 'user',
           chatId,
+          personaName: userName || 'User',
         },
       })
 
@@ -76,27 +77,6 @@ export async function POST(
         where: { id: chatId },
         data: { updatedAt: new Date() },
       })
-
-      // If auto-debate mode is on, trigger auto-continue
-      if (chat.isAutoMode && participants.length > 0) {
-        // Check if debate is already running for this chat
-        if (!debateLocks.get(chatId)) {
-          debateLocks.set(chatId, true)
-          // Return immediately, debate continues in background
-          setTimeout(async () => {
-            try {
-              await autoContinueDebate(chatId, 3)
-            } finally {
-              debateLocks.delete(chatId)
-            }
-          }, 500)
-        }
-
-        return NextResponse.json({
-          message,
-          autoDebateTriggered: true,
-        })
-      }
 
       return NextResponse.json(message)
     }
@@ -117,20 +97,6 @@ export async function POST(
 
     if (result.error) {
       return NextResponse.json({ error: result.error }, { status: 400 })
-    }
-
-    // If auto-debate mode is on and user spoke, continue debate
-    if (chat.isAutoMode && isUser) {
-      if (!debateLocks.get(chatId)) {
-        debateLocks.set(chatId, true)
-        setTimeout(async () => {
-          try {
-            await autoContinueDebate(chatId, 3)
-          } finally {
-            debateLocks.delete(chatId)
-          }
-        }, 500)
-      }
     }
 
     return NextResponse.json({

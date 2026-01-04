@@ -159,6 +159,34 @@ export function truncateResponse(content: string, maxLength: number = MAX_RESPON
 /**
  * Sanitize message content to prevent injection attacks
  */
+export function detectLoop(content: string): boolean {
+  // Check for repeated phrases of significant length
+  const sentences = content.split(/[.!?\n]/).filter(s => s.trim().length > 10);
+  for (let i = 0; i < sentences.length; i++) {
+    const s = sentences[i].trim();
+    const count = sentences.filter(other => other.trim() === s).length;
+    if (count > 3) return true;
+  }
+  
+  // Check for character-level repetition (e.g., "abcabcabcabc")
+  if (content.length > 50) {
+      for (let len = 5; len <= 20; len++) {
+          const chunk = content.substring(0, len);
+          let matchCount = 0;
+          for (let i = 0; i < content.length - len; i += len) {
+              if (content.substring(i, i + len) === chunk) {
+                  matchCount++;
+              } else {
+                  break;
+              }
+          }
+          if (matchCount > 4) return true;
+      }
+  }
+
+  return false;
+}
+
 export function sanitizeContent(content: string): string {
   // Remove null bytes and other dangerous characters
   let sanitized = content.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\u200B\uFEFF]/g, '')
@@ -205,72 +233,3 @@ export function validateMessageLength(content: string): { valid: boolean; error?
   return { valid: true }
 }
 
-/**
- * Check if a response looks like it's looping
- */
-export function detectLoop(response: string, previousResponses: string[]): boolean {
-  if (previousResponses.length < 2) return false
-
-  const recent = previousResponses.slice(-3)
-
-  // Check for exact repetition
-  for (const prev of recent) {
-    if (prev === response) return true
-  }
-
-  // Check for very high similarity (>90% same)
-  for (const prev of recent) {
-    const similarity = calculateSimilarity(response, prev)
-    if (similarity > 0.9) return true
-  }
-
-  return false
-}
-
-/**
- * Calculate similarity between two strings (0-1)
- */
-function calculateSimilarity(str1: string, str2: string): number {
-  const longer = str1.length > str2.length ? str1 : str2
-  const shorter = str1.length > str2.length ? str2 : str1
-
-  if (longer.length === 0) return 1.0
-
-  const editDistance = levenshteinDistance(longer, shorter)
-  return (longer.length - editDistance) / longer.length
-}
-
-/**
- * Levenshtein distance for similarity calculation
- */
-function levenshteinDistance(str1: string, str2: string): number {
-  const m = str1.length
-  const n = str2.length
-
-  // Use shorter strings for efficiency
-  if (m > 1000 || n > 1000) {
-    // For very long strings, use a simpler approach
-    return Math.abs(m - n)
-  }
-
-  const dp: number[][] = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0))
-
-  for (let i = 0; i <= m; i++) dp[i][0] = i
-  for (let j = 0; j <= n; j++) dp[0][j] = j
-
-  for (let i = 1; i <= m; i++) {
-    for (let j = 1; j <= n; j++) {
-      if (str1[i - 1] === str2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1]
-      } else {
-        dp[i][j] = Math.min(
-          dp[i - 1][j] + 1,    // deletion
-          dp[i][j - 1] + 1,    // insertion
-          dp[i - 1][j - 1] + 1 // substitution
-        )
-      }
-    }
-  }
-
-  return dp[m][n]
-}

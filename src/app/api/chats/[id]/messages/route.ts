@@ -17,3 +17,19 @@ export async function GET(
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    await prisma.message.deleteMany({
+      where: { chatId: id },
+    })
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Error wiping messages:', error)
+    return NextResponse.json({ error: 'Failed to wipe messages' }, { status: 500 })
+  }
+}

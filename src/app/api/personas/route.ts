@@ -29,8 +29,10 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const normalizedName = name.trim()
+
     // Bio and personality are optional - provide defaults if not given
-    const finalBio = bio?.trim() || `I am ${name}, a participant in this discussion.`
+    const finalBio = bio?.trim() || `I am ${normalizedName}, a participant in this discussion.`
     const finalPersonality = personality?.trim() || 'Friendly and conversational.'
 
     // If provider is specified, verify it exists
@@ -45,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     const persona = await prisma.persona.create({
       data: {
-        name: name.trim(),
+        name: normalizedName,
         bio: finalBio,
         personality: finalPersonality,
         providerId: providerId || null,

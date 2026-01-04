@@ -64,7 +64,7 @@ export default function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-2 rounded-lg transition-colors cursor-pointer ${
                 isLight ? 'hover:bg-slate-100' : 'hover:bg-slate-800'
               }`}
               title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -82,22 +82,21 @@ export default function Navbar() {
 
             {/* Auth Button */}
             {isAuthenticated ? (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm">
-                  {session?.user?.image ? (
-                    <img src={session.user.image} alt="" className="w-7 h-7 rounded-full" />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">
-                      {(session?.user?.name || 'U').charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                  <span className={isLight ? 'text-slate-700' : 'text-slate-300'}>
-                    {session?.user?.name || 'User'}
-                  </span>
-                </div>
+              <div className="flex items-center gap-3">
+                <Link 
+                  href="/dashboard" 
+                  className="flex items-center justify-center transition-opacity hover:opacity-80 cursor-pointer"
+                  title="View User Dashboard"
+                >
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all ring-2 ring-white/20">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                </Link>
                 <button
                   onClick={() => signOut()}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
                     isLight
                       ? 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                       : 'bg-slate-800 hover:bg-slate-700 text-slate-300'
