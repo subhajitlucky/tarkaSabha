@@ -54,10 +54,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    await nextAuthSignOut({ redirect: false })
+    // Ensure the NextAuth session cookie is cleared and user is redirected
+    await nextAuthSignOut({ callbackUrl: '/', redirect: true })
     setSession(null)
-    router.push('/')
-    router.refresh()
   }
 
   return (
