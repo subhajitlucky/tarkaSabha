@@ -115,7 +115,11 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/debate"
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-all shadow-lg shadow-amber-500/20 cursor-pointer hover:shadow-xl hover:-translate-y-0.5"
+                className={`font-semibold px-8 py-4 rounded-xl text-lg transition-all cursor-pointer hover:-translate-y-0.5 ${
+                  isLight
+                    ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl'
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/20 hover:shadow-xl'
+                }`}
               >
                 Start New Debate
               </Link>
@@ -123,7 +127,7 @@ export default function Home() {
                 href="/history"
                 className={`border font-medium px-8 py-4 rounded-xl text-lg transition-all cursor-pointer hover:-translate-y-0.5 ${
                   isLight 
-                    ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' 
+                    ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm hover:shadow-md' 
                     : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
                 }`}
               >

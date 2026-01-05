@@ -85,7 +85,8 @@ export default function RootLayout({
                     <ul className="space-y-2 text-sm text-slate-400">
                       <li><a href="/debate" className="hover:text-amber-400 transition-colors">Start Debate</a></li>
                       <li><a href="/history" className="hover:text-amber-400 transition-colors">Chat History</a></li>
-                      <li><a href="/features" className="hover:text-amber-400 transition-colors">Features</a></li>
+                      <li><a href="/about" className="hover:text-amber-400 transition-colors">About</a></li>
+                      <li><a href="/feedback" className="hover:text-amber-400 transition-colors">Feedback</a></li>
                     </ul>
                   </div>
 

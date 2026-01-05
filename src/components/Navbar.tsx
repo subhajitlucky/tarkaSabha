@@ -88,7 +88,9 @@ export default function Navbar() {
               <div className="flex items-center gap-3">
                 <Link 
                   href="/dashboard" 
-                  className="hidden md:flex items-center justify-center transition-opacity hover:opacity-80 cursor-pointer"
+                  className={`hidden md:flex items-center justify-center transition-all hover:scale-105 cursor-pointer ${
+                    isLight ? 'opacity-100 hover:opacity-80' : 'opacity-100 hover:opacity-80'
+                  }`}
                   title="View User Dashboard"
                 >
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-md hover:shadow-lg transition-all ring-2 ring-white/20">
@@ -99,10 +101,10 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className={`hidden md:block px-3 py-1.5 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
+                  className={`hidden md:block px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer border ${
                     isLight
-                      ? 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                      ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 shadow-sm'
+                      : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
                   }`}
                 >
                   Sign Out
@@ -111,7 +113,11 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className="hidden md:block bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all shadow-lg shadow-amber-500/20 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
+                className={`hidden md:block px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer ${
+                  isLight
+                    ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/20'
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20'
+                }`}
               >
                 Sign In
               </Link>

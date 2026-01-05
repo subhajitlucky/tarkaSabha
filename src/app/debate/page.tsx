@@ -442,7 +442,7 @@ export default function DebatePage() {
                   onClick={addAgent}
                   className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-medium ${
                     isLight 
-                      ? 'bg-slate-200 hover:bg-slate-300 text-slate-800' 
+                      ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' 
                       : 'bg-slate-700 hover:bg-slate-600 text-white'
                   }`}
                 >
@@ -496,7 +496,11 @@ export default function DebatePage() {
             <button
               onClick={createDebate}
               disabled={isCreating || agents.length < 2}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-slate-900 font-semibold px-4 py-3 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer disabled:cursor-not-allowed disabled:transform-none"
+              className={`w-full font-semibold px-4 py-3 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed disabled:transform-none ${
+                isLight
+                  ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-slate-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5'
+              }`}
             >
               {isCreating ? 'Creating...' : `Start Debate with ${agents.length} Agents`}
             </button>

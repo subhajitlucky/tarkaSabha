@@ -336,20 +336,20 @@ export default function ChatPage() {
     ? 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400' 
     : 'bg-slate-500/10 border-slate-500/20 text-slate-500 dark:text-slate-400';
   const identityBtn = isLight 
-    ? 'bg-white border-slate-200 hover:border-amber-500 hover:bg-amber-50' 
+    ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' 
     : 'bg-slate-900 border-slate-800 hover:border-amber-500 hover:bg-slate-800';
-  const actionGroup = isLight ? 'bg-slate-100 border-slate-200' : 'bg-slate-900 border-slate-800';
+  const actionGroup = isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-900 border-slate-800';
   const toggleBtn = chat.isAutoMode 
-    ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20' 
-    : (isLight ? 'text-slate-500 hover:bg-slate-200' : 'text-slate-400 hover:bg-slate-800');
+    ? 'bg-red-500 text-white hover:bg-red-600 shadow-md' 
+    : (isLight ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-md' : 'text-slate-400 hover:bg-slate-800');
   const settingsBtn = showChatSettings 
-    ? (isLight ? 'bg-white shadow-sm' : 'bg-slate-800')
-    : (isLight ? 'hover:bg-white' : 'hover:bg-slate-800');
+    ? (isLight ? 'bg-slate-100 text-slate-900' : 'bg-slate-800')
+    : (isLight ? 'hover:bg-slate-50 text-slate-600' : 'hover:bg-slate-800');
   const trayBg = isLight ? 'bg-white border-slate-200 shadow-xl' : 'bg-slate-900 border-slate-800 shadow-2xl';
-  const trayItem = isLight ? 'hover:bg-slate-50 text-slate-700' : 'hover:bg-slate-800 text-slate-300';
-  const deleteBtn = 'bg-red-500 bg-opacity-10 text-red-500 hover:bg-red-500 hover:text-white';
-  const signOutBtn = isLight ? 'hover:bg-slate-50 text-slate-400 hover:text-slate-600' : 'hover:bg-slate-800 text-slate-500 hover:text-slate-300';
-  const messageInputBg = isLight ? 'bg-white shadow-slate-200' : 'bg-slate-900 shadow-black shadow-opacity-50';
+  const trayItem = isLight ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' : 'hover:bg-slate-800 text-slate-300';
+  const deleteBtn = 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 shadow-sm';
+  const signOutBtn = isLight ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' : 'hover:bg-slate-800 text-slate-500 hover:text-slate-300';
+  const messageInputBg = isLight ? 'bg-white shadow-xl shadow-slate-200/50 border border-slate-100' : 'bg-slate-900 shadow-black shadow-opacity-50';
 
   return (
     <div className={`min-h-screen flex flex-col font-sans ${themeBg} ${themeText}`}>
@@ -730,8 +730,10 @@ export default function ChatPage() {
                 disabled={!newMessage.trim() || isSending}
                 className={`absolute right-3 bottom-3 w-12 h-12 rounded-[1.2rem] flex items-center justify-center transition-all ${
                   !newMessage.trim() || isSending 
-                    ? 'bg-slate-500 bg-opacity-10 text-slate-500 opacity-50 cursor-not-allowed' 
-                    : 'bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-95 shadow-lg'
+                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+                    : isLight
+                      ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl active:scale-95'
+                      : 'bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-95 shadow-lg'
                 }`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

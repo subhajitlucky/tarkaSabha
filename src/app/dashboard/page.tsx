@@ -120,7 +120,14 @@ export default function DashboardPage() {
         {/* History Section */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Recent Debates</h2>
-          <Link href="/debate" className="text-sm font-bold text-amber-500 hover:text-amber-400 transition-colors">
+          <Link 
+            href="/debate" 
+            className={`text-sm font-bold px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md ${
+              isLight 
+                ? 'bg-slate-900 text-white hover:bg-slate-800' 
+                : 'bg-amber-500 text-slate-900 hover:bg-amber-400'
+            }`}
+          >
             + New Debate
           </Link>
         </div>
@@ -143,7 +150,11 @@ export default function DashboardPage() {
             <p className={`mb-4 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>No debates found</p>
             <Link
               href="/debate"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-sm transition-transform hover:scale-105"
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 ${
+                isLight
+                  ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105'
+              }`}
             >
               Start Debate
             </Link>

@@ -67,7 +67,11 @@ export default function HistoryPage() {
             <p className={`mb-4 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>No debates yet</p>
             <Link
               href="/debate"
-              className="text-amber-500 hover:text-amber-600 font-medium transition-colors"
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 ${
+                isLight
+                  ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105'
+              }`}
             >
               Start your first debate
             </Link>
