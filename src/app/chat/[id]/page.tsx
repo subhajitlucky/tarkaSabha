@@ -199,7 +199,7 @@ export default function ChatPage() {
       role: 'user',
       chatId,
       personaName: localUsername,
-      createdAt: new Date().toISOString()
+      createdAt: new Date()
     }
     
     setMessages(prev => [...prev, optimisticMessage])
