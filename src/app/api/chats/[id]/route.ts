@@ -21,9 +21,29 @@ export async function GET(
 
     const chat = await prisma.chat.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        topic: true,
+        isAutoMode: true,
+        creatorId: true,
+        createdAt: true,
+        updatedAt: true,
+        lastSpeakerId: true,
         participants: {
-          include: { persona: true },
+          select: {
+            id: true,
+            personaId: true,
+            persona: {
+              select: {
+                id: true,
+                name: true,
+                bio: true,
+                personality: true,
+                avatarUrl: true,
+              }
+            }
+          }
         },
         messages: {
           orderBy: { createdAt: 'desc' },

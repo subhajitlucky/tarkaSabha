@@ -24,21 +24,28 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchChats()
-    fetchFeedback()
+    const loadData = async () => {
+      setLoading(true)
+      try {
+        await Promise.all([fetchChats(), fetchFeedback()])
+      } catch (e) {
+        console.error('Error loading dashboard data:', e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
   }, [])
 
   const fetchChats = async () => {
     try {
-      const res = await fetch('/api/chats')
+      const res = await fetch('/api/chats?limit=6')
       if (res.ok) {
         const data = await res.json()
         setChats(data)
       }
     } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
+      console.error('Failed to fetch chats:', e)
     }
   }
 
@@ -50,7 +57,7 @@ export default function DashboardPage() {
         setFeedbacks(data)
       }
     } catch (e) {
-      console.error(e)
+      console.error('Failed to fetch feedback:', e)
     }
   }
 

@@ -28,8 +28,14 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
+    const { searchParams } = new URL(request.url)
+    const lastId = searchParams.get('lastId')
+
     const messages = await prisma.message.findMany({
-      where: { chatId: id },
+      where: { 
+        chatId: id,
+        ...(lastId ? { id: { gt: lastId } } : {})
+      },
       orderBy: { createdAt: 'asc' },
     })
     return NextResponse.json(messages)

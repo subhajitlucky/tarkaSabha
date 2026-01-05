@@ -15,12 +15,24 @@ export async function GET() {
     const providers = await prisma.provider.findMany({
       where: { creatorId: session.user.id },
       orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        name: true,
+        provider: true,
+        apiUrl: true,
+        model: true,
+        temperature: true,
+        isDefault: true,
+        createdAt: true,
+        updatedAt: true,
+        // Explicitly exclude apiKey
+      }
     })
 
-    // Mask API keys before returning
+    // Add a placeholder for apiKey so the frontend knows it exists
     const maskedProviders = providers.map(p => ({
       ...p,
-      apiKey: cryptoService.maskKey(p.apiKey),
+      apiKey: '********',
     }))
 
     return NextResponse.json(maskedProviders)

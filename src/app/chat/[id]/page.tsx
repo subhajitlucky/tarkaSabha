@@ -166,15 +166,25 @@ export default function ChatPage() {
 
   const fetchMessages = async () => {
     try {
-      const res = await fetch(`/api/chats/${chatId}/messages`)
+      const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : null
+      const url = `/api/chats/${chatId}/messages${lastMessageId ? `?lastId=${lastMessageId}` : ''}`
+      
+      const res = await fetch(url)
       if (res.ok) {
-        const data = await res.json()
-        setMessages(prev => {
-          if (JSON.stringify(prev) !== JSON.stringify(data)) {
-            return data
-          }
-          return prev
-        })
+        const newMessages = await res.json()
+        if (newMessages.length > 0) {
+          setMessages(prev => {
+            // Filter out any optimistic messages that have been confirmed by the server
+            const filteredPrev = prev.filter(m => !m.id.startsWith('temp-'))
+            
+            // Check if we actually have new messages (avoid duplicates if polling overlaps)
+            const existingIds = new Set(filteredPrev.map(m => m.id))
+            const uniqueNewMessages = newMessages.filter((m: Message) => !existingIds.has(m.id))
+            
+            if (uniqueNewMessages.length === 0) return prev
+            return [...filteredPrev, ...uniqueNewMessages]
+          })
+        }
       }
     } catch (e) {
       console.error('Failed to fetch messages', e)

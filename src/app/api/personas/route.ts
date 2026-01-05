@@ -13,8 +13,22 @@ export async function GET() {
     const personas = await prisma.persona.findMany({
       where: { creatorId: session.user.id },
       orderBy: { createdAt: 'desc' },
-      include: {
-        provider: true,
+      select: {
+        id: true,
+        name: true,
+        bio: true,
+        personality: true,
+        avatarUrl: true,
+        model: true,
+        temperature: true,
+        createdAt: true,
+        provider: {
+          select: {
+            id: true,
+            name: true,
+            provider: true,
+          }
+        },
       },
     })
     return NextResponse.json(personas)
