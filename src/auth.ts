@@ -15,7 +15,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           prompt: "select_account",
           access_type: "offline",
           response_type: "code",
-          max_age: 0
+          max_age: 0,
+          // Force re-consent to ensure fresh account selection
+          include_granted_scopes: "true",
         }
       }
     }),
