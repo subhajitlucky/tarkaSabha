@@ -579,7 +579,9 @@ export default function ChatPage() {
               'from-rose-500 to-pink-600',
               'from-blue-600 to-cyan-500',
               'from-violet-600 to-fuchsia-500',
-              'from-orange-500 to-yellow-500',
+              'from-sky-500 to-blue-700',
+              'from-lime-500 to-green-600',
+              'from-red-500 to-rose-700',
             ];
             
             const agentColor = persona 
