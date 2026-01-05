@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Fetch initial session
-    fetch('/api/auth/session')
+    fetch('/api/auth/session', { cache: 'no-store' })
       .then(res => res.json())
       .then(data => {
         setSession(data)
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for session changes
     const interval = setInterval(() => {
-      fetch('/api/auth/session')
+      fetch('/api/auth/session', { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
           if (JSON.stringify(data) !== JSON.stringify(session)) {

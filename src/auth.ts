@@ -14,7 +14,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         params: {
           prompt: "select_account",
           access_type: "offline",
-          response_type: "code"
+          response_type: "code",
+          max_age: 0
         }
       }
     }),
