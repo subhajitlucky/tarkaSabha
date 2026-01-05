@@ -105,11 +105,17 @@ export default function ChatPage() {
             setManualTurnsLeft(prev => prev - 1);
           }
         } else {
-          // If error (e.g. rate limit), stop the manual loop
+          const data = await res.json();
+          setError(data.error || 'Agent failed to respond');
           setManualTurnsLeft(0);
+          // If it's a persistent error, stop auto mode to prevent spamming
+          if (chat?.isAutoMode) {
+             setChat(prev => prev ? { ...prev, isAutoMode: false } : null);
+          }
         }
       } catch (err) {
         console.error("Failed to trigger persona", err);
+        setError("Connection error: Failed to reach the debate server.");
         setManualTurnsLeft(0);
       } finally {
         setIsProcessing(false);

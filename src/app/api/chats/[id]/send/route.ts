@@ -9,6 +9,8 @@ import {
 import { auth } from '@/auth'
 import { sanitizeContent, validateMessageLength } from '@/lib/llm-protection'
 
+export const maxDuration = 60 // 60 seconds
+
 // In-memory lock to prevent concurrent auto-debate calls per chat
 const debateLocks = new Map<string, boolean>()
 
@@ -21,17 +23,19 @@ export async function POST(
     const body = await request.json()
     const { content, isUser, userName } = body
 
-    // Validate content
-    const validation = validateMessageLength(content)
-    if (!validation.valid) {
-      return NextResponse.json(
-        { error: validation.error },
-        { status: 400 }
-      )
+    // Validate content only for user messages
+    if (isUser) {
+      const validation = validateMessageLength(content)
+      if (!validation.valid) {
+        return NextResponse.json(
+          { error: validation.error },
+          { status: 400 }
+        )
+      }
     }
 
-    // Sanitize content
-    const sanitizedContent = sanitizeContent(content)
+    // Sanitize content (only if provided)
+    const sanitizedContent = content ? sanitizeContent(content) : ''
 
     const session = await auth()
 
