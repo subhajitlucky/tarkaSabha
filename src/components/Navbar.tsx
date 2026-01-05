@@ -101,9 +101,9 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className={`hidden md:block px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer border ${
+                  className={`hidden md:block px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer border shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
                     isLight
-                      ? 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md'
+                      ? 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
                   }`}
                 >

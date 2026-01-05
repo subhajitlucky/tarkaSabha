@@ -440,9 +440,9 @@ export default function DebatePage() {
 
                 <button
                   onClick={addAgent}
-                  className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-bold border ${
+                  className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-bold border shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
                     isLight 
-                      ? 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md' 
+                      ? 'bg-white border-slate-200 text-slate-700 hover:border-slate-300' 
                       : 'bg-slate-700 hover:bg-slate-600 text-white border-transparent'
                   }`}
                 >
