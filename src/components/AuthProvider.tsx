@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Session, User } from 'next-auth'
+import { signOut as nextAuthSignOut } from 'next-auth/react'
 
 type AuthContextType = {
   session: Session | null
@@ -53,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    await fetch('/api/auth/signout', { method: 'POST' })
+    await nextAuthSignOut({ redirect: false })
     setSession(null)
     router.push('/')
     router.refresh()
