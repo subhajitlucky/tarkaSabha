@@ -67,10 +67,10 @@ export default function HistoryPage() {
             <p className={`mb-4 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>No debates yet</p>
             <Link
               href="/debate"
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 ${
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 border ${
                 isLight
-                  ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl'
-                  : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105'
+                  ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105 border-transparent'
               }`}
             >
               Start your first debate

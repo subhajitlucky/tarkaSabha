@@ -167,10 +167,10 @@ export default function FeedbackPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full font-semibold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                className={`w-full font-bold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed border ${
                   isLight
-                    ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5'
-                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/20'
+                    ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5'
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/20 border-transparent'
                 }`}
               >
                 {loading ? 'Sending...' : 'Send Feedback'}

@@ -440,10 +440,10 @@ export default function DebatePage() {
 
                 <button
                   onClick={addAgent}
-                  className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-medium ${
+                  className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-bold border ${
                     isLight 
-                      ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' 
-                      : 'bg-slate-700 hover:bg-slate-600 text-white'
+                      ? 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md' 
+                      : 'bg-slate-700 hover:bg-slate-600 text-white border-transparent'
                   }`}
                 >
                   + Add Agent
@@ -496,10 +496,10 @@ export default function DebatePage() {
             <button
               onClick={createDebate}
               disabled={isCreating || agents.length < 2}
-              className={`w-full font-semibold px-4 py-3 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed disabled:transform-none ${
+              className={`w-full font-bold px-4 py-4 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed disabled:transform-none border ${
                 isLight
-                  ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl hover:-translate-y-0.5 disabled:bg-slate-200 disabled:text-slate-400 disabled:shadow-none'
-                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-slate-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5'
+                  ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-300 disabled:border-slate-200 disabled:text-slate-400 disabled:shadow-none'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-slate-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5 border-transparent'
               }`}
             >
               {isCreating ? 'Creating...' : `Start Debate with ${agents.length} Agents`}

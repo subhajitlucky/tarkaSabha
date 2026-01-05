@@ -122,10 +122,10 @@ export default function DashboardPage() {
           <h2 className="text-2xl font-bold">Recent Debates</h2>
           <Link 
             href="/debate" 
-            className={`text-sm font-bold px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md ${
+            className={`text-sm font-bold px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md border ${
               isLight 
-                ? 'bg-slate-900 text-white hover:bg-slate-800' 
-                : 'bg-amber-500 text-slate-900 hover:bg-amber-400'
+                ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white hover:shadow-slate-900/20' 
+                : 'bg-amber-500 text-slate-900 hover:bg-amber-400 border-transparent'
             }`}
           >
             + New Debate
@@ -150,10 +150,10 @@ export default function DashboardPage() {
             <p className={`mb-4 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>No debates found</p>
             <Link
               href="/debate"
-              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 ${
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm transition-all hover:-translate-y-0.5 border ${
                 isLight
-                  ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl'
-                  : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105'
+                  ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:scale-105 border-transparent'
               }`}
             >
               Start Debate

@@ -101,9 +101,9 @@ export default function Navbar() {
                 </Link>
                 <button
                   onClick={() => signOut()}
-                  className={`hidden md:block px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer border ${
+                  className={`hidden md:block px-4 py-2 rounded-xl text-sm font-bold transition-all cursor-pointer border ${
                     isLight
-                      ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 shadow-sm'
+                      ? 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-white hover:border-slate-300 hover:shadow-md'
                       : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white'
                   }`}
                 >
@@ -113,10 +113,10 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/login"
-                className={`hidden md:block px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer ${
+                className={`hidden md:block px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer border ${
                   isLight
-                    ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/20'
-                    : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20'
+                    ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white shadow-slate-900/20'
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-amber-500/20 border-transparent'
                 }`}
               >
                 Sign In

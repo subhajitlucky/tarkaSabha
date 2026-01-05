@@ -115,19 +115,19 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/debate"
-                className={`font-semibold px-8 py-4 rounded-xl text-lg transition-all cursor-pointer hover:-translate-y-0.5 ${
+                className={`font-bold px-8 py-4 rounded-xl text-lg transition-all cursor-pointer hover:-translate-y-0.5 border ${
                   isLight
-                    ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl'
-                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/20 hover:shadow-xl'
+                    ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30'
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white shadow-lg shadow-amber-500/20 hover:shadow-xl border-transparent'
                 }`}
               >
                 Start New Debate
               </Link>
               <Link
                 href="/history"
-                className={`border font-medium px-8 py-4 rounded-xl text-lg transition-all cursor-pointer hover:-translate-y-0.5 ${
+                className={`font-bold px-8 py-4 rounded-xl text-lg transition-all cursor-pointer hover:-translate-y-0.5 border ${
                   isLight 
-                    ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm hover:shadow-md' 
+                    ? 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)]' 
                     : 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700'
                 }`}
               >

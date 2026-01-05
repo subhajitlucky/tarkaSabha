@@ -57,9 +57,9 @@ function LoginForm() {
         <button
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className={`w-full flex items-center justify-center gap-3 font-semibold px-4 py-3 rounded-xl border transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
+          className={`w-full flex items-center justify-center gap-3 font-semibold px-4 py-3.5 rounded-xl border transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group ${
             isLight
-              ? 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200 shadow-sm hover:shadow-md hover:-translate-y-0.5'
+              ? 'bg-white text-slate-700 border-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.05)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.1)] hover:border-slate-300 hover:-translate-y-0.5'
               : 'bg-white hover:bg-slate-50 text-slate-900 border-slate-200'
           }`}
         >

@@ -336,7 +336,7 @@ export default function ChatPage() {
     ? 'bg-green-500/10 border-green-500/20 text-green-600 dark:text-green-400' 
     : 'bg-slate-500/10 border-slate-500/20 text-slate-500 dark:text-slate-400';
   const identityBtn = isLight 
-    ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' 
+    ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.05)]' 
     : 'bg-slate-900 border-slate-800 hover:border-amber-500 hover:bg-slate-800';
   const actionGroup = isLight ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-900 border-slate-800';
   const toggleBtn = chat.isAutoMode 
@@ -346,9 +346,9 @@ export default function ChatPage() {
     ? (isLight ? 'bg-slate-100 text-slate-900' : 'bg-slate-800')
     : (isLight ? 'hover:bg-slate-50 text-slate-600' : 'hover:bg-slate-800');
   const trayBg = isLight ? 'bg-white border-slate-200 shadow-xl' : 'bg-slate-900 border-slate-800 shadow-2xl';
-  const trayItem = isLight ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' : 'hover:bg-slate-800 text-slate-300';
+  const trayItem = isLight ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.05)]' : 'hover:bg-slate-800 text-slate-300';
   const deleteBtn = 'bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 shadow-sm';
-  const signOutBtn = isLight ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm' : 'hover:bg-slate-800 text-slate-500 hover:text-slate-300';
+  const signOutBtn = isLight ? 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-[0_2px_8px_rgba(0,0,0,0.05)]' : 'hover:bg-slate-800 text-slate-500 hover:text-slate-300';
   const messageInputBg = isLight ? 'bg-white shadow-xl shadow-slate-200/50 border border-slate-100' : 'bg-slate-900 shadow-black shadow-opacity-50';
 
   return (
@@ -386,7 +386,11 @@ export default function ChatPage() {
                 const input = (e.target as HTMLElement).parentElement?.querySelector('input')
                 if (input) saveUsername(input.value)
               }}
-              className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white font-bold py-4 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg"
+              className={`w-full font-bold py-4 rounded-2xl transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg ${
+                isLight
+                  ? 'bg-gradient-to-b from-slate-800 to-slate-950 text-white shadow-slate-900/20'
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-white'
+              }`}
             >
               Start Chatting
             </button>
@@ -732,7 +736,7 @@ export default function ChatPage() {
                   !newMessage.trim() || isSending 
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
                     : isLight
-                      ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/20 hover:shadow-xl active:scale-95'
+                      ? 'bg-gradient-to-b from-slate-800 to-slate-950 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 active:scale-95'
                       : 'bg-amber-500 text-slate-900 hover:bg-amber-400 active:scale-95 shadow-lg'
                 }`}
               >
