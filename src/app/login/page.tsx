@@ -19,7 +19,10 @@ function LoginForm() {
     setIsLoading(true)
     setError(null)
     try {
-      await signIn('google', { callbackUrl })
+      await signIn('google', { 
+        callbackUrl,
+        prompt: 'select_account'
+      })
     } catch (err) {
       setError('Failed to sign in. Please try again.')
       setIsLoading(false)
