@@ -23,6 +23,74 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
+/* ==================== GLOBAL SMOOTHNESS ==================== */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Apply smooth transitions and pointer cursor to all interactive elements */
+button,
+a,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+select,
+summary,
+.clickable {
+  cursor: pointer;
+  transition-property: all;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Ensure disabled elements don't have pointer cursor */
+button:disabled,
+a[aria-disabled="true"],
+[role="button"][aria-disabled="true"],
+input:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Add subtle hover effect to all buttons */
+button:hover:not(:disabled),
+[role="button"]:hover:not([aria-disabled="true"]) {
+  transform: translateY(-1px);
+}
+
+/* Active state for better feedback */
+button:active:not(:disabled),
+[role="button"]:active:not([aria-disabled="true"]) {
+  transform: translateY(0);
+}
+
+/* ==================== CUSTOM SCROLLBAR (DEFAULT/DARK) ==================== */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 5px;
+  border: 2px solid #020617;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* ==================== SELECTION ==================== */
+::selection {
+  background-color: #f97316;
+  color: white;
+}
+
 /* ==================== LIGHT THEME BASE ==================== */
 html.light {
   background: #f1f5f9 !important;

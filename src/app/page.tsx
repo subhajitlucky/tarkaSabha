@@ -10,6 +10,7 @@ export default function Home() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [providers, setProviders] = useState<Provider[]>([])
   const [chats, setChats] = useState<Chat[]>([])
+  const [dataLoading, setDataLoading] = useState(false)
   const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
   const { isAuthenticated, isLoading: authLoading } = useAuth()
@@ -18,11 +19,22 @@ export default function Home() {
   useEffect(() => {
     setMounted(true)
     if (isAuthenticated) {
-      fetchPersonas()
-      fetchProviders()
-      fetchChats()
+      fetchData()
     }
   }, [isAuthenticated])
+
+  const fetchData = async () => {
+    setDataLoading(true)
+    try {
+      await Promise.all([
+        fetchPersonas(),
+        fetchProviders(),
+        fetchChats()
+      ])
+    } finally {
+      setDataLoading(false)
+    }
+  }
 
   const fetchPersonas = async () => {
     const res = await fetch('/api/personas')
@@ -122,17 +134,29 @@ export default function Home() {
 
           {/* Stats - Only show when authenticated */}
           {isAuthenticated && (
-            <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto pb-16">
+            <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="text-center">
-                <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{chats.length}</div>
+                {dataLoading ? (
+                  <div className="h-9 w-12 mx-auto bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-1" />
+                ) : (
+                  <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{chats.length}</div>
+                )}
                 <div className="text-sm text-slate-500">Your Debates</div>
               </div>
               <div className="text-center">
-                <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{personas.length}</div>
+                {dataLoading ? (
+                  <div className="h-9 w-12 mx-auto bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-1" />
+                ) : (
+                  <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{personas.length}</div>
+                )}
                 <div className="text-sm text-slate-500">Your Personas</div>
               </div>
               <div className="text-center">
-                <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{providers.length}</div>
+                {dataLoading ? (
+                  <div className="h-9 w-12 mx-auto bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-1" />
+                ) : (
+                  <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{providers.length}</div>
+                )}
                 <div className="text-sm text-slate-500">Your Providers</div>
               </div>
             </div>

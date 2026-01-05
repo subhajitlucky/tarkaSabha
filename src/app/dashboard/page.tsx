@@ -76,13 +76,21 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           <div className={`p-6 rounded-2xl border ${isLight ? 'bg-white border-slate-100' : 'bg-slate-900/50 border-slate-800'}`}>
             <p className={`text-sm font-bold uppercase tracking-wider mb-1 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>Debates</p>
-            <p className="text-3xl font-bold text-amber-500">{chats.length}</p>
+            {loading ? (
+              <div className="h-9 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+            ) : (
+              <p className="text-3xl font-bold text-amber-500">{chats.length}</p>
+            )}
           </div>
           <div className={`p-6 rounded-2xl border ${isLight ? 'bg-white border-slate-100' : 'bg-slate-900/50 border-slate-800'}`}>
             <p className={`text-sm font-bold uppercase tracking-wider mb-1 ${isLight ? 'text-slate-400' : 'text-slate-500'}`}>Personas</p>
-            <p className="text-3xl font-bold text-indigo-500">
-              {new Set(chats.flatMap(c => c.participants?.map(p => p.personaId))).size || 0}
-            </p>
+            {loading ? (
+              <div className="h-9 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+            ) : (
+              <p className="text-3xl font-bold text-indigo-500">
+                {new Set(chats.flatMap(c => c.participants?.map(p => p.personaId))).size || 0}
+              </p>
+            )}
           </div>
         </div>
 
