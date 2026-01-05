@@ -296,7 +296,6 @@ export default function ChatPage() {
   }
 
   const deleteChat = async () => {
-    if (!confirm('Are you sure you want to delete this chat?')) return
     try {
       await fetch(`/api/chats/${chatId}`, { method: 'DELETE' })
       router.push('/history')
