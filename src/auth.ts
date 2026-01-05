@@ -10,6 +10,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
           prompt: "consent select_account",
@@ -21,26 +22,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async session({ session, user }) {
-      // Attach user ID to session for easy access
       if (session.user) {
         session.user.id = user.id
       }
       return session
     },
-    // Add signIn callback to allow any Google account
     async signIn({ user, account, profile }) {
-      console.log("SIGNIN DEBUG:", { 
-        userEmail: user.email, 
-        userId: user.id, 
-        provider: account?.provider,
-        profileEmail: profile?.email 
-      })
-
-      if (account?.provider === "google" && profile?.email) {
-        // Safety check: Prevent linking a Google account to a user with a different email
-        // This happens if a session persists and the user tries to sign in with a different Google account
-        if (user.email && user.email !== profile.email) {
-          console.log("SIGNIN BLOCKED: Email mismatch", { userEmail: user.email, profileEmail: profile.email });
+      if (account?.provider === "google" && profile?.email && user.email) {
+        if (user.email !== profile.email) {
           return false
         }
       }
