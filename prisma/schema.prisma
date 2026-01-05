@@ -7,22 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// NextAuth Models
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?
-  access_token       String?
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -36,17 +34,17 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
+  id            String     @id @default(cuid())
   name          String?
-  email         String?   @unique
+  email         String?    @unique
   emailVerified DateTime?
   image         String?
   accounts      Account[]
-  sessions      Session[]
   chats         Chat[]
+  feedbacks     Feedback[]
   personas      Persona[]
   providers     Provider[]
-  feedbacks     Feedback[]
+  sessions      Session[]
 }
 
 model Feedback {
@@ -70,53 +68,50 @@ model VerificationToken {
 
 model Provider {
   id          String    @id @default(cuid())
-  name        String    // Display name (e.g., "OpenAI", "Anthropic", "Ollama")
-  provider    String    // Provider type: "openai", "anthropic", "google", "groq", "ollama", "custom"
-  apiUrl      String    @default("https://api.openai.com/v1") // Base API URL
-  apiKey      String    // Encrypted API key
-  model       String    @default("gpt-3.5-turbo") // Default model for this provider
+  name        String
+  provider    String
+  apiUrl      String    @default("https://api.openai.com/v1")
+  apiKey      String
+  model       String    @default("gpt-3.5-turbo")
   temperature Float     @default(0.7)
   isDefault   Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   creatorId   String?
-  creator     User?     @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-
   personas    Persona[]
+  creator     User?     @relation(fields: [creatorId], references: [id])
 }
 
 model Persona {
-  id          String    @id @default(cuid())
+  id          String          @id @default(cuid())
   name        String
   bio         String
   personality String?
-  providerId  String?   // Optional: override with specific provider
-  model       String?   // Override provider's default model
-  temperature Float?    // Override provider's default temperature
+  providerId  String?
+  model       String?
+  temperature Float?
   avatarUrl   String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
   creatorId   String?
-  creator     User?     @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-
   messages    Message[]
+  creator     User?           @relation(fields: [creatorId], references: [id])
+  provider    Provider?       @relation(fields: [providerId], references: [id])
   chats       PersonaOnChat[]
-  provider    Provider? @relation(fields: [providerId], references: [id])
 }
 
 model Chat {
-  id            String    @id @default(cuid())
-  title         String    @default("New Chat")
+  id            String          @id @default(cuid())
+  title         String          @default("New Chat")
   topic         String?
-  isAutoMode    Boolean   @default(false)
+  isAutoMode    Boolean         @default(false)
   lastSpeakerId String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  creatorId     String?   // User ID of who created this chat (for access control)
-  creator       User?     @relation(fields: [creatorId], references: [id], onDelete: SetNull)
-
-  participants  PersonaOnChat[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  creatorId     String?
+  creator       User?           @relation(fields: [creatorId], references: [id])
   messages      Message[]
+  participants  PersonaOnChat[]
 }
 
 model PersonaOnChat {
@@ -124,32 +119,30 @@ model PersonaOnChat {
   personaId String
   chatId    String
   joinedAt  DateTime @default(now())
-
-  persona   Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  persona   Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
 
   @@unique([personaId, chatId])
 }
 
 model Message {
-  id          String    @id @default(cuid())
+  id          String   @id @default(cuid())
   content     String
   role        String
   personaId   String?
   personaName String?
   chatId      String
-  createdAt   DateTime  @default(now())
-
-  chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
-  persona   Persona? @relation(fields: [personaId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  persona     Persona? @relation(fields: [personaId], references: [id])
 }
 
 model RateLimit {
-  id          String   @id @default(cuid())
-  key         String   @unique // providerId:day
-  requests    Int      @default(0)
-  limit       Int      @default(100)
-  resetAt     DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  key       String   @unique
+  requests  Int      @default(0)
+  limit     Int      @default(100)
+  resetAt   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

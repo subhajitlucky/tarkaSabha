@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { useTheme } from '@/components/ThemeProvider'
 import { useAuth } from '@/components/AuthProvider'
 
@@ -76,12 +77,26 @@ export default function FeedbackPage() {
               <p className={isLight ? 'text-slate-600' : 'text-slate-400'}>
                 Your feedback has been received. We appreciate your input!
               </p>
-              <button
-                onClick={() => setSuccess(false)}
-                className="mt-6 text-amber-500 hover:text-amber-600 font-medium"
-              >
-                Send another message
-              </button>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
+                <button
+                  onClick={() => setSuccess(false)}
+                  className={`px-6 py-2 rounded-xl font-medium transition-all ${
+                    isLight ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                  }`}
+                >
+                  Send another message
+                </button>
+                <Link
+                  href="/dashboard"
+                  className={`px-6 py-2 rounded-xl font-medium transition-all ${
+                    isLight 
+                      ? 'bg-slate-900 text-white hover:bg-slate-800' 
+                      : 'bg-amber-500 text-slate-900 hover:bg-amber-400'
+                  }`}
+                >
+                  View your feedback
+                </Link>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">

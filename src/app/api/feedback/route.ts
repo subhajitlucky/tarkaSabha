@@ -36,19 +36,38 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Security Check: Only allow the admin to view feedback
-    // You need to set ADMIN_EMAIL in your .env file
     const adminEmail = process.env.ADMIN_EMAIL
     const userEmail = session.user.email
+    const userId = session.user.id
 
-    if (!adminEmail || !userEmail || userEmail.toLowerCase() !== adminEmail.toLowerCase()) {
-      // Return empty array so regular users just see nothing, rather than an error
-      return NextResponse.json([])
+    // Check if user is admin
+    const isAdmin = adminEmail && userEmail && 
+                    userEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim()
+
+    // If admin, fetch all feedback. If not, fetch only their own.
+    const where: any = {}
+    if (!isAdmin) {
+      where.OR = []
+      if (userId) where.OR.push({ userId })
+      if (userEmail) where.OR.push({ email: userEmail })
+      
+      if (where.OR.length === 0) {
+        return NextResponse.json([])
+      }
     }
 
     const feedback = await prisma.feedback.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
-      include: { user: { select: { name: true, email: true } } }
+      include: { 
+        user: { 
+          select: { 
+            name: true, 
+            email: true,
+            image: true
+          } 
+        } 
+      }
     })
 
     return NextResponse.json(feedback)
