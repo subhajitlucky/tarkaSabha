@@ -188,14 +188,30 @@ export default function ChatPage() {
       return
     }
 
+    const currentMessage = newMessage.trim()
     setError(null)
+    
+    // OPTIMISTIC UPDATE: Add message to UI immediately
+    const tempId = 'temp-' + Date.now()
+    const optimisticMessage: Message = {
+      id: tempId,
+      content: currentMessage,
+      role: 'user',
+      chatId,
+      personaName: localUsername,
+      createdAt: new Date().toISOString()
+    }
+    
+    setMessages(prev => [...prev, optimisticMessage])
+    setNewMessage('')
+    adjustTextareaHeight()
     setIsSending(true)
 
     try {
       const res = await fetch(`/api/chats/${chatId}/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: newMessage, isUser: true, userName: localUsername }),
+        body: JSON.stringify({ content: currentMessage, isUser: true, userName: localUsername }),
       })
 
       if (!res.ok) {
@@ -203,18 +219,20 @@ export default function ChatPage() {
         throw new Error(errData.message || 'Failed to send message')
       }
 
-      const data = await res.json()
-      await fetchMessages()
+      const savedMessage = await res.json()
+      
+      // Replace optimistic message with saved one to get real ID
+      setMessages(prev => prev.map(m => m.id === tempId ? savedMessage : m))
       
       // If manual mode, trigger one round of persona responses
       if (!chat.isAutoMode) {
         setManualTurnsLeft(chat.participants?.length || 0)
       }
-
-      setNewMessage('')
-      adjustTextareaHeight()
     } catch (err: any) {
       setError(err.message || 'Failed to send message')
+      // Remove the optimistic message if it failed
+      setMessages(prev => prev.filter(m => m.id !== tempId))
+      setNewMessage(currentMessage) // Restore the text so they don't lose it
     } finally {
       setIsSending(false)
     }
@@ -222,12 +240,17 @@ export default function ChatPage() {
 
   const toggleAutoMode = async () => {
     if (!chat) return
+    const originalMode = chat.isAutoMode
     setError(null)
+    
+    // OPTIMISTIC UPDATE
+    setChat({ ...chat, isAutoMode: !originalMode })
+
     try {
       const res = await fetch(`/api/chats/${chatId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isAutoMode: !chat.isAutoMode }),
+        body: JSON.stringify({ isAutoMode: !originalMode }),
       })
       if (!res.ok) {
         const data = await res.json()
@@ -237,6 +260,8 @@ export default function ChatPage() {
       setChat(data.chat)
     } catch (error: any) {
       setError(error.message || 'Failed to toggle auto mode')
+      // Revert on error
+      setChat(prev => prev ? { ...prev, isAutoMode: originalMode } : null)
     }
   }
 
