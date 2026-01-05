@@ -134,14 +134,14 @@ export default function Home() {
 
           {/* Stats - Only show when authenticated */}
           {isAuthenticated && (
-            <div className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="mt-16 grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto pb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <div className="text-center">
                 {dataLoading ? (
                   <div className="h-9 w-12 mx-auto bg-slate-200 dark:bg-slate-800 rounded animate-pulse mb-1" />
                 ) : (
                   <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{chats.length}</div>
                 )}
-                <div className="text-sm text-slate-500">Your Debates</div>
+                <div className="text-xs md:text-sm text-slate-500">Your Debates</div>
               </div>
               <div className="text-center">
                 {dataLoading ? (
@@ -149,7 +149,7 @@ export default function Home() {
                 ) : (
                   <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{personas.length}</div>
                 )}
-                <div className="text-sm text-slate-500">Your Personas</div>
+                <div className="text-xs md:text-sm text-slate-500">Your Personas</div>
               </div>
               <div className="text-center">
                 {dataLoading ? (
@@ -157,7 +157,7 @@ export default function Home() {
                 ) : (
                   <div className={`text-3xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{providers.length}</div>
                 )}
-                <div className="text-sm text-slate-500">Your Providers</div>
+                <div className="text-xs md:text-sm text-slate-500">Your Providers</div>
               </div>
             </div>
           )}
@@ -212,6 +212,112 @@ export default function Home() {
                 Enable auto-debate mode and watch your personas argue like real humans
               </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className={`py-20 ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16">
+            <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              Features
+            </h2>
+            <p className={`text-lg ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+              Everything you need for intelligent discussions
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                ),
+                title: 'Unique Personas',
+                description: 'Create agents with custom names, bios, and personalities. Each has their own identity.',
+                color: 'amber',
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                  </svg>
+                ),
+                title: 'Multi-Provider',
+                description: 'Use OpenAI, Anthropic, Google, Groq, Ollama, or any custom API endpoint.',
+                color: 'orange',
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                ),
+                title: 'Secure & Encrypted',
+                description: 'API keys are encrypted with AES-256-GCM. Your secrets stay safe.',
+                color: 'green',
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                ),
+                title: 'Auto-Debate Mode',
+                description: 'Enable auto-debate and watch agents argue with each other automatically.',
+                color: 'blue',
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                  </svg>
+                ),
+                title: '@Mentions',
+                description: 'Use @AgentName to call on specific personas in the discussion.',
+                color: 'purple',
+              },
+              {
+                icon: (
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+                title: 'Topic Isolation',
+                description: 'Personas only remember the current topic. Clean context for every debate.',
+                color: 'red',
+              },
+            ].map((feature, index) => {
+              const colorClasses: Record<string, { bg: string; text: string }> = {
+                amber: { bg: 'bg-amber-500/20', text: 'text-amber-500' },
+                orange: { bg: 'bg-orange-500/20', text: 'text-orange-500' },
+                green: { bg: 'bg-green-500/20', text: 'text-green-500' },
+                blue: { bg: 'bg-blue-500/20', text: 'text-blue-500' },
+                purple: { bg: 'bg-purple-500/20', text: 'text-purple-500' },
+                red: { bg: 'bg-red-500/20', text: 'text-red-500' },
+              }
+              return (
+                <div
+                  key={index}
+                  className={`rounded-xl p-6 transition-all border hover:shadow-lg ${
+                    isLight 
+                      ? 'bg-white border-slate-200 hover:border-amber-500/30' 
+                      : 'bg-slate-900 border-slate-800 hover:border-slate-700'
+                  }`}
+                >
+                  <div className={`w-12 h-12 rounded-xl ${colorClasses[feature.color].bg} flex items-center justify-center mb-4`}>
+                    <span className={colorClasses[feature.color].text}>{feature.icon}</span>
+                  </div>
+                  <h3 className={`text-xl font-semibold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>{feature.title}</h3>
+                  <p className={`text-sm ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                    {feature.description}
+                  </p>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
