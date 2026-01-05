@@ -15,6 +15,8 @@ export default function Navbar() {
     { href: '/debate', label: 'Start Debate' },
     { href: '/history', label: 'History' },
     { href: '/features', label: 'Features' },
+    { href: '/about', label: 'About' },
+    { href: '/feedback', label: 'Feedback' },
   ]
 
   const isLight = theme === 'light'

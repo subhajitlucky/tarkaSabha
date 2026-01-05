@@ -46,6 +46,18 @@ model User {
   chats         Chat[]
   personas      Persona[]
   providers     Provider[]
+  feedbacks     Feedback[]
+}
+
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String?
+  email     String?
+  message   String
+  type      String   @default("general")
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
 }
 
 model VerificationToken {

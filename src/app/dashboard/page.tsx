@@ -6,15 +6,26 @@ import { Chat } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
 import { useTheme } from '@/components/ThemeProvider'
 
+interface Feedback {
+  id: string
+  message: string
+  type: string
+  name?: string
+  email?: string
+  createdAt: string
+}
+
 export default function DashboardPage() {
   const { session } = useAuth()
   const { theme } = useTheme()
   const isLight = theme === 'light'
   const [chats, setChats] = useState<Chat[]>([])
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchChats()
+    fetchFeedback()
   }, [])
 
   const fetchChats = async () => {
@@ -28,6 +39,18 @@ export default function DashboardPage() {
       console.error(e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchFeedback = async () => {
+    try {
+      const res = await fetch('/api/feedback')
+      if (res.ok) {
+        const data = await res.json()
+        setFeedbacks(data)
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
@@ -194,6 +217,36 @@ export default function DashboardPage() {
                 </div>
               </Link>
             ))}
+          </div>
+        )}
+
+        {/* Feedback Section */}
+        {feedbacks.length > 0 && (
+          <div className="mt-16">
+            <h2 className={`text-2xl font-bold mb-6 ${isLight ? 'text-slate-900' : 'text-white'}`}>Feedback Reports</h2>
+            <div className="grid gap-4">
+              {feedbacks.map((item) => (
+                <div key={item.id} className={`p-6 rounded-2xl border ${isLight ? 'bg-white border-slate-100' : 'bg-slate-900/50 border-slate-800'}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <span className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase tracking-wider mb-2 ${
+                        item.type === 'bug' ? 'bg-red-500/10 text-red-500' :
+                        item.type === 'feature' ? 'bg-blue-500/10 text-blue-500' :
+                        'bg-slate-500/10 text-slate-500'
+                      }`}>
+                        {item.type}
+                      </span>
+                      <h3 className={`font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>{item.name || 'Anonymous'}</h3>
+                      <p className="text-sm text-slate-500">{item.email}</p>
+                    </div>
+                    <span className="text-xs text-slate-500">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className={isLight ? 'text-slate-700' : 'text-slate-300'}>{item.message}</p>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
