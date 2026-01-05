@@ -34,12 +34,13 @@ export default function DashboardPage() {
   const userImage = session?.user?.image
   const userName = session?.user?.name || 'User'
   const userEmail = session?.user?.email
-  const userInitials = userName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(w => w[0]?.toUpperCase() || '')
-    .join('') || 'U'
+  const userInitials =
+    userName
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(w => w[0]?.toUpperCase() || '')
+      .join('') || 'U'
 
   return (
     <div className={`min-h-screen py-12 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#050505] text-white'}`}>
@@ -56,7 +57,7 @@ export default function DashboardPage() {
                 <img src={userImage} alt={userName} className="relative w-24 h-24 rounded-full ring-4 ring-white dark:ring-slate-900 shadow-xl object-cover" />
               ) : (
                 <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                  {userInitials}
+                  <span className="max-w-[80%] text-center truncate leading-none">{userInitials}</span>
                 </div>
               )}
             </div>
