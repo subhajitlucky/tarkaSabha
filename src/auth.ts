@@ -28,7 +28,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session
     },
     // Add signIn callback to allow any Google account
-    async signIn() {
+    async signIn({ user, account, profile }) {
+      console.log("SIGNIN DEBUG:", { 
+        userEmail: user.email, 
+        userId: user.id, 
+        provider: account?.provider,
+        profileEmail: profile?.email 
+      })
       return true
     },
   },
