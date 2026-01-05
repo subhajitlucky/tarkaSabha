@@ -572,14 +572,28 @@ export default function ChatPage() {
             const persona = chat.participants?.find(p => p.persona?.id === message.personaId)?.persona
             const isUser = message.role === 'user'
             
+            // Generate a distinct color for each agent based on their ID
+            const agentGradients = [
+              'from-indigo-500 to-purple-600',
+              'from-emerald-500 to-teal-600',
+              'from-rose-500 to-pink-600',
+              'from-blue-600 to-cyan-500',
+              'from-violet-600 to-fuchsia-500',
+              'from-orange-500 to-yellow-500',
+            ];
+            
+            const agentColor = persona 
+              ? agentGradients[persona.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % agentGradients.length]
+              : 'from-slate-500 to-slate-600';
+
             return (
               <div key={message.id || idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 <div className={`flex gap-4 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                   <div className="flex-shrink-0 mt-1">
-                    <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-md ${
+                    <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-md bg-gradient-to-br ${
                       isUser 
-                        ? 'bg-gradient-to-br from-amber-400 to-orange-600' 
-                        : 'bg-gradient-to-br from-indigo-500 to-purple-600'
+                        ? 'from-amber-400 to-orange-600' 
+                        : agentColor
                     }`}>
                       {(isUser ? username : (persona?.name || 'A')).charAt(0).toUpperCase()}
                     </div>
