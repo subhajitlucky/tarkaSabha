@@ -56,8 +56,8 @@ export default function DashboardPage() {
               {userImage ? (
                 <img src={userImage} alt={userName} className="relative w-24 h-24 rounded-full ring-4 ring-white dark:ring-slate-900 shadow-xl object-cover" />
               ) : (
-                <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                  <span className="max-w-[80%] text-center truncate leading-none">{userInitials}</span>
+                <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
+                  <span className="max-w-[80%] text-center truncate block leading-none">{userInitials}</span>
                 </div>
               )}
             </div>
@@ -142,13 +142,20 @@ export default function DashboardPage() {
                     {chat.participants?.slice(0, 3).map((p, i) => (
                       <div
                         key={i}
-                        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${
+                        className={`w-8 h-8 rounded-full overflow-hidden border-2 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${
                           isLight ? 'border-white' : 'border-slate-900'
                         } ${
                            i % 2 === 0 ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : 'bg-gradient-to-br from-amber-400 to-orange-500'
                         }`}
                       >
-                        {(p.persona?.name || '?').charAt(0).toUpperCase()}
+                        <span className="truncate max-w-[90%]">
+                          {(p.persona?.name || '?')
+                            .split(/\s+/)
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map(w => w[0]?.toUpperCase() || '')
+                            .join('')}
+                        </span>
                       </div>
                     ))}
                     {(chat.participants?.length || 0) > 3 && (

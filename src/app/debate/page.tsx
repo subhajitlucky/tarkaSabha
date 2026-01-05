@@ -459,8 +459,15 @@ export default function DebatePage() {
                     isLight ? 'bg-slate-50 border border-slate-100' : 'bg-slate-800/50'
                   }`}>
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">
-                        {(agent.name || '?').charAt(0).toUpperCase()}
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">
+                        <span className="truncate max-w-[90%]">
+                          {(agent.name || '?')
+                            .split(/\s+/)
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map(w => w[0]?.toUpperCase() || '')
+                            .join('')}
+                        </span>
                       </div>
                       <div>
                         <div className={`text-sm font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}>{agent.name}</div>

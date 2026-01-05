@@ -500,8 +500,15 @@ export default function ChatPage() {
                 onClick={() => setShowUsernameModal(true)}
                 className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl transition-all border group cursor-pointer ${identityBtn}`}
               >
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-[11px] font-black text-white shadow-sm transition-transform group-hover:scale-110">
-                  {username.charAt(0).toUpperCase()}
+                <div className="w-7 h-7 rounded-lg overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-[11px] font-black text-white shadow-sm transition-transform group-hover:scale-110">
+                  <span className="truncate max-w-[90%]">
+                    {username
+                      .split(/\s+/)
+                      .filter(Boolean)
+                      .slice(0, 2)
+                      .map(w => w[0]?.toUpperCase() || '')
+                      .join('')}
+                  </span>
                 </div>
                 <span className="text-sm font-bold tracking-tight">{username}</span>
               </button>
@@ -617,12 +624,19 @@ export default function ChatPage() {
               <div key={message.id || idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 <div className={`flex gap-4 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                   <div className="flex-shrink-0 mt-1">
-                    <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm font-bold text-white shadow-md bg-gradient-to-br ${
+                    <div className={`w-9 h-9 rounded-2xl overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow-md bg-gradient-to-br ${
                       isUser 
                         ? 'from-amber-400 to-orange-600' 
                         : agentColor
                     }`}>
-                      {(isUser ? username : (persona?.name || 'A')).charAt(0).toUpperCase()}
+                      <span className="truncate max-w-[90%]">
+                        {(isUser ? username : (persona?.name || 'A'))
+                          .split(/\s+/)
+                          .filter(Boolean)
+                          .slice(0, 2)
+                          .map(w => w[0]?.toUpperCase() || '')
+                          .join('')}
+                      </span>
                     </div>
                   </div>
 

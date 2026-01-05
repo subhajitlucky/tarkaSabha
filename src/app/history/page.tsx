@@ -89,11 +89,18 @@ export default function HistoryPage() {
                     {chat.participants?.slice(0, 3).map((p, i) => (
                       <div
                         key={i}
-                        className={`w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 border-2 flex items-center justify-center text-xs font-bold text-white ${
+                        className={`w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 border-2 flex items-center justify-center text-xs font-bold text-white ${
                           isLight ? 'border-white' : 'border-slate-900'
                         }`}
                       >
-                        {(p.persona?.name || '?').charAt(0).toUpperCase()}
+                        <span className="truncate max-w-[90%]">
+                          {(p.persona?.name || '?')
+                            .split(/\s+/)
+                            .filter(Boolean)
+                            .slice(0, 2)
+                            .map(w => w[0]?.toUpperCase() || '')
+                            .join('')}
+                        </span>
                       </div>
                     ))}
                   </div>
