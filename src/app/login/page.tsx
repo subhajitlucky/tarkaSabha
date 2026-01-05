@@ -19,9 +19,9 @@ function LoginForm() {
     setIsLoading(true)
     setError(null)
     try {
+      // Don't pass extra options here - the server-side auth.ts config handles prompt: select_account
       await signIn('google', { 
-        callbackUrl,
-        prompt: 'select_account'
+        callbackUrl
       })
     } catch (err) {
       setError('Failed to sign in. Please try again.')
