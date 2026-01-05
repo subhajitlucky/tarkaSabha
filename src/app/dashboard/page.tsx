@@ -34,13 +34,8 @@ export default function DashboardPage() {
   const userImage = session?.user?.image
   const userName = session?.user?.name || 'User'
   const userEmail = session?.user?.email
-  const userInitials =
-    userName
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map(w => w[0]?.toUpperCase() || '')
-      .join('') || 'U'
+  // Only show the first letter of the user's name
+  const userInitial = userName?.charAt(0)?.toUpperCase() || 'U'
 
   return (
     <div className={`min-h-screen py-12 ${isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#050505] text-white'}`}>
@@ -53,13 +48,10 @@ export default function DashboardPage() {
           <div className="flex flex-col md:flex-row items-center gap-8">
             <div className="relative group">
               <div className="absolute -inset-1 bg-gradient-to-br from-amber-400 to-orange-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-              {userImage ? (
-                <img src={userImage} alt={userName} className="relative w-24 h-24 rounded-full ring-4 ring-white dark:ring-slate-900 shadow-xl object-cover" />
-              ) : (
-                <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                  <span className="max-w-[80%] text-center truncate block leading-none">{userInitials}</span>
-                </div>
-              )}
+              {/* Always show initials to ensure consistent look and avoid text overflow in default Google images */}
+              <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
+                <span className="max-w-[80%] text-center truncate block leading-none">{userInitial}</span>
+              </div>
             </div>
             <div className="text-center md:text-left space-y-2">
               <h1 className="text-3xl font-bold">{userName}</h1>
