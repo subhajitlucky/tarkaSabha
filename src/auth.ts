@@ -29,10 +29,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     // Add signIn callback to allow any Google account
     async signIn({ user, account, profile }) {
+      console.log("SIGNIN DEBUG:", { 
+        userEmail: user.email, 
+        userId: user.id, 
+        provider: account?.provider,
+        profileEmail: profile?.email 
+      })
+
       if (account?.provider === "google" && profile?.email) {
         // Safety check: Prevent linking a Google account to a user with a different email
         // This happens if a session persists and the user tries to sign in with a different Google account
         if (user.email && user.email !== profile.email) {
+          console.log("SIGNIN BLOCKED: Email mismatch", { userEmail: user.email, profileEmail: profile.email });
           return false
         }
       }
