@@ -6,6 +6,10 @@ import { Persona, Chat, Provider, ProviderType } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
 import { useTheme } from '@/components/ThemeProvider'
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback
+}
+
 const PROVIDER_TYPES: { value: ProviderType; label: string; requiresKey: boolean; defaultUrl: string }[] = [
   { value: 'openai', label: 'OpenAI', requiresKey: true, defaultUrl: 'https://api.openai.com/v1' },
   { value: 'anthropic', label: 'Anthropic', requiresKey: true, defaultUrl: 'https://api.anthropic.com' },
@@ -263,8 +267,8 @@ export default function DebatePage() {
       })
 
       setCreatedChatId(chat.id)
-    } catch (err: any) {
-      setError(err.message || 'Failed to create debate')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to create debate'))
       setIsCreating(false)
     }
   }

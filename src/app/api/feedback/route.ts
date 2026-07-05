@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import type { Prisma } from '@prisma/client'
 
 export async function POST(req: Request) {
   try {
@@ -45,7 +46,7 @@ export async function GET(req: Request) {
                     userEmail.toLowerCase().trim() === adminEmail.toLowerCase().trim()
 
     // If admin, fetch all feedback. If not, fetch only their own.
-    const where: any = {}
+    const where: Prisma.FeedbackWhereInput = {}
     if (!isAdmin) {
       where.OR = []
       if (userId) where.OR.push({ userId })

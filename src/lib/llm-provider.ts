@@ -40,6 +40,10 @@ export class LLMError extends Error {
   }
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 // Provider-specific implementations
 abstract class BaseLLMProvider {
   protected config: LLMConfig
@@ -68,7 +72,7 @@ class OpenAIProvider extends BaseLLMProvider {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
         messages: messages.map(m => {
-          const msg: any = {
+          const msg: { role: ChatMessage['role']; content: string; name?: string } = {
             role: m.role,
             content: m.content,
           }
@@ -94,18 +98,19 @@ class OpenAIProvider extends BaseLLMProvider {
         content: response.choices[0]?.message?.content || '(No response)',
         usage,
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof OpenAI.APIError) {
         const specificError = this.getSpecificError(error)
         throw new LLMError(specificError.message, specificError.code, error.status)
       }
-      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      const message = getErrorMessage(error)
+      if (message.includes('fetch') || message.includes('network')) {
         throw new LLMError(
           `Cannot connect to OpenAI. Check internet or API URL.`,
           'CONNECTION_ERROR'
         )
       }
-      throw new LLMError(String(error), 'UNKNOWN_ERROR')
+      throw new LLMError(message, 'UNKNOWN_ERROR')
     }
   }
 
@@ -363,14 +368,15 @@ class CustomProvider extends BaseLLMProvider {
       return {
         content: response.choices[0]?.message?.content || '(No response)',
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error instanceof OpenAI.APIError) {
         // Provide specific error messages for common issues
         const specificError = this.getSpecificError(error)
         throw new LLMError(specificError.message, specificError.code, error.status)
       }
       // Network/connection errors
-      if (error.message?.includes('fetch') || error.message?.includes('network')) {
+      const message = getErrorMessage(error)
+      if (message.includes('fetch') || message.includes('network')) {
         throw new LLMError(
           `Cannot connect to API server. Check URL: ${this.config.apiUrl}`,
           'CONNECTION_ERROR'

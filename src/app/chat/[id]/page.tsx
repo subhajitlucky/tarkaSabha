@@ -6,6 +6,10 @@ import { Chat, Message } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
 import { useAuth } from '@/components/AuthProvider'
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback
+}
+
 export default function ChatPage() {
   const params = useParams()
   const router = useRouter()
@@ -64,11 +68,10 @@ export default function ChatPage() {
 
   // Poll for messages continuously
   useEffect(() => {
-    let interval: NodeJS.Timeout
     let isActive = true
 
     // Poll every 3 seconds
-    interval = setInterval(async () => {
+    const interval = setInterval(async () => {
       if (!isActive) return
       await fetchMessages()
     }, 3000)
@@ -238,8 +241,8 @@ export default function ChatPage() {
       if (!chat.isAutoMode) {
         setManualTurnsLeft(chat.participants?.length || 0)
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send message')
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Failed to send message'))
       // Remove the optimistic message if it failed
       setMessages(prev => prev.filter(m => m.id !== tempId))
       setNewMessage(currentMessage) // Restore the text so they don't lose it
@@ -268,8 +271,8 @@ export default function ChatPage() {
       }
       const data = await res.json()
       setChat(data.chat)
-    } catch (error: any) {
-      setError(error.message || 'Failed to toggle auto mode')
+    } catch (error: unknown) {
+      setError(getErrorMessage(error, 'Failed to toggle auto mode'))
       // Revert on error
       setChat(prev => prev ? { ...prev, isAutoMode: originalMode } : null)
     }
@@ -290,8 +293,8 @@ export default function ChatPage() {
       }
       setChat({ ...chat, isAutoMode: false })
       setIsTyping(false)
-    } catch (error: any) {
-      setError(error.message || 'Failed to stop debate')
+    } catch (error: unknown) {
+      setError(getErrorMessage(error, 'Failed to stop debate'))
     }
   }
 

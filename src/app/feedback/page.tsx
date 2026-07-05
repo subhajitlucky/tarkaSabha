@@ -58,7 +58,7 @@ export default function FeedbackPage() {
           Feedback & Support
         </h1>
         <p className={`mb-8 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-          Have a suggestion, found a bug, or just want to say hi? We'd love to hear from you.
+          Have a suggestion, found a bug, or just want to say hi? We&apos;d love to hear from you.
         </p>
 
         <div className={`p-8 rounded-2xl border ${

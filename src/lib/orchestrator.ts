@@ -1,21 +1,22 @@
 import { prisma } from './prisma'
-import { getLLMResponse, LLMProviderFactory, ChatMessage } from './llm-provider'
+import { getLLMResponse, ChatMessage, ProviderType } from './llm-provider'
 import { rateLimitService } from './rate-limit'
-import { cryptoService } from './crypto'
 import { LLMError } from './llm-provider'
 import {
   LLM_TIMEOUT_MS,
   MAX_RESPONSE_LENGTH,
   withTimeout,
   truncateResponse,
-  sanitizeContent,
-  validateMessageLength,
   isCircuitOpen,
   recordSuccess,
   recordFailure,
   detectLoop,
 } from './llm-protection'
 import type { Persona } from '@prisma/client'
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
 
 export interface OrchestrationContext {
   chatId: string
@@ -101,7 +102,7 @@ export class DynamicOrchestrator implements Orchestrator {
 
       const response = await getLLMResponse(
         defaultProvider.apiKey,
-        defaultProvider.provider as any,
+        defaultProvider.provider as ProviderType,
         defaultProvider.model,
         [{ role: 'user', content: selectionPrompt }],
         { temperature: 0, maxTokens: 20 }
@@ -529,7 +530,7 @@ Do not repeat yourself. React to ${sender} IMMEDIATELY.`
     content: buildPersonaPrompt(persona, topic, otherParticipants),
   })
 
-  let lastError: any = null;
+  let lastError: unknown = null;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -804,9 +805,9 @@ Do not repeat your old rants. Move the conversation forward as ${speaker.name}.`
       recordSuccess(provider.id)
       lastSpeakerId = speaker.id
       turns++
-    } catch (error: any) {
+    } catch (error: unknown) {
       recordFailure(provider.id)
-      console.error(`[Auto-Debate] Error for ${speaker.name}:`, error.message)
+      console.error(`[Auto-Debate] Error for ${speaker.name}:`, getErrorMessage(error))
       break
     }
   }

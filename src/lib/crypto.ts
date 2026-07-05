@@ -102,8 +102,11 @@ export class CryptoService {
     try {
       getEncryptionKey()
       return { valid: true, message: 'Encryption key configured' }
-    } catch (error: any) {
-      return { valid: false, message: error.message }
+    } catch (error: unknown) {
+      return {
+        valid: false,
+        message: error instanceof Error ? error.message : String(error),
+      }
     }
   }
 }

@@ -11,13 +11,11 @@ export default function Home() {
   const [providers, setProviders] = useState<Provider[]>([])
   const [chats, setChats] = useState<Chat[]>([])
   const [dataLoading, setDataLoading] = useState(false)
-  const [mounted, setMounted] = useState(false)
   const { theme } = useTheme()
-  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated } = useAuth()
   const isLight = theme === 'light'
 
   useEffect(() => {
-    setMounted(true)
     if (isAuthenticated) {
       fetchData()
     }
@@ -52,19 +50,6 @@ export default function Home() {
     const res = await fetch('/api/chats')
     const data = await res.json()
     setChats(data)
-  }
-
-  // Avoid hydration mismatch
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-slate-950">
-        <div className="max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
-          <div className="h-96 flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
-          </div>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -201,7 +186,7 @@ export default function Home() {
               </div>
               <h3 className={`text-xl font-semibold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Create Personas</h3>
               <p className="text-slate-500 text-sm">
-                Give each agent a name, bio, and personality - they believe they're human
+                Give each agent a name, bio, and personality - they believe they&apos;re human
               </p>
             </div>
 
