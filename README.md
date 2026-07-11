@@ -6,6 +6,7 @@ The project focuses on orchestration rather than a single chatbot prompt: provid
 
 - Live: https://tarkasabha.vercel.app
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
+- Status: Live platform
 
 ## Product Problem
 
