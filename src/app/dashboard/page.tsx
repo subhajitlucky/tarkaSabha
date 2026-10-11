@@ -61,7 +61,6 @@ export default function DashboardPage() {
     }
   }
 
-  const userImage = session?.user?.image
   const userName = session?.user?.name || 'User'
   const userEmail = session?.user?.email
   // Only show the first letter of the user's name

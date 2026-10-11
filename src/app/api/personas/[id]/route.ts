@@ -1,20 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
+
+function withoutApiKey<T extends { apiKey: string }>(provider: T): Omit<T, 'apiKey'> {
+  const clone = { ...provider } as { apiKey?: string }
+  delete clone.apiKey
+  return clone as Omit<T, 'apiKey'>
+}
+
+async function getPersonaForRequest(id: string, userId: string) {
+  const persona = await prisma.persona.findUnique({
+    where: { id },
+    include: { provider: true },
+  })
+
+  if (!persona) {
+    return { error: 'not_found' as const, status: 404 }
+  }
+
+  if (persona.creatorId !== userId) {
+    return { error: 'forbidden' as const, status: 403 }
+  }
+
+  return { persona }
+}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
-    const persona = await prisma.persona.findUnique({
-      where: { id },
-      include: { provider: true },
-    })
-    if (!persona) {
-      return NextResponse.json({ error: 'Persona not found' }, { status: 404 })
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.json(persona)
+
+    const { id } = await params
+    const result = await getPersonaForRequest(id, session.user.id)
+
+    if ('error' in result) {
+      return NextResponse.json(
+        { error: result.status === 404 ? 'Persona not found' : 'Forbidden' },
+        { status: result.status }
+      )
+    }
+
+    const { provider, ...persona } = result.persona
+
+    return NextResponse.json({
+      ...persona,
+      provider: provider ? withoutApiKey(provider) : provider,
+    })
   } catch (error) {
     console.error('Error fetching persona:', error)
     return NextResponse.json({ error: 'Failed to fetch persona' }, { status: 500 })
@@ -26,9 +63,52 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { id } = await params
+    const result = await getPersonaForRequest(id, session.user.id)
+
+    if ('error' in result) {
+      return NextResponse.json(
+        { error: result.status === 404 ? 'Persona not found' : 'Forbidden' },
+        { status: result.status }
+      )
+    }
+
     const body = await request.json()
     const { name, bio, personality, providerId, model, temperature } = body
+
+    if (name !== undefined && typeof name !== 'string') {
+      return NextResponse.json({ error: 'Name must be a string' }, { status: 400 })
+    }
+    if (bio !== undefined && bio !== null && typeof bio !== 'string') {
+      return NextResponse.json({ error: 'Bio must be a string' }, { status: 400 })
+    }
+    if (personality !== undefined && personality !== null && typeof personality !== 'string') {
+      return NextResponse.json({ error: 'Personality must be a string' }, { status: 400 })
+    }
+    if (model !== undefined && model !== null && typeof model !== 'string') {
+      return NextResponse.json({ error: 'Model must be a string' }, { status: 400 })
+    }
+    if (temperature !== undefined && temperature !== null && typeof temperature !== 'number') {
+      return NextResponse.json({ error: 'Temperature must be a number' }, { status: 400 })
+    }
+    if (providerId !== undefined && providerId !== null && typeof providerId !== 'string') {
+      return NextResponse.json({ error: 'Provider ID must be a string' }, { status: 400 })
+    }
+
+    if (providerId) {
+      const provider = await prisma.provider.findFirst({
+        where: { id: providerId, creatorId: session.user.id },
+      })
+      if (!provider) {
+        return NextResponse.json({ error: 'Provider not found or access denied' }, { status: 400 })
+      }
+    }
 
     const persona = await prisma.persona.update({
       where: { id },
@@ -43,7 +123,12 @@ export async function PUT(
       include: { provider: true },
     })
 
-    return NextResponse.json(persona)
+    const { provider, ...safePersona } = persona
+
+    return NextResponse.json({
+      ...safePersona,
+      provider: provider ? withoutApiKey(provider) : provider,
+    })
   } catch (error) {
     console.error('Error updating persona:', error)
     return NextResponse.json({ error: 'Failed to update persona' }, { status: 500 })
@@ -55,7 +140,22 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await auth()
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { id } = await params
+    const result = await getPersonaForRequest(id, session.user.id)
+
+    if ('error' in result) {
+      return NextResponse.json(
+        { error: result.status === 404 ? 'Persona not found' : 'Forbidden' },
+        { status: result.status }
+      )
+    }
+
     await prisma.persona.delete({ where: { id } })
     return NextResponse.json({ success: true })
   } catch (error) {

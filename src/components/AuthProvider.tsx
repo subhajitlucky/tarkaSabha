@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Session, User } from 'next-auth'
 import { signOut as nextAuthSignOut } from 'next-auth/react'
@@ -19,7 +19,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const sessionRef = useRef<Session | null>(null)
   const router = useRouter()
+
+  useEffect(() => {
+    sessionRef.current = session
+  }, [session])
 
   useEffect(() => {
     // Fetch initial session with timestamp to prevent browser caching
@@ -39,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       fetch(`/api/auth/session?t=${Date.now()}`, { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
-          if (JSON.stringify(data) !== JSON.stringify(session)) {
+          if (JSON.stringify(data) !== JSON.stringify(sessionRef.current)) {
             setSession(data)
           }
         })

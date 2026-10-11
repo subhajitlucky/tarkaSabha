@@ -9,7 +9,7 @@ import { useAuth } from './AuthProvider'
 export default function Navbar() {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
-  const { session, isAuthenticated, signIn, signOut } = useAuth()
+  const { isAuthenticated, signOut } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const navLinks = [

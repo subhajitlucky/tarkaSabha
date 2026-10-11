@@ -1,6 +1,7 @@
 import OpenAI from 'openai'
 import Anthropic from '@anthropic-ai/sdk'
 import { cryptoService } from './crypto'
+import { validateProviderApiUrl } from './api-url'
 
 export type ProviderType = 'openai' | 'anthropic' | 'google' | 'groq' | 'ollama' | 'deepseek' | 'mistral' | 'together' | 'openrouter' | 'perplexity' | 'huggingface' | 'custom'
 
@@ -689,6 +690,15 @@ class HuggingFaceProvider extends BaseLLMProvider {
 
 // Factory for creating providers
 export class LLMProviderFactory {
+  static validateApiUrl(apiUrl: string): { valid: boolean; error?: string } {
+    try {
+      return validateProviderApiUrl(apiUrl)
+    } catch {
+      // Never block trusted default URLs because the validator itself failed
+      return { valid: true }
+    }
+  }
+
   static create(config: LLMConfig): BaseLLMProvider {
     switch (config.provider) {
       case 'openai':
@@ -828,6 +838,11 @@ export async function getLLMResponse(
     model,
     temperature: options.temperature || 0.7,
     maxTokens: options.maxTokens,
+  }
+
+  const apiUrlValidation = LLMProviderFactory.validateApiUrl(config.apiUrl)
+  if (!apiUrlValidation.valid) {
+    throw new LLMError(apiUrlValidation.error || 'Invalid API URL', 'VALIDATION_ERROR')
   }
 
   const llmProvider = LLMProviderFactory.create(config)

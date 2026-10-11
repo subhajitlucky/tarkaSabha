@@ -16,7 +16,7 @@ export default function ChatPage() {
   const chatId = params.id as string
 
   const { theme } = useTheme()
-  const { session, isAuthenticated, signIn, signOut } = useAuth()
+  const { session, signOut } = useAuth()
   const isLight = theme === 'light'
   const [chat, setChat] = useState<Chat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
@@ -34,6 +34,42 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [isOwner, setIsOwner] = useState(false)
+
+  const fetchChat = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chats/${chatId}`)
+      if (res.ok) {
+        const data = await res.json()
+        setChat(data)
+      }
+    } catch (e) {
+      console.error('Failed to fetch chat', e)
+    }
+  }, [chatId])
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chats/${chatId}/messages`)
+      if (res.ok) {
+        const newMessages = await res.json()
+        if (newMessages.length > 0) {
+          setMessages(prev => {
+            // Filter out any optimistic messages that have been confirmed by the server
+            const filteredPrev = prev.filter(m => !m.id.startsWith('temp-'))
+
+            // Check if we actually have new messages (avoid duplicates if polling overlaps)
+            const existingIds = new Set(filteredPrev.map(m => m.id))
+            const uniqueNewMessages = newMessages.filter((m: Message) => !existingIds.has(m.id))
+
+            if (uniqueNewMessages.length === 0) return prev
+            return [...filteredPrev, ...uniqueNewMessages]
+          })
+        }
+      }
+    } catch (e) {
+      console.error('Failed to fetch messages', e)
+    }
+  }, [chatId])
 
   // Load username from localStorage on client mount
   useEffect(() => {
@@ -80,7 +116,7 @@ export default function ChatPage() {
       isActive = false
       clearInterval(interval)
     }
-  }, [])
+  }, [fetchMessages])
 
   // Client-driven Debate Loop (Vercel Stable)
   useEffect(() => {
@@ -127,7 +163,7 @@ export default function ChatPage() {
     }, 4000); // 4 second wait between turns
 
     return () => clearTimeout(timer);
-  }, [chat?.isAutoMode, manualTurnsLeft, messages.length, isProcessing, isSending]);
+  }, [chat?.isAutoMode, manualTurnsLeft, messages.length, isProcessing, isSending, chatId, fetchMessages]);
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current
     if (textarea) {
@@ -153,46 +189,7 @@ export default function ChatPage() {
       fetchChat()
       fetchMessages()
     }
-  }, [chatId])
-
-  const fetchChat = async () => {
-    try {
-      const res = await fetch(`/api/chats/${chatId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setChat(data)
-      }
-    } catch (e) {
-      console.error('Failed to fetch chat', e)
-    }
-  }
-
-  const fetchMessages = async () => {
-    try {
-      const lastMessageId = messages.length > 0 ? messages[messages.length - 1].id : null
-      const url = `/api/chats/${chatId}/messages${lastMessageId ? `?lastId=${lastMessageId}` : ''}`
-      
-      const res = await fetch(url)
-      if (res.ok) {
-        const newMessages = await res.json()
-        if (newMessages.length > 0) {
-          setMessages(prev => {
-            // Filter out any optimistic messages that have been confirmed by the server
-            const filteredPrev = prev.filter(m => !m.id.startsWith('temp-'))
-            
-            // Check if we actually have new messages (avoid duplicates if polling overlaps)
-            const existingIds = new Set(filteredPrev.map(m => m.id))
-            const uniqueNewMessages = newMessages.filter((m: Message) => !existingIds.has(m.id))
-            
-            if (uniqueNewMessages.length === 0) return prev
-            return [...filteredPrev, ...uniqueNewMessages]
-          })
-        }
-      }
-    } catch (e) {
-      console.error('Failed to fetch messages', e)
-    }
-  }
+  }, [chatId, fetchChat, fetchMessages])
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !chat) return
@@ -302,7 +299,7 @@ export default function ChatPage() {
     try {
       await fetch(`/api/chats/${chatId}`, { method: 'DELETE' })
       router.push('/history')
-    } catch (error) {
+    } catch {
       setError('Failed to delete chat')
     }
   }
@@ -314,7 +311,7 @@ export default function ChatPage() {
       setMessages([])
       setShowWipeConfirm(false)
       setShowChatSettings(false)
-    } catch (error) {
+    } catch {
       setError('Failed to wipe messages')
     }
   }

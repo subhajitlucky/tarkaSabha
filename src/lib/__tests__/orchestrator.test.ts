@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('../prisma', () => ({
   prisma: {
@@ -37,6 +37,7 @@ import {
   buildConversationContext,
   buildPersonaPrompt,
   cleanResponse,
+  escapeRegExp,
   extractMention,
   getNextSpeaker,
   isRefusal,
@@ -183,6 +184,21 @@ describe('isRefusal / stripRefusal', () => {
     expect(stripRefusal("I'm sorry, but I can't assist with that. Let's move on.")).toBe(
       "Let's move on."
     )
+  })
+})
+
+describe('escapeRegExp', () => {
+  it('escapes every regex metacharacter', () => {
+    expect(escapeRegExp('.*+?^${}()|[]\\')).toBe('\\.\\*\\+\\?\\^\\$\\{\\}\\(\\)\\|\\[\\]\\\\')
+  })
+
+  it('keeps ordinary persona names unchanged', () => {
+    expect(escapeRegExp('Grace-Hopper')).toBe('Grace-Hopper')
+  })
+
+  it('prevents persona names with metacharacters from breaking cleanResponse', () => {
+    expect(cleanResponse('Ada): hello there', 'Ada)')).toBe('hello there')
+    expect(cleanResponse('C++: operator talk', 'C++')).toBe('operator talk')
   })
 })
 

@@ -1,11 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { addParticipants, removeParticipants, autoContinueDebate } from '@/lib/orchestrator'
+import { addParticipants, removeParticipants } from '@/lib/orchestrator'
 import { auth } from '@/auth'
-
-// In-memory lock to prevent concurrent auto-debate calls per chat
-// (Note: This map is local to this file/module. If the server is serverless/lambda, this might not be perfect but sufficient for now)
-const debateLocks = new Map<string, boolean>()
 
 export async function GET(
   request: NextRequest,
@@ -159,36 +155,10 @@ export async function DELETE(
       )
     }
 
-    // Get all persona IDs associated with this chat
-    const personaOnChat = await prisma.personaOnChat.findMany({
-      where: { chatId: id },
-      select: { personaId: true },
-    })
-    const personaIds = personaOnChat.map(p => p.personaId)
-
-    // Get all provider IDs used by these personas
-    const providers = await prisma.provider.findMany({
-      where: {
-        personas: {
-          some: {
-            id: { in: personaIds },
-          },
-        },
-      },
-    })
-    const providerIds = providers.map(p => p.id)
-
-    // Delete all providers (cascades to personas and their messages)
-    if (providerIds.length > 0) {
-      await prisma.provider.deleteMany({
-        where: { id: { in: providerIds } },
-      })
-    }
-
-    // Delete the chat (cascades to PersonaOnChat and remaining messages)
+    // Delete the chat (PersonaOnChat and messages cascade via schema)
     await prisma.chat.delete({ where: { id } })
 
-    return NextResponse.json({ success: true, deletedProviders: providerIds.length })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Error deleting chat:', error)
     return NextResponse.json({ error: 'Failed to delete chat' }, { status: 500 })

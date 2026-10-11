@@ -18,6 +18,10 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+export function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export interface OrchestrationContext {
   chatId: string
   topic: string | null
@@ -206,26 +210,17 @@ This is the ONLY topic being discussed. Focus all your responses on this topic.`
 
 export function isRefusal(content: string): boolean {
   const refusalPatterns = [
-    /i am an ai/i,
-    /as an ai/i,
-    /language model/i,
-    /i cannot fulfill/i,
-    /i cannot adopt/i,
-    /offensive language/i,
-    /hate speech/i,
-    /promoting violence/i,
+    /i can'?t assist/i,
     /i cannot assist/i,
-    /i'm sorry, but/i,
-    /i apologize/i,
-    /creative writing/i,
-    /themes of betrayal/i,
-    /my programming/i,
-    /my guidelines/i,
-    /safety guidelines/i,
-    /openai/i,
-    /anthropic/i,
-    /system flagged/i,
-    /built to simulate/i
+    /i can'?t help/i,
+    /i cannot help/i,
+    /i'?m unable to/i,
+    /as an ai/i,
+    /i must decline/i,
+    /i apologize, but i can'?t/i,
+    /i apologize, but i cannot/i,
+    /i'?m sorry, but i can'?t/i,
+    /i'?m sorry, but i cannot/i,
   ];
   return refusalPatterns.some(pattern => pattern.test(content));
 }
@@ -319,8 +314,9 @@ export function cleanResponse(content: string, personaName: string): string {
   }
 
   // Handle various "Name: Content" formats
+  const escapedPersonaName = escapeRegExp(personaName);
   const patterns = [
-      new RegExp(`^${personaName}\\s*:\\s*`, 'i'),
+      new RegExp(`^${escapedPersonaName}\\s*:\\s*`, 'i'),
       /^Persona\s*:\s*/i,
       /^Assistant\s*:\s*/i,
   ];
@@ -330,7 +326,7 @@ export function cleanResponse(content: string, personaName: string): string {
   }
 
   // 1. Handle "Name: Message" pattern (even buried in text)
-  const nameLabelRegex = new RegExp(`${personaName}\\s*:\\s*`, 'i');
+  const nameLabelRegex = new RegExp(`${escapedPersonaName}\\s*:\\s*`, 'i');
   const match = cleaned.match(nameLabelRegex);
 
   if (match && match.index !== undefined) {
@@ -427,7 +423,7 @@ export async function orchestrateMessage(
   participants: Persona[],
   userId?: string | null
 ): Promise<{ message: string; speakerId?: string; error?: string }> {
-  const { chatId, topic, isAutoMode, lastSpeakerId, mentionedPersonaId } = context
+  const { chatId, topic, isAutoMode, mentionedPersonaId } = context
 
   if (isUserMessage) {
     const mention = extractMention(messageContent)
@@ -512,15 +508,13 @@ export async function orchestrateMessage(
   )
 
   // DYNAMIC FRESHNESS INSTRUCTION
+  // Untrusted message content stays in a user-role message, never a system message.
   const lastMsg = previousMessages[previousMessages.length - 1];
   if (lastMsg) {
       const sender = lastMsg.personaName || (lastMsg.role === 'user' ? 'User' : 'Unknown');
       conversationContext.push({
-          role: 'system',
-          content: `DIRECTOR: YOU ARE ${speaker.name}. 
-${sender} JUST SAID: "${lastMsg.content}". 
-You MUST respond DIRECTLY to this as ${speaker.name}. 
-Do not repeat yourself. React to ${sender} IMMEDIATELY.`
+          role: 'user',
+          content: `${sender} JUST SAID: "${lastMsg.content}". Respond DIRECTLY to this as ${speaker.name}. Do not repeat yourself. React to ${sender} IMMEDIATELY.`
       });
   }
 
@@ -718,16 +712,13 @@ export async function autoContinueDebate(
     })
 
     // DYNAMIC FORWARD MOTION INSTRUCTION
-    // Grab the content of the very last message to make sure they react to IT.
+    // Untrusted message content stays in a user-role message, never a system message.
     const lastMsg = previousMessages[previousMessages.length - 1];
     if (lastMsg) {
         const sender = lastMsg.personaName || (lastMsg.role === 'user' ? 'User' : 'Unknown');
         conversationContext.push({
-            role: 'system',
-            content: `DIRECTOR: YOU ARE ${speaker.name}. 
-${sender} JUST SAID: "${lastMsg.content}". 
-You MUST respond DIRECTLY to this as ${speaker.name}. 
-Do not repeat your old rants. Move the conversation forward as ${speaker.name}.`
+            role: 'user',
+            content: `${sender} JUST SAID: "${lastMsg.content}". Respond DIRECTLY to this as ${speaker.name}. Do not repeat your old rants. Move the conversation forward as ${speaker.name}.`
         });
     }
 

@@ -1,3 +1,5 @@
+import crypto from 'crypto'
+import { Prisma } from '@prisma/client'
 import { prisma } from './prisma'
 
 export interface RateLimitResult {
@@ -5,6 +7,12 @@ export interface RateLimitResult {
   remaining: number
   resetAt: Date
   limit: number
+}
+
+interface RateLimitRow {
+  requests: number
+  limit: number
+  resetAt: Date
 }
 
 export class RateLimitService {
@@ -17,6 +25,54 @@ export class RateLimitService {
       RateLimitService.instance = new RateLimitService()
     }
     return RateLimitService.instance
+  }
+
+  /**
+   * Atomically consume one request for a key, resetting the window when needed.
+   * The allow/deny decision and the counter update happen in a single SQL statement
+   * so concurrent requests cannot overshoot the configured limit.
+   */
+  private async consume(
+    key: string,
+    limit: number,
+    resetAt: Date
+  ): Promise<RateLimitResult> {
+    try {
+      const rows = await prisma.$queryRaw<RateLimitRow[]>(Prisma.sql`
+        INSERT INTO "RateLimit" ("id", "key", "requests", "limit", "resetAt", "createdAt", "updatedAt")
+        VALUES (${crypto.randomUUID()}, ${key}, 1, ${limit}, ${resetAt}, NOW(), NOW())
+        ON CONFLICT ("key") DO UPDATE SET
+          "requests" = CASE
+            WHEN "RateLimit"."resetAt" <= NOW() THEN 1
+            ELSE "RateLimit"."requests" + 1
+          END,
+          "limit" = CASE
+            WHEN "RateLimit"."resetAt" <= NOW() THEN ${limit}
+            ELSE "RateLimit"."limit"
+          END,
+          "resetAt" = CASE
+            WHEN "RateLimit"."resetAt" <= NOW() THEN ${resetAt}
+            ELSE "RateLimit"."resetAt"
+          END,
+          "updatedAt" = NOW()
+        RETURNING "requests", "limit", "resetAt"
+      `)
+
+      const row = rows[0]
+      if (!row) {
+        return { allowed: false, remaining: 0, resetAt, limit }
+      }
+
+      return {
+        allowed: row.requests <= row.limit,
+        remaining: Math.max(0, row.limit - row.requests),
+        resetAt: row.resetAt,
+        limit: row.limit,
+      }
+    } catch (error) {
+      console.error('Rate limit check failed:', error)
+      return { allowed: false, remaining: 0, resetAt, limit }
+    }
   }
 
   /**
@@ -34,53 +90,20 @@ export class RateLimitService {
 
     const key = `${providerId}:${today.toISOString().split('T')[0]}`
 
-    // Try to find existing record
-    let record = await prisma.rateLimit.findUnique({
-      where: { key },
-    })
+    return this.consume(key, limit, tomorrow)
+  }
 
-    if (!record) {
-      // Create new record
-      record = await prisma.rateLimit.create({
-        data: {
-          key,
-          requests: 1,
-          limit,
-          resetAt: tomorrow,
-        },
-      })
-      return {
-        allowed: true,
-        remaining: limit - 1,
-        resetAt: tomorrow,
-        limit,
-      }
-    }
+  /**
+   * Check and increment the feedback rate limit for a client IP (5 per hour)
+   */
+  async limitFeedback(ip: string, limit: number = 5): Promise<RateLimitResult> {
+    const hourStart = new Date()
+    hourStart.setMinutes(0, 0, 0)
+    const nextHour = new Date(hourStart.getTime() + 60 * 60 * 1000)
 
-    // Check if limit exceeded
-    if (record.requests >= record.limit) {
-      return {
-        allowed: false,
-        remaining: 0,
-        resetAt: record.resetAt,
-        limit: record.limit,
-      }
-    }
+    const key = `feedback:${ip}:${hourStart.toISOString().slice(0, 13)}`
 
-    // Increment counter
-    await prisma.rateLimit.update({
-      where: { key },
-      data: {
-        requests: { increment: 1 },
-      },
-    })
-
-    return {
-      allowed: true,
-      remaining: record.limit - record.requests - 1,
-      resetAt: record.resetAt,
-      limit: record.limit,
-    }
+    return this.consume(key, limit, nextHour)
   }
 
   /**
@@ -144,13 +167,9 @@ export class RateLimitService {
    * Reset rate limit for a provider (admin only)
    */
   async resetLimit(providerId: string): Promise<void> {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const key = `${providerId}:${today.toISOString().split('T')[0]}`
-
     await prisma.rateLimit.deleteMany({
       where: {
-        key: { startsWith: providerId },
+        key: { startsWith: `${providerId}:` },
       },
     })
   }

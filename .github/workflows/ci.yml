@@ -41,3 +41,6 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Audit Production Dependencies
+        run: npm audit --omit=dev --audit-level=high

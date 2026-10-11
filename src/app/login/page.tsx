@@ -1,12 +1,11 @@
 'use client'
 
 import { Suspense, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { useTheme } from '@/components/ThemeProvider'
 
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const { theme } = useTheme()
   const isLight = theme === 'light'
@@ -25,7 +24,7 @@ function LoginForm() {
       }, {
         prompt: 'consent select_account'
       })
-    } catch (err) {
+    } catch {
       setError('Failed to sign in. Please try again.')
       setIsLoading(false)
     }

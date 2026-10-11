@@ -56,6 +56,8 @@ model Feedback {
   type      String   @default("general")
   createdAt DateTime @default(now())
   user      User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 model VerificationToken {
@@ -80,6 +82,8 @@ model Provider {
   creatorId   String?
   personas    Persona[]
   creator     User?     @relation(fields: [creatorId], references: [id])
+
+  @@index([creatorId])
 }
 
 model Persona {
@@ -98,6 +102,9 @@ model Persona {
   creator     User?           @relation(fields: [creatorId], references: [id])
   provider    Provider?       @relation(fields: [providerId], references: [id])
   chats       PersonaOnChat[]
+
+  @@index([creatorId])
+  @@index([providerId])
 }
 
 model Chat {
@@ -112,6 +119,8 @@ model Chat {
   creator       User?           @relation(fields: [creatorId], references: [id])
   messages      Message[]
   participants  PersonaOnChat[]
+
+  @@index([creatorId])
 }
 
 model PersonaOnChat {
@@ -135,6 +144,9 @@ model Message {
   createdAt   DateTime @default(now())
   chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   persona     Persona? @relation(fields: [personaId], references: [id])
+
+  @@index([chatId])
+  @@index([personaId])
 }
 
 model RateLimit {

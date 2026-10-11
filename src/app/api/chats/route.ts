@@ -67,6 +67,23 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { title, topic, participantIds } = body
 
+    if (title !== undefined && title !== null && typeof title !== 'string') {
+      return NextResponse.json({ error: 'Title must be a string' }, { status: 400 })
+    }
+    if (topic !== undefined && topic !== null && typeof topic !== 'string') {
+      return NextResponse.json({ error: 'Topic must be a string' }, { status: 400 })
+    }
+    if (
+      participantIds !== undefined &&
+      participantIds !== null &&
+      (!Array.isArray(participantIds) || participantIds.some((id: unknown) => typeof id !== 'string'))
+    ) {
+      return NextResponse.json(
+        { error: 'participantIds must be an array of strings' },
+        { status: 400 }
+      )
+    }
+
     const chat = await prisma.chat.create({
       data: {
         title: title || 'New Discussion',

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Persona, Chat, Provider, ProviderType } from '@/types'
+import { Provider, ProviderType } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
 import { useTheme } from '@/components/ThemeProvider'
 
@@ -93,7 +93,7 @@ const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = 
 
 export default function DebatePage() {
   const router = useRouter()
-  const { session, isAuthenticated, isLoading: authLoading, signIn } = useAuth()
+  const { session, isAuthenticated, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
   const isLight = theme === 'light'
   const [providers, setProviders] = useState<Provider[]>([])

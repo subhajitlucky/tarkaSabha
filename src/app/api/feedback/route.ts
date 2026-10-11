@@ -1,7 +1,25 @@
 import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { rateLimitService } from '@/lib/rate-limit'
 import type { Prisma } from '@prisma/client'
+
+const MAX_MESSAGE_LENGTH = 2000
+const MAX_NAME_LENGTH = 100
+const MAX_EMAIL_LENGTH = 254
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for')
+  if (forwarded) {
+    const first = forwarded.split(',')[0]?.trim()
+    if (first) return first
+  }
+  return req.headers.get('x-real-ip')?.trim() || 'unknown'
+}
+
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
 
 export async function POST(req: Request) {
   try {
@@ -9,13 +27,54 @@ export async function POST(req: Request) {
     const body = await req.json()
     const { message, type, name, email } = body
 
-    if (!message) {
+    if (typeof message !== 'string' || message.trim().length === 0) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 })
+    }
+    if (message.length > MAX_MESSAGE_LENGTH) {
+      return NextResponse.json(
+        { error: `Message must be at most ${MAX_MESSAGE_LENGTH} characters` },
+        { status: 400 }
+      )
+    }
+    if (type !== undefined && type !== null && typeof type !== 'string') {
+      return NextResponse.json({ error: 'Type must be a string' }, { status: 400 })
+    }
+    if (name !== undefined && name !== null && typeof name !== 'string') {
+      return NextResponse.json({ error: 'Name must be a string' }, { status: 400 })
+    }
+    if (typeof name === 'string' && name.length > MAX_NAME_LENGTH) {
+      return NextResponse.json(
+        { error: `Name must be at most ${MAX_NAME_LENGTH} characters` },
+        { status: 400 }
+      )
+    }
+    if (email !== undefined && email !== null && typeof email !== 'string') {
+      return NextResponse.json({ error: 'Email must be a string' }, { status: 400 })
+    }
+    if (typeof email === 'string' && email.trim().length > 0) {
+      if (email.length > MAX_EMAIL_LENGTH) {
+        return NextResponse.json(
+          { error: `Email must be at most ${MAX_EMAIL_LENGTH} characters` },
+          { status: 400 }
+        )
+      }
+      if (!isValidEmail(email.trim())) {
+        return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
+      }
+    }
+
+    const ip = getClientIp(req)
+    const rateLimit = await rateLimitService.limitFeedback(ip)
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many feedback submissions. Please try again later.' },
+        { status: 429 }
+      )
     }
 
     const feedback = await prisma.feedback.create({
       data: {
-        message,
+        message: message.trim(),
         type: type || 'general',
         name: name || session?.user?.name,
         email: email || session?.user?.email,
@@ -30,7 +89,7 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET(req: Request) {
+export async function GET() {
   try {
     const session = await auth()
     if (!session?.user) {

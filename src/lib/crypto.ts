@@ -29,16 +29,21 @@ const getEncryptionKey = () => {
 }
 
 const IV_LENGTH = 16
+const SALT_LENGTH = 16
+const KEY_LENGTH = 32
 const ALGORITHM = 'aes-256-gcm'
+const LEGACY_SALT = 'salt'
+export const ENCRYPTED_V2_PREFIX = 'enc:v2'
 
 export class CryptoService {
   private static instance: CryptoService
-  private key: Buffer
+  private masterKey: string
+  private legacyKey: Buffer
 
   private constructor() {
-    const key = getEncryptionKey()
-    // Ensure key is exactly 32 bytes using scrypt
-    this.key = crypto.scryptSync(key, 'salt', 32)
+    this.masterKey = getEncryptionKey()
+    // Legacy ciphertext derives the key with a fixed salt
+    this.legacyKey = crypto.scryptSync(this.masterKey, LEGACY_SALT, KEY_LENGTH)
   }
 
   static getInstance(): CryptoService {
@@ -49,36 +54,64 @@ export class CryptoService {
   }
 
   /**
-   * Encrypt a plaintext string
-   * Returns: iv:authTag:encryptedData (base64 encoded)
+   * Encrypt a plaintext string.
+   * New payloads use the versioned format: enc:v2:salt:iv:authTag:encryptedData
    */
   encrypt(plaintext: string): string {
+    const salt = crypto.randomBytes(SALT_LENGTH)
+    const key = crypto.scryptSync(this.masterKey, salt, KEY_LENGTH)
     const iv = crypto.randomBytes(IV_LENGTH)
-    const cipher = crypto.createCipheriv(ALGORITHM, this.key, iv)
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv)
 
     let encrypted = cipher.update(plaintext, 'utf8', 'hex')
     encrypted += cipher.final('hex')
 
     const authTag = cipher.getAuthTag()
 
-    // Combine iv + authTag + encrypted data
-    return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted
+    return [
+      ENCRYPTED_V2_PREFIX,
+      salt.toString('hex'),
+      iv.toString('hex'),
+      authTag.toString('hex'),
+      encrypted,
+    ].join(':')
   }
 
   /**
-   * Decrypt an encrypted string
+   * Decrypt an encrypted string.
+   * Supports both the versioned v2 format and the legacy iv:authTag:data format.
    */
   decrypt(encryptedText: string): string {
+    if (encryptedText.startsWith(`${ENCRYPTED_V2_PREFIX}:`)) {
+      const parts = encryptedText.split(':')
+      if (parts.length !== 6) {
+        throw new Error('Invalid encrypted format')
+      }
+
+      const [, , saltHex, ivHex, authTagHex, encrypted] = parts
+      const salt = Buffer.from(saltHex, 'hex')
+      if (salt.length === 0) {
+        throw new Error('Invalid encrypted format')
+      }
+
+      const key = crypto.scryptSync(this.masterKey, salt, KEY_LENGTH)
+      return this.decryptWithKey(key, ivHex, authTagHex, encrypted)
+    }
+
     const parts = encryptedText.split(':')
     if (parts.length !== 3) {
       throw new Error('Invalid encrypted format')
     }
 
     const [ivHex, authTagHex, encrypted] = parts
+    return this.decryptWithKey(this.legacyKey, ivHex, authTagHex, encrypted)
+  }
+
+  private decryptWithKey(key: Buffer, ivHex: string, authTagHex: string, encrypted: string): string {
     const iv = Buffer.from(ivHex, 'hex')
     const authTag = Buffer.from(authTagHex, 'hex')
 
-    const decipher = crypto.createDecipheriv(ALGORITHM, this.key, iv)
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv)
     decipher.setAuthTag(authTag)
 
     let decrypted = decipher.update(encrypted, 'hex', 'utf8')

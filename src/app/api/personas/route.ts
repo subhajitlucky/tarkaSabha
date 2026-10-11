@@ -57,6 +57,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (bio !== undefined && bio !== null && typeof bio !== 'string') {
+      return NextResponse.json({ error: 'Bio must be a string' }, { status: 400 })
+    }
+    if (personality !== undefined && personality !== null && typeof personality !== 'string') {
+      return NextResponse.json({ error: 'Personality must be a string' }, { status: 400 })
+    }
+    if (providerId !== undefined && providerId !== null && typeof providerId !== 'string') {
+      return NextResponse.json({ error: 'Provider ID must be a string' }, { status: 400 })
+    }
+    if (model !== undefined && model !== null && typeof model !== 'string') {
+      return NextResponse.json({ error: 'Model must be a string' }, { status: 400 })
+    }
+    if (temperature !== undefined && temperature !== null && typeof temperature !== 'number') {
+      return NextResponse.json({ error: 'Temperature must be a number' }, { status: 400 })
+    }
+
     const normalizedName = name.trim()
 
     // Bio and personality are optional - provide defaults if not given

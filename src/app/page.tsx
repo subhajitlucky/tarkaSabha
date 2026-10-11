@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Persona, Chat, Provider } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
@@ -15,13 +15,25 @@ export default function Home() {
   const { isAuthenticated } = useAuth()
   const isLight = theme === 'light'
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchData()
-    }
-  }, [isAuthenticated])
+  const fetchPersonas = useCallback(async () => {
+    const res = await fetch('/api/personas')
+    const data = await res.json()
+    setPersonas(data)
+  }, [])
 
-  const fetchData = async () => {
+  const fetchProviders = useCallback(async () => {
+    const res = await fetch('/api/providers')
+    const data = await res.json()
+    setProviders(data)
+  }, [])
+
+  const fetchChats = useCallback(async () => {
+    const res = await fetch('/api/chats')
+    const data = await res.json()
+    setChats(data)
+  }, [])
+
+  const fetchData = useCallback(async () => {
     setDataLoading(true)
     try {
       await Promise.all([
@@ -32,25 +44,13 @@ export default function Home() {
     } finally {
       setDataLoading(false)
     }
-  }
+  }, [fetchPersonas, fetchProviders, fetchChats])
 
-  const fetchPersonas = async () => {
-    const res = await fetch('/api/personas')
-    const data = await res.json()
-    setPersonas(data)
-  }
-
-  const fetchProviders = async () => {
-    const res = await fetch('/api/providers')
-    const data = await res.json()
-    setProviders(data)
-  }
-
-  const fetchChats = async () => {
-    const res = await fetch('/api/chats')
-    const data = await res.json()
-    setChats(data)
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchData()
+    }
+  }, [isAuthenticated, fetchData])
 
   return (
     <div className={`min-h-screen ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>

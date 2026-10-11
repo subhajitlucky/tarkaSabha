@@ -3,16 +3,11 @@ import { prisma } from '@/lib/prisma'
 import {
   orchestrateMessage,
   extractMention,
-  autoContinueDebate,
-  getParticipants,
 } from '@/lib/orchestrator'
 import { auth } from '@/auth'
 import { sanitizeContent, validateMessageLength } from '@/lib/llm-protection'
 
 export const maxDuration = 60 // 60 seconds
-
-// In-memory lock to prevent concurrent auto-debate calls per chat
-const debateLocks = new Map<string, boolean>()
 
 export async function POST(
   request: NextRequest,
