@@ -25,8 +25,17 @@ const PROVIDER_TYPES: { value: ProviderType; label: string; requiresKey: boolean
   { value: 'custom', label: 'Custom API', requiresKey: true, defaultUrl: '' },
 ]
 
-const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = {
-  openai: [
+type PersonaRole = 'contributor' | 'researcher' | 'critic' | 'planner' | 'synthesizer'
+
+const ROLE_OPTIONS: { value: PersonaRole; label: string; hint: string }[] = [
+  { value: 'contributor', label: 'Contributor', hint: 'Argues the strongest substantive point' },
+  { value: 'researcher', label: 'Researcher', hint: 'Brings evidence and flags uncertainty' },
+  { value: 'critic', label: 'Critic', hint: 'Attacks the weakest reasoning' },
+  { value: 'planner', label: 'Planner', hint: 'Turns the discussion into concrete steps' },
+  { value: 'synthesizer', label: 'Synthesizer', hint: 'Pulls the threads together' },
+]
+
+const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = {  openai: [
     { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
     { value: 'gpt-4', label: 'GPT-4' },
     { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
@@ -103,11 +112,16 @@ export default function DebatePage() {
 
   // Debate creation state
   const [topic, setTopic] = useState('')
+  const [mode, setMode] = useState<'debate' | 'task'>('task')
+  const [objective, setObjective] = useState('')
+  const [deliverableSpec, setDeliverableSpec] = useState('')
+  const [audience, setAudience] = useState('')
   const [agents, setAgents] = useState<Array<{
     id: string
     name: string
     bio: string
     personality: string
+    role: PersonaRole
     providerType: ProviderType
     apiUrl: string
     apiKey: string
@@ -118,6 +132,7 @@ export default function DebatePage() {
     name: '',
     bio: '',
     personality: '',
+    role: 'contributor' as PersonaRole,
     providerType: 'openai' as ProviderType,
     apiUrl: 'https://api.openai.com/v1',
     apiKey: '',
@@ -176,6 +191,7 @@ export default function DebatePage() {
       name: '',
       bio: '',
       personality: '',
+      role: 'contributor',
       providerType: 'openai',
       apiUrl: 'https://api.openai.com/v1',
       apiKey: '',
@@ -273,6 +289,7 @@ export default function DebatePage() {
             name: agent.name,
             bio: agent.bio || `I am ${agent.name}.`,
             personality: agent.personality || 'Friendly and conversational.',
+            role: agent.role,
             providerId,
           }),
         })
@@ -289,6 +306,10 @@ export default function DebatePage() {
         body: JSON.stringify({
           title: topic,
           topic,
+          mode,
+          objective: mode === 'task' ? objective : null,
+          deliverableSpec: mode === 'task' ? deliverableSpec : null,
+          audience: mode === 'task' ? audience : null,
           isAutoMode: true,
         }),
       })
@@ -372,30 +393,103 @@ export default function DebatePage() {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Step 1: Topic */}
+          {/* Step 1: Brief */}
           <div className={`${cardClass} rounded-2xl p-6`}>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
                 <span className="text-amber-500 font-bold">1</span>
               </div>
-              <h3 className={`text-xl font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>Discussion Topic</h3>
+              <h3 className={`text-xl font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                {mode === 'task' ? 'What do you need?' : 'Discussion Topic'}
+              </h3>
+            </div>
+
+            <div className="mb-6">
+              <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                Mode
+              </label>
+              <div className={`inline-flex p-1 rounded-xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-800 border-slate-700'}`}>
+                {([
+                  { value: 'task', label: 'Task', hint: 'Agents cooperate and produce a deliverable' },
+                  { value: 'debate', label: 'Debate', hint: 'Agents argue in character' },
+                ] as const).map(option => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setMode(option.value)}
+                    title={option.hint}
+                    className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                      mode === option.value
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 shadow'
+                        : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500 mt-2">
+                {mode === 'task'
+                  ? 'Agents work together on your objective. Synthesise a final deliverable when they are done.'
+                  : 'Agents stay stubbornly in character and argue. For entertainment, not for getting an answer.'}
+              </p>
             </div>
 
             <div>
               <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-                What should they discuss?
+                {mode === 'task' ? 'Short title' : 'What should they discuss?'}
               </label>
               <input
                 type="text"
                 value={topic}
                 onChange={e => setTopic(e.target.value)}
-                placeholder="e.g., Should AI replace doctors?"
+                placeholder={mode === 'task' ? 'e.g., Buy vs rent in Bengaluru' : 'e.g., Should AI replace doctors?'}
                 className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
               />
-              <p className="text-xs text-slate-500 mt-2">
-                Personas will only remember messages related to this topic
-              </p>
             </div>
+
+            {mode === 'task' && (
+              <div className="mt-4 space-y-4">
+                <div>
+                  <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    Objective
+                  </label>
+                  <textarea
+                    value={objective}
+                    onChange={e => setObjective(e.target.value)}
+                    rows={2}
+                    placeholder="What exactly should they work out?"
+                    className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors resize-none ${inputClass}`}
+                  />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                      Deliverable
+                    </label>
+                    <input
+                      type="text"
+                      value={deliverableSpec}
+                      onChange={e => setDeliverableSpec(e.target.value)}
+                      placeholder="e.g., A one-page recommendation"
+                      className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                      Audience
+                    </label>
+                    <input
+                      type="text"
+                      value={audience}
+                      onChange={e => setAudience(e.target.value)}
+                      placeholder="e.g., A first-time buyer"
+                      className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Step 2: Add Agents */}
@@ -492,6 +586,23 @@ export default function DebatePage() {
                   </div>
                 </div>
 
+                <div>
+                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Role in the task
+                  </label>
+                  <select
+                    value={newAgent.role}
+                    onChange={e => setNewAgent({ ...newAgent, role: e.target.value as PersonaRole })}
+                    className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none ${inputClass}`}
+                  >
+                    {ROLE_OPTIONS.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label} — {option.hint}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <button
                   onClick={addAgent}
                   className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-bold border shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
@@ -525,7 +636,10 @@ export default function DebatePage() {
                       </div>
                       <div>
                         <div className={`text-sm font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}>{agent.name}</div>
-                        <div className="text-xs text-slate-500">{agent.providerType} · {agent.model}</div>
+                        <div className="text-xs text-slate-500">
+                          <span className="text-amber-500 font-semibold">{agent.role}</span>
+                          {' · '}{agent.providerType} · {agent.model}
+                        </div>
                       </div>
                     </div>
                     <button

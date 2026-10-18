@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Chat, Message } from '@/types'
+import { Artifact, Chat, Message } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
 import { useAuth } from '@/components/AuthProvider'
 
@@ -50,6 +50,9 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState('')
   const [isSending, setIsSending] = useState(false)
   const [showChatSettings, setShowChatSettings] = useState(false)
+  const [artifacts, setArtifacts] = useState<Artifact[]>([])
+  const [showDeliverable, setShowDeliverable] = useState(false)
+  const [isSynthesizing, setIsSynthesizing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [usernameModalRequested, setUsernameModalRequested] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -134,6 +137,36 @@ export default function ChatPage() {
       setError(getErrorMessage(err, 'Could not start the debate'))
     }
   }
+
+  const fetchArtifacts = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/chats/${chatId}/artifacts`)
+      if (!res.ok) return
+      const data = await res.json()
+      if (Array.isArray(data)) setArtifacts(data)
+    } catch (e) {
+      console.error('Failed to fetch deliverables', e)
+    }
+  }, [chatId])
+
+  // Ask the server to turn the discussion so far into a deliverable.
+  const synthesize = async () => {
+    setError(null)
+    setIsSynthesizing(true)
+    try {
+      const res = await fetch(`/api/chats/${chatId}/artifacts`, { method: 'POST' })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || 'Could not produce a deliverable')
+      }
+      await fetchArtifacts()
+      setShowDeliverable(true)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Could not produce a deliverable'))
+    } finally {
+      setIsSynthesizing(false)
+    }
+  }
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current
     if (textarea) {
@@ -175,7 +208,14 @@ export default function ChatPage() {
       await fetchMessages()
     }
 
+    // Wrapped locally: calling the memoised callback straight from the effect
+    // body trips the set-state-in-effect rule, which cannot see through it.
+    const loadDeliverables = async () => {
+      await fetchArtifacts()
+    }
+
     loadChat()
+    loadDeliverables()
     tick()
     const interval = setInterval(tick, 3000)
 
@@ -183,7 +223,7 @@ export default function ChatPage() {
       isActive = false
       clearInterval(interval)
     }
-  }, [chatId, fetchMessages])
+  }, [chatId, fetchMessages, fetchArtifacts])
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !chat) return
@@ -401,6 +441,58 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Deliverable Modal */}
+      {showDeliverable && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className={`p-6 rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl ${isLight ? 'bg-white' : 'bg-slate-900 border border-slate-800'}`}>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Deliverable</h2>
+              <button
+                onClick={() => setShowDeliverable(false)}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-slate-800 text-slate-400'}`}
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            {artifacts.length === 0 ? (
+              <p className={`text-sm py-8 text-center ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                No deliverable yet. Run a few turns, then synthesise the discussion into an answer.
+              </p>
+            ) : (
+              <div className="overflow-y-auto flex-1 pr-1">
+                <h3 className={`text-lg font-semibold mb-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  {artifacts[0].title}
+                </h3>
+                <div className={`text-sm whitespace-pre-wrap leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                  {artifacts[0].content}
+                </div>
+                {artifacts[0].model && (
+                  <p className="text-xs text-slate-500 mt-4">Produced by {artifacts[0].model}</p>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-slate-700/40">
+              <button
+                onClick={synthesize}
+                disabled={isSynthesizing}
+                className={`px-5 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+                  isSynthesizing
+                    ? 'opacity-60 cursor-not-allowed bg-slate-600 text-white'
+                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 shadow-lg'
+                }`}
+              >
+                {isSynthesizing
+                  ? 'Synthesising…'
+                  : artifacts.length > 0 ? 'Regenerate' : 'Synthesise'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -521,6 +613,16 @@ export default function ChatPage() {
               </button>
 
               <div className={`flex items-center p-1 rounded-xl border ${actionGroup}`}>
+                {isOwner && (
+                  <button
+                    onClick={() => setShowDeliverable(true)}
+                    className={`px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer ${settingsBtn} ${isLight ? 'text-slate-600' : 'text-slate-400'}`}
+                    title="The synthesised deliverable for this task"
+                  >
+                    Deliverable{artifacts.length > 0 ? ` (${artifacts.length})` : ''}
+                  </button>
+                )}
+
                 {isOwner && (
                   <button
                     onClick={chat.isAutoMode ? stopDebate : toggleAutoMode}
