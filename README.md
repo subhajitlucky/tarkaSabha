@@ -80,15 +80,31 @@ Turns are executed by the server, not by the browser. Starting a debate sets
 `autoAdvanceAt` on the chat; a runner then claims chats that are due and advances
 one turn each. **A debate therefore keeps going after the tab is closed.**
 
-Two triggers drive the same endpoint:
+One endpoint drives it, and you choose the trigger:
 
-| Trigger | Use case |
+| Trigger | Notes |
 |---|---|
-| `vercel.json` cron calling `/api/debates/tick` | Vercel deployments |
-| `npm run worker` | Self-hosted and local development |
+| `npm run worker` | Self-hosted, a container, or local development. Ticks every few seconds. |
+| Vercel Cron | **Pro plans only** — see below. |
+| Any external scheduler | GitHub Actions on a schedule, cron-job.org, etc. |
 
-Both authenticate with `Authorization: Bearer $CRON_SECRET`. The endpoint fails
-closed if `CRON_SECRET` is unset.
+All of them authenticate with `Authorization: Bearer $CRON_SECRET`. The endpoint
+fails closed if `CRON_SECRET` is unset.
+
+**Vercel Cron and plan limits.** Vercel's Hobby plan only permits *daily* cron
+schedules; a per-minute expression is rejected at deploy time and the whole
+deployment fails. That is why this repo deliberately ships no `vercel.json`
+crons block. On Pro, add:
+
+```json
+{
+  "crons": [{ "path": "/api/debates/tick?turns=5", "schedule": "*/5 * * * *" }]
+}
+```
+
+On Hobby, either run the worker somewhere, or point an external scheduler at the
+same URL. Note that `/api/debates/tick` defaults to 5 turns per chat per call, so
+a slower trigger still makes progress.
 
 Claiming is atomic — the claim statement pushes `autoAdvanceAt` forward with
 `FOR UPDATE SKIP LOCKED` — so overlapping ticks divide the work instead of
