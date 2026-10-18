@@ -35,6 +35,12 @@ const ROLE_OPTIONS: { value: PersonaRole; label: string; hint: string }[] = [
   { value: 'synthesizer', label: 'Synthesizer', hint: 'Pulls the threads together' },
 ]
 
+const TOOL_OPTIONS = [
+  { value: 'web_search', label: 'Web search', hint: 'Find sources to ground a claim' },
+  { value: 'fetch_url', label: 'Read a page', hint: 'Open a URL and read its text' },
+  { value: 'calculator', label: 'Calculator', hint: 'Exact arithmetic, no guessing' },
+]
+
 const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = {  openai: [
     { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
     { value: 'gpt-4', label: 'GPT-4' },
@@ -122,6 +128,7 @@ export default function DebatePage() {
     bio: string
     personality: string
     role: PersonaRole
+    tools: string[]
     providerType: ProviderType
     apiUrl: string
     apiKey: string
@@ -133,6 +140,7 @@ export default function DebatePage() {
     bio: '',
     personality: '',
     role: 'contributor' as PersonaRole,
+    tools: [] as string[],
     providerType: 'openai' as ProviderType,
     apiUrl: 'https://api.openai.com/v1',
     apiKey: '',
@@ -192,6 +200,7 @@ export default function DebatePage() {
       bio: '',
       personality: '',
       role: 'contributor',
+      tools: [],
       providerType: 'openai',
       apiUrl: 'https://api.openai.com/v1',
       apiKey: '',
@@ -290,6 +299,7 @@ export default function DebatePage() {
             bio: agent.bio || `I am ${agent.name}.`,
             personality: agent.personality || 'Friendly and conversational.',
             role: agent.role,
+            tools: agent.tools,
             providerId,
           }),
         })
@@ -603,6 +613,34 @@ export default function DebatePage() {
                   </select>
                 </div>
 
+                <div>
+                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                    Tools
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {TOOL_OPTIONS.map(tool => (
+                      <label
+                        key={tool.value}
+                        title={tool.hint}
+                        className={`flex items-center gap-2 text-xs cursor-pointer ${isLight ? 'text-slate-600' : 'text-slate-300'}`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={newAgent.tools.includes(tool.value)}
+                          onChange={e => setNewAgent({
+                            ...newAgent,
+                            tools: e.target.checked
+                              ? [...newAgent.tools, tool.value]
+                              : newAgent.tools.filter(name => name !== tool.value),
+                          })}
+                          className="accent-amber-500"
+                        />
+                        {tool.label}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 <button
                   onClick={addAgent}
                   className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-bold border shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
@@ -639,6 +677,7 @@ export default function DebatePage() {
                         <div className="text-xs text-slate-500">
                           <span className="text-amber-500 font-semibold">{agent.role}</span>
                           {' · '}{agent.providerType} · {agent.model}
+                          {agent.tools.length > 0 && ` · ${agent.tools.length} tool${agent.tools.length > 1 ? 's' : ''}`}
                         </div>
                       </div>
                     </div>
