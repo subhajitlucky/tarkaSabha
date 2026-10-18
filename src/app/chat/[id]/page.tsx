@@ -53,6 +53,7 @@ export default function ChatPage() {
   const [artifacts, setArtifacts] = useState<Artifact[]>([])
   const [showDeliverable, setShowDeliverable] = useState(false)
   const [isSynthesizing, setIsSynthesizing] = useState(false)
+  const [showOtherCandidates, setShowOtherCandidates] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [usernameModalRequested, setUsernameModalRequested] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -149,12 +150,18 @@ export default function ChatPage() {
     }
   }, [chatId])
 
-  // Ask the server to turn the discussion so far into a deliverable.
-  const synthesize = async () => {
+  // Ask the server to turn the discussion so far into a deliverable. It
+  // generates several candidates, scores them against the rubric, and keeps the
+  // best one; all of them are stored so the run is auditable.
+  const synthesize = async (rounds = 1) => {
     setError(null)
     setIsSynthesizing(true)
     try {
-      const res = await fetch(`/api/chats/${chatId}/artifacts`, { method: 'POST' })
+      const res = await fetch(`/api/chats/${chatId}/artifacts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidates: 3, rounds }),
+      })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
         throw new Error(data?.error || 'Could not produce a deliverable')
@@ -442,56 +449,138 @@ export default function ChatPage() {
       )}
 
       {/* Deliverable Modal */}
-      {showDeliverable && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`p-6 rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl ${isLight ? 'bg-white' : 'bg-slate-900 border border-slate-800'}`}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Deliverable</h2>
-              <button
-                onClick={() => setShowDeliverable(false)}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-slate-800 text-slate-400'}`}
-                title="Close"
-              >
-                ✕
-              </button>
-            </div>
+      {showDeliverable && (() => {
+        const ranked = [...artifacts].sort((a, b) => (b.score ?? -1) - (a.score ?? -1))
+        const best = ranked.find(a => a.selected) ?? ranked[0]
+        const others = ranked.filter(a => a !== best)
 
-            {artifacts.length === 0 ? (
-              <p className={`text-sm py-8 text-center ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                No deliverable yet. Run a few turns, then synthesise the discussion into an answer.
-              </p>
-            ) : (
-              <div className="overflow-y-auto flex-1 pr-1">
-                <h3 className={`text-lg font-semibold mb-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                  {artifacts[0].title}
-                </h3>
-                <div className={`text-sm whitespace-pre-wrap leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                  {artifacts[0].content}
+        return (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className={`p-6 rounded-3xl max-w-3xl w-full max-h-[85vh] flex flex-col shadow-2xl ${isLight ? 'bg-white' : 'bg-slate-900 border border-slate-800'}`}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <h2 className={`text-xl font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>Deliverable</h2>
+                  {best?.score != null && (
+                    <span
+                      title="Weighted rubric score out of 10"
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500/15 text-amber-500"
+                    >
+                      {best.score.toFixed(1)} / 10
+                    </span>
+                  )}
                 </div>
-                {artifacts[0].model && (
-                  <p className="text-xs text-slate-500 mt-4">Produced by {artifacts[0].model}</p>
-                )}
+                <button
+                  onClick={() => setShowDeliverable(false)}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-slate-800 text-slate-400'}`}
+                  title="Close"
+                >
+                  ✕
+                </button>
               </div>
-            )}
 
-            <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-slate-700/40">
-              <button
-                onClick={synthesize}
-                disabled={isSynthesizing}
-                className={`px-5 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
-                  isSynthesizing
-                    ? 'opacity-60 cursor-not-allowed bg-slate-600 text-white'
-                    : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 shadow-lg'
-                }`}
-              >
-                {isSynthesizing
-                  ? 'Synthesising…'
-                  : artifacts.length > 0 ? 'Regenerate' : 'Synthesise'}
-              </button>
+              {!best ? (
+                <p className={`text-sm py-8 text-center ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  No deliverable yet. Run a few turns, then synthesise the discussion into an answer.
+                </p>
+              ) : (
+                <div className="overflow-y-auto flex-1 pr-1">
+                  <h3 className={`text-lg font-semibold mb-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                    {best.title}
+                  </h3>
+                  <div className={`text-sm whitespace-pre-wrap leading-relaxed ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                    {best.content}
+                  </div>
+
+                  {best.breakdown && best.breakdown.length > 0 && (
+                    <div className="mt-5">
+                      <h4 className={`text-xs font-bold uppercase tracking-wide mb-2 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                        Rubric
+                      </h4>
+                      <div className="space-y-1.5">
+                        {best.breakdown.map(criterion => (
+                          <div key={criterion.key} className="flex items-start gap-3 text-xs">
+                            <span className={`w-24 flex-shrink-0 font-semibold ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
+                              {criterion.label}
+                            </span>
+                            <span className="w-8 flex-shrink-0 text-amber-500 font-bold">{criterion.score}</span>
+                            <span className={isLight ? 'text-slate-500' : 'text-slate-500'}>{criterion.reason}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-slate-500 mt-4">
+                    {best.model && `Produced by ${best.model}`}
+                    {best.angle && ` · ${best.angle} angle`}
+                    {best.round ? ` · round ${best.round}` : ''}
+                  </p>
+
+                  {others.length > 0 && (
+                    <div className="mt-5 pt-4 border-t border-slate-700/40">
+                      <button
+                        onClick={() => setShowOtherCandidates(!showOtherCandidates)}
+                        className={`text-xs font-bold cursor-pointer ${isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'}`}
+                      >
+                        {showOtherCandidates ? '▾' : '▸'} {others.length} other candidate{others.length > 1 ? 's' : ''} considered
+                      </button>
+
+                      {showOtherCandidates && (
+                        <div className="mt-3 space-y-2">
+                          {others.map(candidate => (
+                            <div key={candidate.id} className={`p-3 rounded-xl text-xs ${isLight ? 'bg-slate-50' : 'bg-slate-800/60'}`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold text-amber-500">
+                                  {candidate.score != null ? candidate.score.toFixed(1) : '—'}
+                                </span>
+                                <span className={isLight ? 'text-slate-700' : 'text-slate-300'}>{candidate.title}</span>
+                                <span className="text-slate-500">
+                                  {candidate.angle}{candidate.round ? ` · round ${candidate.round}` : ''}
+                                </span>
+                              </div>
+                              <div className={`whitespace-pre-wrap line-clamp-3 ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>
+                                {candidate.content.slice(0, 240)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-slate-700/40">
+                <button
+                  onClick={() => synthesize(2)}
+                  disabled={isSynthesizing}
+                  title="Generate candidates, judge them, and retry once if the best scores below 7"
+                  className={`px-4 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+                    isSynthesizing
+                      ? 'opacity-60 cursor-not-allowed bg-slate-600 text-white'
+                      : isLight ? 'bg-white border border-slate-200 text-slate-700 hover:border-slate-300' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'
+                  }`}
+                >
+                  Thorough
+                </button>
+                <button
+                  onClick={() => synthesize(1)}
+                  disabled={isSynthesizing}
+                  className={`px-5 py-3 rounded-xl font-bold text-sm transition-all cursor-pointer ${
+                    isSynthesizing
+                      ? 'opacity-60 cursor-not-allowed bg-slate-600 text-white'
+                      : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 shadow-lg'
+                  }`}
+                >
+                  {isSynthesizing
+                    ? 'Synthesising…'
+                    : artifacts.length > 0 ? 'Regenerate' : 'Synthesise'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
