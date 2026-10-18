@@ -5,7 +5,7 @@ export interface ApiUrlValidationResult {
   error?: string
 }
 
-function parseIPv4(hostname: string): number[] | null {
+export function parseIPv4(hostname: string): number[] | null {
   const parts = hostname.split('.')
   if (parts.length !== 4) return null
   const octets = parts.map((part) => (/^\d{1,3}$/.test(part) ? Number(part) : NaN))
@@ -28,7 +28,7 @@ function isBlockedIPv4(hostname: string): boolean {
   return false
 }
 
-function expandIPv6(input: string): number[] | null {
+export function expandIPv6(input: string): number[] | null {
   let host = input
   if (host.startsWith('[') && host.endsWith(']')) {
     host = host.slice(1, -1)

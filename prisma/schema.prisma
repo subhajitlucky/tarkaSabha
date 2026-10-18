@@ -97,6 +97,9 @@ model Persona {
   // planner | synthesizer. Stored as text and validated in code so the set can
   // grow without a migration.
   role        String          @default("contributor")
+  // Allowlisted tool names this participant may call (e.g. web_search). Empty
+  // means the participant reasons from its own knowledge only.
+  tools       String[]        @default([])
   providerId  String?
   model       String?
   temperature Float?

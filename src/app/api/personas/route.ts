@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { PERSONA_ROLES, isPersonaRole } from '@/lib/orchestrator'
+import { TOOL_NAMES, isToolName } from '@/lib/tools'
 
 export async function GET() {
   try {
@@ -20,6 +21,7 @@ export async function GET() {
         bio: true,
         personality: true,
         role: true,
+        tools: true,
         avatarUrl: true,
         model: true,
         temperature: true,
@@ -49,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, bio, personality, role, providerId, model, temperature } = body
+    const { name, bio, personality, role, tools, providerId, model, temperature } = body
 
     // Validate required fields
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
@@ -67,6 +69,18 @@ export async function POST(request: NextRequest) {
     }
     if (providerId !== undefined && providerId !== null && typeof providerId !== 'string') {
       return NextResponse.json({ error: 'Provider ID must be a string' }, { status: 400 })
+    }
+    if (tools !== undefined && tools !== null) {
+      if (!Array.isArray(tools) || tools.some((name: unknown) => typeof name !== 'string')) {
+        return NextResponse.json({ error: 'tools must be an array of strings' }, { status: 400 })
+      }
+      const unknownTools = tools.filter((name: string) => !isToolName(name))
+      if (unknownTools.length > 0) {
+        return NextResponse.json(
+          { error: `Unknown tool(s): ${unknownTools.join(', ')}. Available: ${TOOL_NAMES.join(', ')}` },
+          { status: 400 }
+        )
+      }
     }
     if (role !== undefined && role !== null && !isPersonaRole(role)) {
       return NextResponse.json(
@@ -106,6 +120,7 @@ export async function POST(request: NextRequest) {
         bio: finalBio,
         personality: finalPersonality,
         role: role || 'contributor',
+        tools: tools || [],
         providerId: providerId || null,
         model: model || null,
         temperature: temperature ?? null,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { PERSONA_ROLES, isPersonaRole } from '@/lib/orchestrator'
+import { TOOL_NAMES, isToolName } from '@/lib/tools'
 
 function withoutApiKey<T extends { apiKey: string }>(provider: T): Omit<T, 'apiKey'> {
   const clone = { ...provider } as { apiKey?: string }
@@ -81,7 +82,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, bio, personality, role, providerId, model, temperature } = body
+    const { name, bio, personality, role, tools, providerId, model, temperature } = body
 
     if (name !== undefined && typeof name !== 'string') {
       return NextResponse.json({ error: 'Name must be a string' }, { status: 400 })
@@ -100,6 +101,18 @@ export async function PUT(
     }
     if (providerId !== undefined && providerId !== null && typeof providerId !== 'string') {
       return NextResponse.json({ error: 'Provider ID must be a string' }, { status: 400 })
+    }
+    if (tools !== undefined && tools !== null) {
+      if (!Array.isArray(tools) || tools.some((name: unknown) => typeof name !== 'string')) {
+        return NextResponse.json({ error: 'tools must be an array of strings' }, { status: 400 })
+      }
+      const unknownTools = tools.filter((name: string) => !isToolName(name))
+      if (unknownTools.length > 0) {
+        return NextResponse.json(
+          { error: `Unknown tool(s): ${unknownTools.join(', ')}. Available: ${TOOL_NAMES.join(', ')}` },
+          { status: 400 }
+        )
+      }
     }
     if (role !== undefined && role !== null && !isPersonaRole(role)) {
       return NextResponse.json(
@@ -133,6 +146,7 @@ export async function PUT(
       bio?: string
       personality?: string | null
       role?: string
+      tools?: string[]
       providerId?: string | null
       model?: string | null
       temperature?: number | null
@@ -142,6 +156,7 @@ export async function PUT(
     if (bio !== undefined) data.bio = bio.trim()
     if (personality !== undefined) data.personality = personality?.trim() || null
     if (role !== undefined) data.role = role || 'contributor'
+    if (tools !== undefined) data.tools = tools
     if (providerId !== undefined) data.providerId = providerId || null
     if (model !== undefined) data.model = model || null
     if (temperature !== undefined) data.temperature = temperature ?? null

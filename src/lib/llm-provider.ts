@@ -15,14 +15,43 @@ export interface LLMConfig {
 }
 
 export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant'
+  role: 'system' | 'user' | 'assistant' | 'tool'
   content: string
   personaName?: string
   name?: string
+  /** Set on assistant messages that requested tools. */
+  toolCalls?: ToolCall[]
+  /** Set on tool-role messages: which call this is the result of. */
+  toolCallId?: string
+}
+
+/** A tool invocation requested by the model. */
+export interface ToolCall {
+  id: string
+  name: string
+  /** Raw JSON string exactly as the model produced it. */
+  arguments: string
+}
+
+/** Function-calling schema, matching the OpenAI shape. */
+export interface ToolSchemaInput {
+  name: string
+  description: string
+  parameters: {
+    type: 'object'
+    properties: Record<string, unknown>
+    required?: string[]
+  }
+}
+
+export interface ChatOptions {
+  tools?: ToolSchemaInput[]
 }
 
 export interface LLMResponse {
   content: string
+  /** Present when the model asked for one or more tools instead of answering. */
+  toolCalls?: ToolCall[]
   usage?: {
     promptTokens: number
     completionTokens: number
@@ -45,6 +74,137 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+/** OpenAI only accepts letters, numbers, underscores and dashes in `name`. */
+function sanitizeName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 64)
+}
+
+/**
+ * Convert internal messages to the OpenAI wire shape, preserving tool calls and
+ * tool results. Without this a tool round-trip loses the assistant's request and
+ * the provider rejects the follow-up as malformed.
+ */
+function toOpenAiMessages(
+  messages: ChatMessage[]
+): OpenAI.Chat.ChatCompletionMessageParam[] {
+  return messages.map((message) => {
+    if (message.role === 'tool') {
+      return {
+        role: 'tool' as const,
+        tool_call_id: message.toolCallId || 'unknown',
+        content: message.content,
+      }
+    }
+
+    if (message.role === 'assistant' && message.toolCalls && message.toolCalls.length > 0) {
+      return {
+        role: 'assistant' as const,
+        content: message.content || null,
+        tool_calls: message.toolCalls.map((call) => ({
+          id: call.id,
+          type: 'function' as const,
+          function: { name: call.name, arguments: call.arguments },
+        })),
+      }
+    }
+
+    const base = { role: message.role as 'system' | 'user' | 'assistant', content: message.content }
+    return message.name ? { ...base, name: sanitizeName(message.name) } : base
+  })
+}
+
+/**
+ * Anthropic carries tool calls and tool results as content blocks rather than
+ * dedicated message roles, and tool results must arrive as a user turn.
+ */
+function toAnthropicMessages(messages: ChatMessage[]): Anthropic.MessageParam[] {
+  const result: Anthropic.MessageParam[] = []
+
+  for (const message of messages) {
+    if (message.role === 'tool') {
+      result.push({
+        role: 'user',
+        content: [
+          {
+            type: 'tool_result',
+            tool_use_id: message.toolCallId || 'unknown',
+            content: message.content,
+          },
+        ],
+      })
+      continue
+    }
+
+    if (message.role === 'assistant' && message.toolCalls && message.toolCalls.length > 0) {
+      const blocks: Anthropic.ContentBlockParam[] = []
+      if (message.content) blocks.push({ type: 'text', text: message.content })
+      for (const call of message.toolCalls) {
+        let parsed: Record<string, unknown> = {}
+        try {
+          const candidate = JSON.parse(call.arguments)
+          if (candidate && typeof candidate === 'object') parsed = candidate as Record<string, unknown>
+        } catch {
+          parsed = {}
+        }
+        blocks.push({ type: 'tool_use', id: call.id, name: call.name, input: parsed })
+      }
+      result.push({ role: 'assistant', content: blocks })
+      continue
+    }
+
+    result.push({
+      role: message.role === 'user' ? 'user' : 'assistant',
+      content: message.content,
+    })
+  }
+
+  return result
+}
+
+function toolsParam(options?: ChatOptions) {
+  if (!options?.tools || options.tools.length === 0) return {}
+  return {
+    tools: options.tools.map((tool) => ({
+      type: 'function' as const,
+      function: {
+        name: tool.name,
+        description: tool.description,
+        parameters: tool.parameters,
+      },
+    })),
+    tool_choice: 'auto' as const,
+  }
+}
+
+type OpenAiCompletion = OpenAI.Chat.ChatCompletion
+
+function toResponse(completion: OpenAiCompletion): LLMResponse {
+  const message = completion.choices[0]?.message
+  const rawCalls = message?.tool_calls ?? []
+
+  const toolCalls: ToolCall[] = []
+  for (const call of rawCalls) {
+    if (call.type !== 'function') continue
+    toolCalls.push({
+      id: call.id,
+      name: call.function.name,
+      arguments: call.function.arguments,
+    })
+  }
+
+  return {
+    content: message?.content || '',
+    toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
+    usage: completion.usage
+      ? {
+          promptTokens: completion.usage.prompt_tokens,
+          completionTokens: completion.usage.completion_tokens,
+          totalTokens: completion.usage.total_tokens,
+        }
+      : undefined,
+  }
+}
+
 // Provider-specific implementations
 abstract class BaseLLMProvider {
   protected config: LLMConfig
@@ -53,7 +213,7 @@ abstract class BaseLLMProvider {
     this.config = config
   }
 
-  abstract chat(messages: ChatMessage[]): Promise<LLMResponse>
+  abstract chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse>
   abstract validateConfig(): { valid: boolean; error?: string }
 }
 
@@ -68,37 +228,18 @@ class OpenAIProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => {
-          const msg: { role: ChatMessage['role']; content: string; name?: string } = {
-            role: m.role,
-            content: m.content,
-          }
-          if (m.name) {
-             // Sanitize name for OpenAI (only letters, numbers, underscores, max 64 chars)
-             msg.name = m.name.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 64)
-          }
-          return msg
-        }),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      const usage = response.usage
-        ? {
-            promptTokens: response.usage.prompt_tokens,
-            completionTokens: response.usage.completion_tokens,
-            totalTokens: response.usage.total_tokens,
-          }
-        : undefined
-
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-        usage,
-      }
+      // toResponse carries tool_calls through as well as content and usage.
+      return toResponse(response)
     } catch (error: unknown) {
       if (error instanceof OpenAI.APIError) {
         const specificError = this.getSpecificError(error)
@@ -165,7 +306,7 @@ class AnthropicProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       // Convert messages to Anthropic format
       const systemMessage = messages.find(m => m.role === 'system')
@@ -176,19 +317,38 @@ class AnthropicProvider extends BaseLLMProvider {
         max_tokens: this.config.maxTokens || 500,
         temperature: this.config.temperature,
         system: systemMessage?.content,
-        messages: userMessages.map(m => ({
-          role: m.role === 'user' ? 'user' : 'assistant',
-          content: m.content,
-        })),
+        messages: toAnthropicMessages(userMessages),
+        ...(options?.tools && options.tools.length > 0
+          ? {
+              tools: options.tools.map((tool) => ({
+                name: tool.name,
+                description: tool.description,
+                input_schema: tool.parameters as Anthropic.Tool.InputSchema,
+              })),
+            }
+          : {}),
       })
 
-      const content = response.content[0]
-      if (content.type !== 'text') {
-        throw new LLMError('Unexpected response type', 'ANTHROPIC_ERROR')
+      // A response may mix text and tool_use blocks, so collect both rather
+      // than assuming the first block is text.
+      const textParts: string[] = []
+      const toolCalls: ToolCall[] = []
+
+      for (const block of response.content) {
+        if (block.type === 'text') {
+          textParts.push(block.text)
+        } else if (block.type === 'tool_use') {
+          toolCalls.push({
+            id: block.id,
+            name: block.name,
+            arguments: JSON.stringify(block.input ?? {}),
+          })
+        }
       }
 
       return {
-        content: content.text,
+        content: textParts.join('\n').trim(),
+        toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
         usage: {
           promptTokens: response.usage.input_tokens,
           completionTokens: response.usage.output_tokens,
@@ -222,22 +382,18 @@ class GoogleProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       // Google Gemini models via OpenAI-compatible endpoint
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'GOOGLE_ERROR', error.status)
@@ -266,21 +422,17 @@ class GroqProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'GROQ_ERROR', error.status)
@@ -309,21 +461,17 @@ class OllamaProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'OLLAMA_ERROR', error.status)
@@ -354,21 +502,17 @@ class CustomProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error: unknown) {
       if (error instanceof OpenAI.APIError) {
         // Provide specific error messages for common issues
@@ -443,21 +587,17 @@ class DeepSeekProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'DEEPSEEK_ERROR', error.status)
@@ -485,21 +625,17 @@ class MistralProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'MISTRAL_ERROR', error.status)
@@ -527,21 +663,17 @@ class TogetherAIProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'TOGETHER_ERROR', error.status)
@@ -573,21 +705,17 @@ class OpenRouterProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'OPENROUTER_ERROR', error.status)
@@ -615,21 +743,17 @@ class PerplexityProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'PERPLEXITY_ERROR', error.status)
@@ -657,21 +781,17 @@ class HuggingFaceProvider extends BaseLLMProvider {
     })
   }
 
-  async chat(messages: ChatMessage[]): Promise<LLMResponse> {
+  async chat(messages: ChatMessage[], options?: ChatOptions): Promise<LLMResponse> {
     try {
       const response = await this.client.chat.completions.create({
         model: this.config.model,
-        messages: messages.map(m => ({
-          role: m.role,
-          content: m.content,
-        })),
+        messages: toOpenAiMessages(messages),
         temperature: this.config.temperature,
         max_tokens: this.config.maxTokens || 500,
+        ...toolsParam(options),
       })
 
-      return {
-        content: response.choices[0]?.message?.content || '(No response)',
-      }
+      return toResponse(response)
     } catch (error) {
       if (error instanceof OpenAI.APIError) {
         throw new LLMError(error.message, 'HUGGINGFACE_ERROR', error.status)
@@ -831,6 +951,7 @@ export async function getLLMResponse(
     apiUrl?: string
     temperature?: number
     maxTokens?: number
+    tools?: ToolSchemaInput[]
   } = {}
 ): Promise<LLMResponse> {
   const config: LLMConfig = {
@@ -856,5 +977,5 @@ export async function getLLMResponse(
     throw new LLMError(validation.error || 'Invalid config', 'VALIDATION_ERROR')
   }
 
-  return llmProvider.chat(messages)
+  return llmProvider.chat(messages, { tools: options.tools })
 }

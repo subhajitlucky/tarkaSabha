@@ -54,6 +54,7 @@ type Persona = {
   bio: string
   personality: string | null
   role: string
+  tools: string[]
   temperature: number | null
   model: string | null
   providerId: string | null
@@ -70,6 +71,7 @@ function persona(id: string, name: string, role = 'contributor'): Persona {
     bio: `A thoughtful participant named ${name} with strong opinions.`,
     personality: 'direct',
     role,
+    tools: [],
     temperature: 0.7,
     model: null,
     providerId: null,

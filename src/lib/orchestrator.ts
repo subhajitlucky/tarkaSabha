@@ -1,5 +1,7 @@
 import { prisma } from './prisma'
 import { getLLMResponse, ChatMessage, ProviderType } from './llm-provider'
+import { resolveTools } from './tools'
+import { runWithTools } from './agent-loop'
 import { rateLimitService } from './rate-limit'
 import { LLMError } from './llm-provider'
 import {
@@ -273,6 +275,20 @@ const ROLE_DIRECTIVES: Record<PersonaRole, string> = {
     'Pull the threads together: where the group actually agrees, where it does not, and what the best combined answer is so far.',
 }
 
+/**
+ * Tell the agent what it can actually call. The provider's tool schema already
+ * advertises the tools, but naming them in the prompt measurably improves how
+ * often a model reaches for one instead of guessing.
+ */
+function buildToolHint(persona: Persona): string {
+  const tools = resolveTools(persona.tools)
+  if (tools.length === 0) return ''
+
+  const names = tools.map((tool) => tool.schema.name).join(', ')
+  return `\nTOOLS AVAILABLE: ${names}
+Use them whenever a claim needs checking instead of relying on memory. Read a source with fetch_url before citing it. If a tool fails, say so rather than inventing a result.`
+}
+
 export interface TaskBrief {
   mode?: string | null
   objective?: string | null
@@ -305,6 +321,8 @@ ${ROLE_DIRECTIVES[role]}
 THE TEAM:
 - ${persona.name} (YOU)
 - ${otherParticipants.join('\n- ')}
+
+${buildToolHint(persona)}
 
 HOW TO WORK:
 1. You are collaborating to produce the best possible answer. You are not trying to win an argument.
@@ -632,21 +650,33 @@ export async function orchestrateMessage(
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const response = await withTimeout(
-        getLLMResponse(
-          provider.apiKey,
-          provider.provider as 'openai' | 'anthropic' | 'google' | 'groq' | 'ollama' | 'custom',
-          persona.model || provider.model,
-          conversationContext,
-          {
+      const personaTools = resolveTools(persona.tools)
+
+      const toolRun = await withTimeout(
+        runWithTools({
+          apiKey: provider.apiKey,
+          provider: provider.provider as ProviderType,
+          model: persona.model || provider.model,
+          messages: conversationContext,
+          tools: personaTools,
+          options: {
             apiUrl: provider.apiUrl,
             temperature: (persona.temperature ?? provider.temperature) + 0.15,
             maxTokens: 500,
-          }
-        ),
+          },
+        }),
         LLM_TIMEOUT_MS,
         'LLM response timed out'
       )
+
+      if (toolRun.invocations.length > 0) {
+        const summary = toolRun.invocations
+          .map((entry) => `${entry.name}(${entry.ok ? 'ok' : 'failed'})`)
+          .join(', ')
+        console.log(`[Orchestrator] ${speaker.name} used tools: ${summary}`)
+      }
+
+      const response = toolRun.response
 
       const rawContent = response.content;
       

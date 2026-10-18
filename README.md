@@ -105,6 +105,30 @@ turn on demand.
 Note that Vercel's Hobby plan only allows daily cron schedules. For frequent
 ticks on Hobby, run the worker yourself; Pro allows per-minute schedules.
 
+## Agent Tools
+
+Participants can be granted tools so they check facts instead of recalling them.
+Tools are per-persona allowlists (`Persona.tools`); a participant with none is
+offered none.
+
+| Tool | What it does |
+|---|---|
+| `web_search` | Finds sources. Uses Tavily (`TAVILY_API_KEY`) or Brave (`BRAVE_API_KEY`) when keyed, otherwise a keyless best-effort fallback. |
+| `fetch_url` | Reads a public page and returns its text. |
+| `calculator` | Exact arithmetic via a hand-written parser — no `eval`, no `new Function`. |
+
+The loop is bounded at 4 tool round-trips per turn, so a model that keeps asking
+for tools still terminates. Tool results are appended as `tool`-role messages and
+are never merged into the system prompt: fetched web content is untrusted and
+must not be able to issue instructions.
+
+`fetch_url` is stricter than the provider URL validator on purpose. That one
+permits loopback so a provider can point at a local Ollama; a fetch tool must
+not, or an agent becomes an internal-network probe. It refuses loopback, private
+ranges, link-local (including cloud metadata), CGNAT, multicast, IPv4-mapped
+IPv6, credential-bearing URLs and non-http schemes, re-checks every redirect
+hop, and caps response size, time and redirect count.
+
 ## Security & Reliability Notes
 
 - API keys are encrypted before storage and masked when displayed.
