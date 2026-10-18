@@ -73,6 +73,7 @@ export async function PUT(
     const { title, topic, isAutoMode, addParticipantIds, removeParticipantIds } = body
 
     const session = await auth()
+    const userId = session?.user?.id
 
     // Check if chat exists and get creator
     const existingChat = await prisma.chat.findUnique({
@@ -85,11 +86,39 @@ export async function PUT(
     }
 
     // Only the chat creator can update it
-    if (existingChat.creatorId !== session?.user?.id) {
+    if (!userId || existingChat.creatorId !== userId) {
       return NextResponse.json(
         { error: 'Only the chat creator can modify this chat' },
         { status: 403 }
       )
+    }
+
+    if (title !== undefined && (title === null || typeof title !== 'string' || title.trim().length === 0)) {
+      return NextResponse.json(
+        { error: 'Title must be a non-empty string' },
+        { status: 400 }
+      )
+    }
+    if (topic !== undefined && topic !== null && typeof topic !== 'string') {
+      return NextResponse.json({ error: 'Topic must be a string' }, { status: 400 })
+    }
+    if (isAutoMode !== undefined && typeof isAutoMode !== 'boolean') {
+      return NextResponse.json({ error: 'isAutoMode must be a boolean' }, { status: 400 })
+    }
+    for (const [label, value] of [
+      ['addParticipantIds', addParticipantIds],
+      ['removeParticipantIds', removeParticipantIds],
+    ] as const) {
+      if (
+        value !== undefined &&
+        value !== null &&
+        (!Array.isArray(value) || value.some((entry: unknown) => typeof entry !== 'string'))
+      ) {
+        return NextResponse.json(
+          { error: `${label} must be an array of strings` },
+          { status: 400 }
+        )
+      }
     }
 
     // Update chat settings
@@ -104,7 +133,7 @@ export async function PUT(
       participantChanges.removed = await removeParticipants(id, removeParticipantIds)
     }
     if (addParticipantIds?.length > 0) {
-      const result = await addParticipants(id, addParticipantIds)
+      const result = await addParticipants(id, addParticipantIds, userId)
       participantChanges = { ...participantChanges, ...result }
     }
 

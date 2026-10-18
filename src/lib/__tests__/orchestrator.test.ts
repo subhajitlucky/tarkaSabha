@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('../prisma', () => ({
   prisma: {
@@ -6,7 +6,7 @@ vi.mock('../prisma', () => ({
     message: { findMany: vi.fn(), create: vi.fn() },
     chat: { update: vi.fn(), findUnique: vi.fn() },
     personaOnChat: { create: vi.fn(), deleteMany: vi.fn() },
-    persona: {},
+    persona: { findMany: vi.fn() },
   },
 }))
 
@@ -34,6 +34,7 @@ vi.mock('../rate-limit', () => ({
 
 import {
   DynamicOrchestrator,
+  addParticipants,
   buildConversationContext,
   buildPersonaPrompt,
   cleanResponse,
@@ -43,6 +44,7 @@ import {
   isRefusal,
   stripRefusal,
 } from '../orchestrator'
+import { prisma } from '../prisma'
 
 type Persona = {
   id: string
@@ -226,5 +228,61 @@ describe('buildPersonaPrompt', () => {
     expect(prompt).toContain('TOPIC: Housing')
     expect(prompt).toContain('Bo')
     expect(prompt).toContain('Cy')
+  })
+})
+
+describe('addParticipants ownership', () => {
+  beforeEach(() => {
+    vi.mocked(prisma.persona.findMany).mockReset()
+    vi.mocked(prisma.personaOnChat.create).mockReset()
+    vi.mocked(prisma.personaOnChat.create).mockResolvedValue({} as never)
+  })
+
+  it('scopes the ownership lookup to the requesting user', async () => {
+    vi.mocked(prisma.persona.findMany).mockResolvedValue([] as never)
+
+    await addParticipants('chat-1', ['someone-elses'], 'user-1')
+
+    expect(prisma.persona.findMany).toHaveBeenCalledWith({
+      where: { id: { in: ['someone-elses'] }, creatorId: 'user-1' },
+      select: { id: true },
+    })
+  })
+
+  it('refuses to attach a persona the user does not own', async () => {
+    vi.mocked(prisma.persona.findMany).mockResolvedValue([] as never)
+
+    const result = await addParticipants('chat-1', ['theirs'], 'user-1')
+
+    expect(result).toEqual({ added: 0, skipped: 1 })
+    expect(prisma.personaOnChat.create).not.toHaveBeenCalled()
+  })
+
+  it('attaches owned personas and skips the rest', async () => {
+    vi.mocked(prisma.persona.findMany).mockResolvedValue([{ id: 'mine' }] as never)
+
+    const result = await addParticipants('chat-1', ['mine', 'theirs'], 'user-1')
+
+    expect(result).toEqual({ added: 1, skipped: 1 })
+    expect(prisma.personaOnChat.create).toHaveBeenCalledTimes(1)
+    expect(prisma.personaOnChat.create).toHaveBeenCalledWith({
+      data: { personaId: 'mine', chatId: 'chat-1' },
+    })
+  })
+
+  it('counts an already-present participant as skipped', async () => {
+    vi.mocked(prisma.persona.findMany).mockResolvedValue([{ id: 'mine' }] as never)
+    vi.mocked(prisma.personaOnChat.create).mockRejectedValue(new Error('unique constraint'))
+
+    const result = await addParticipants('chat-1', ['mine'], 'user-1')
+
+    expect(result).toEqual({ added: 0, skipped: 1 })
+  })
+
+  it('does not query at all for an empty list', async () => {
+    const result = await addParticipants('chat-1', [], 'user-1')
+
+    expect(result).toEqual({ added: 0, skipped: 0 })
+    expect(prisma.persona.findMany).not.toHaveBeenCalled()
   })
 })

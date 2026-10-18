@@ -814,23 +814,36 @@ export async function autoContinueDebate(
 
 export async function addParticipants(
   chatId: string,
-  personaIds: string[]
+  personaIds: string[],
+  ownerId: string
 ): Promise<{ added: number; skipped: number }> {
+  if (personaIds.length === 0) return { added: 0, skipped: 0 }
+
+  // A persona may only join a chat owned by its own creator. Without this check
+  // any authenticated user could attach someone else's persona to their own chat
+  // and then read its bio and personality back through GET /api/chats/[id].
+  const owned = await prisma.persona.findMany({
+    where: { id: { in: personaIds }, creatorId: ownerId },
+    select: { id: true },
+  })
+  const allowed = new Set(owned.map((persona) => persona.id))
+
   let added = 0
-  let skipped = 0
 
   for (const personaId of personaIds) {
+    if (!allowed.has(personaId)) continue
+
     try {
       await prisma.personaOnChat.create({
         data: { personaId, chatId },
       })
       added++
     } catch {
-      skipped++
+      // already a participant, or a concurrent insert won the race
     }
   }
 
-  return { added, skipped }
+  return { added, skipped: personaIds.length - added }
 }
 
 export async function removeParticipants(
