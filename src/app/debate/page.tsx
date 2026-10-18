@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Provider, ProviderType } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
 import { PageHeader } from '@/components/ui/EmptyState'
+import { Avatar } from '@/components/ui/Avatar'
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
@@ -167,7 +168,7 @@ export default function DebatePage() {
   if (authLoading) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${'bg-bg'}`}>
-        <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-[3px] animate-spin" />
       </div>
     )
   }
@@ -362,18 +363,18 @@ export default function DebatePage() {
     return (
       <div className={`min-h-screen flex items-center justify-center ${'bg-bg'}`}>
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
-            <svg className="w-10 h-10 text-amber-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className={`text-2xl font-bold mb-2 ${'text-text'}`}>Debate Created!</h2>
-          <p className={`mb-6 ${'text-muted'}`}>Your debate is ready</p>
+          <span className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-[3px] border border-accent-line bg-accent-soft font-display text-2xl text-accent">
+            त
+          </span>
+          <h2 className="text-2xl text-text">The council is convened</h2>
+          <p className="mb-6 mt-2 text-sm text-muted">
+            Take your seat, then start the discussion or let the agents work on their own.
+          </p>
           <button
             onClick={goToChat}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-semibold px-8 py-4 rounded-[3px] transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
+            className="cursor-pointer rounded-[3px] border border-accent bg-accent px-6 py-3 font-medium text-accent-ink transition-colors hover:bg-accent-hover"
           >
-            Enter Debate Room
+            Enter the council
           </button>
         </div>
       </div>
@@ -420,7 +421,7 @@ export default function DebatePage() {
                     title={option.hint}
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                       mode === option.value
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 shadow'
+                        ? 'border-accent bg-accent text-accent-ink'
                         : 'text-muted hover:text-text'
                     }`}
                   >
@@ -428,7 +429,7 @@ export default function DebatePage() {
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-slate-500 mt-2">
+              <p className="mt-2 text-xs text-subtle">
                 {mode === 'task'
                   ? 'Agents work together on your objective. Synthesise a final deliverable when they are done.'
                   : 'Agents stay stubbornly in character and argue. For entertainment, not for getting an answer.'}
@@ -646,20 +647,11 @@ export default function DebatePage() {
                     'bg-surface-2 border border-line'
                   }`}>
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">
-                        <span className="truncate max-w-[90%]">
-                          {(agent.name || '?')
-                            .split(/\s+/)
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .map(w => w[0]?.toUpperCase() || '')
-                            .join('')}
-                        </span>
-                      </div>
+                      <Avatar name={agent.name} size="sm" />
                       <div>
                         <div className={`text-sm font-medium ${'text-text'}`}>{agent.name}</div>
-                        <div className="text-xs text-slate-500">
-                          <span className="text-amber-500 font-semibold">{agent.role}</span>
+                        <div className="text-xs text-subtle">
+                          <span className="font-mono text-accent">{agent.role}</span>
                           {' · '}{agent.providerType} · {agent.model}
                           {agent.tools.length > 0 && ` · ${agent.tools.length} tool${agent.tools.length > 1 ? 's' : ''}`}
                         </div>
@@ -667,7 +659,7 @@ export default function DebatePage() {
                     </div>
                     <button
                       onClick={() => removeAgent(agent.id)}
-                      className="text-red-400 hover:text-red-300 p-1 cursor-pointer transition-colors"
+                      className="cursor-pointer rounded-[3px] p-1 text-subtle transition-colors hover:bg-danger-soft hover:text-danger"
                     >
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -679,7 +671,7 @@ export default function DebatePage() {
             )}
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-2 rounded-lg text-sm mb-4">
+              <div role="alert" className="mb-4 rounded-[3px] border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger">
                 {error}
               </div>
             )}

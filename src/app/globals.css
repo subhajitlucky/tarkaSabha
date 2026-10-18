@@ -36,6 +36,14 @@
   --success: #6fb587;
   --success-soft: rgb(111 181 135 / 0.12);
 
+  /* Avatar tones. Five earthy hues that sit inside the manuscript palette
+     instead of the indigo/purple gradients the old design used. */
+  --tone-1: #e8913a; /* saffron */
+  --tone-2: #c07a5a; /* clay */
+  --tone-3: #93a06a; /* moss */
+  --tone-4: #7d90b5; /* ink blue */
+  --tone-5: #b483a2; /* plum */
+
   --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.8);
 
   color-scheme: dark;
@@ -64,6 +72,12 @@ html.light {
   --danger-soft: rgb(179 64 60 / 0.1);
   --success: #3d7f52;
   --success-soft: rgb(61 127 82 / 0.1);
+
+  --tone-1: #b4621a;
+  --tone-2: #8c5334;
+  --tone-3: #5f6b3c;
+  --tone-4: #4a5c7d;
+  --tone-5: #7d4d6b;
 
   --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.6), 0 12px 32px -20px rgb(60 45 25 / 0.28);
 

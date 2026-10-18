@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Chat } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
+import { Avatar } from '@/components/ui/Avatar'
 
 interface Feedback {
   id: string
@@ -60,35 +61,25 @@ export default function DashboardPage() {
 
   const userName = session?.user?.name || 'User'
   const userEmail = session?.user?.email
-  // Only show the first letter of the user's name
-  const userInitial = userName?.charAt(0)?.toUpperCase() || 'U'
 
   return (
     <div className={`min-h-screen py-12 ${'bg-bg text-text'}`}>
       <div className="max-w-6xl mx-auto px-6">
         
         {/* Profile Section */}
-        <div className={`mb-12 p-8 rounded-3xl border shadow-lg ${
-          'bg-surface border-line'
-        }`}>
+        <div className="mb-10 rounded-[4px] border border-line bg-surface p-7">
           <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-br from-amber-400 to-orange-600 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-              {/* Always show initials to ensure consistent look and avoid text overflow in default Google images */}
-              <div className="relative w-24 h-24 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-3xl font-bold text-white shadow-xl">
-                <span className="max-w-[80%] text-center truncate block leading-none">{userInitial}</span>
-              </div>
-            </div>
+            <Avatar name={userName} size="lg" />
             <div className="text-center md:text-left space-y-2">
-              <h1 className="text-3xl font-bold">{userName}</h1>
-              <p className={`text-lg ${'text-muted'}`}>{userEmail}</p>
+              <h1 className="text-3xl text-text">{userName}</h1>
+              <p className="text-base text-muted">{userEmail}</p>
               <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-2">
-                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
+                <span className={`rounded-[3px] border border-line px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.1em] ${
                   'bg-accent-soft text-accent'
                 }`}>
                   Free Tier
                 </span>
-                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest ${
+                <span className={`rounded-[3px] border border-line px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.1em] ${
                   'bg-surface-2 text-muted'
                 }`}>
                   Member since {new Date().getFullYear()}
@@ -103,17 +94,17 @@ export default function DashboardPage() {
           <div className={`p-6 rounded-2xl border ${'bg-surface border-line'}`}>
             <p className={`text-sm font-bold uppercase tracking-wider mb-1 ${'text-subtle'}`}>Debates</p>
             {loading ? (
-              <div className="h-9 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+              <div className="h-9 w-16 animate-pulse rounded-[3px] bg-surface-2" />
             ) : (
-              <p className="text-3xl font-bold text-amber-500">{chats.length}</p>
+              <p className="font-display text-3xl text-accent tabular-nums">{chats.length}</p>
             )}
           </div>
           <div className={`p-6 rounded-2xl border ${'bg-surface border-line'}`}>
             <p className={`text-sm font-bold uppercase tracking-wider mb-1 ${'text-subtle'}`}>Personas</p>
             {loading ? (
-              <div className="h-9 w-16 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" />
+              <div className="h-9 w-16 animate-pulse rounded-[3px] bg-surface-2" />
             ) : (
-              <p className="text-3xl font-bold text-indigo-500">
+              <p className="font-display text-3xl text-text tabular-nums">
                 {new Set(chats.flatMap(c => c.participants?.map(p => p.personaId))).size || 0}
               </p>
             )}
@@ -133,16 +124,16 @@ export default function DashboardPage() {
 
         {loading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
+            <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-[3px] animate-spin" />
           </div>
         ) : chats.length === 0 ? (
-          <div className={`text-center py-16 rounded-3xl border-2 border-dashed ${
+          <div className={`text-center py-16 rounded-[4px] border-2 border-dashed ${
             'border-line bg-surface-2'
           }`}>
-            <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            <div className={`w-16 h-16 mx-auto mb-4 rounded-[3px] flex items-center justify-center ${
               'bg-surface-2'
             }`}>
-              <svg className="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-7 w-7 text-subtle" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -167,10 +158,10 @@ export default function DashboardPage() {
                     {chat.participants?.slice(0, 3).map((p, i) => (
                       <div
                         key={i}
-                        className={`w-8 h-8 rounded-full overflow-hidden border-2 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${
+                        className={`w-8 h-8 rounded-[3px] overflow-hidden border-2 flex items-center justify-center text-[10px] font-bold text-white shadow-sm ${
                           'border-line'
                         } ${
-                           i % 2 === 0 ? 'bg-gradient-to-br from-indigo-500 to-purple-600' : 'bg-gradient-to-br from-amber-400 to-orange-500'
+                           'bg-surface-2 border border-line text-muted'
                         }`}
                       >
                         <span className="truncate max-w-[90%]">
@@ -184,7 +175,7 @@ export default function DashboardPage() {
                       </div>
                     ))}
                     {(chat.participants?.length || 0) > 3 && (
-                      <div className={`w-8 h-8 rounded-full border-2 flex items-center justify-center text-[10px] font-bold ${
+                      <div className={`w-8 h-8 rounded-[3px] border-2 flex items-center justify-center text-[10px] font-bold ${
                         'border-line bg-surface-2 text-muted'
                       }`}>
                         +{(chat.participants?.length || 0) - 3}
@@ -192,14 +183,14 @@ export default function DashboardPage() {
                     )}
                   </div>
                   {chat.isAutoMode && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-500/10 text-green-500 text-[10px] font-bold uppercase tracking-wider border border-green-500/20">
-                      <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />
+                    <span className="flex items-center gap-1.5 rounded-[3px] border border-success/30 bg-success-soft px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-success">
+                      <span className="h-1 w-1 animate-pulse rounded-full bg-success" />
                       Auto
                     </span>
                   )}
                 </div>
                 
-                <h3 className={`font-bold text-lg mb-2 line-clamp-2 group-hover:text-amber-500 transition-colors ${
+                <h3 className={`font-bold text-lg mb-2 line-clamp-2 group-hover:text-accent transition-colors ${
                   'text-text'
                 }`}>
                   {chat.topic || 'Untitled Debate'}
@@ -231,17 +222,17 @@ export default function DashboardPage() {
                 <div key={item.id} className={`p-6 rounded-2xl border ${'bg-surface border-line'}`}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <span className={`inline-block px-2 py-1 rounded text-xs font-bold uppercase tracking-wider mb-2 ${
-                        item.type === 'bug' ? 'bg-red-500/10 text-red-500' :
-                        item.type === 'feature' ? 'bg-blue-500/10 text-blue-500' :
-                        'bg-slate-500/10 text-slate-500'
+                      <span className={`mb-2 inline-block rounded-[3px] px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] ${
+                        item.type === 'bug' ? 'border border-danger/30 bg-danger-soft text-danger' :
+                        item.type === 'feature' ? 'border border-accent-line bg-accent-soft text-accent' :
+                        'border border-line bg-surface-2 text-subtle'
                       }`}>
                         {item.type}
                       </span>
                       <h3 className={`font-semibold ${'text-text'}`}>{item.name || 'Anonymous'}</h3>
-                      <p className="text-sm text-slate-500">{item.email}</p>
+                      <p className="text-sm text-subtle">{item.email}</p>
                     </div>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-subtle">
                       {new Date(item.createdAt).toLocaleDateString()}
                     </span>
                   </div>

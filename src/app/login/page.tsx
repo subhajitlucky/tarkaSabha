@@ -76,6 +76,8 @@ function LoginForm() {
         <Button
           variant="secondary"
           size="lg"
+          // Deliberately off-palette: Google's brand guidelines require the
+          // white button with dark text for this mark.
           className="w-full bg-white text-slate-900 hover:bg-slate-50"
           onClick={handleGoogleSignIn}
           disabled={isLoading}

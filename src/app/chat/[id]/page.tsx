@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Artifact, Chat, Message } from '@/types'
+import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/components/AuthProvider'
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -369,7 +370,7 @@ export default function ChatPage() {
   if (!chat) {
     return (
       <div className={`min-h-screen flex items-center justify-center ${'bg-bg'}`}>
-        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -379,13 +380,10 @@ export default function ChatPage() {
   const themeText = 'text-text';
   const headerBg = 'bg-surface border-line';
   const sidebarBtn = 'hover:bg-surface-2 text-muted';
-  const statusBadge = chat.isAutoMode 
-    ? 'bg-success-soft border-success/30 text-success' 
-    : 'bg-surface-2 border-line text-subtle';
   const identityBtn = 'bg-surface border border-line text-text hover:bg-surface-2';
   const actionGroup = 'bg-surface border-line';
   const toggleBtn = chat.isAutoMode 
-    ? 'bg-red-500 text-white hover:bg-red-600 shadow-md' 
+    ? 'border-danger bg-danger-soft text-danger' 
     : ('bg-surface-2 text-text hover:bg-surface-3');
   const settingsBtn = showChatSettings 
     ? ('bg-surface-3 text-text')
@@ -401,15 +399,13 @@ export default function ChatPage() {
       {/* Username Modal */}
       {showUsernameModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className={`p-8 rounded-[4px] max-w-md w-full shadow-2xl ${'bg-surface border border-line'}`}>
-            <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-600 rounded-[4px] flex items-center justify-center mb-6 shadow-lg">
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold mb-2">Identity Setup</h2>
-            <p className="mb-6 text-sm opacity-60">
-              Choose a name to represent you in this debate. This name will be shared with the AI personas.
+          <div className="w-full max-w-md rounded-[4px] border border-line bg-surface p-7 shadow-lift">
+            <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-[3px] border border-accent-line bg-accent-soft font-display text-xl text-accent">
+              त
+            </span>
+            <h2 className="text-xl text-text">Take your seat</h2>
+            <p className="mb-6 mt-2 text-sm leading-relaxed text-muted">
+              Choose the name the agents will know you by in this council.
             </p>
             <input
               type="text"
@@ -450,7 +446,7 @@ export default function ChatPage() {
                   {best?.score != null && (
                     <span
                       title="Weighted rubric score out of 10"
-                      className="px-2.5 py-1 rounded-[3px] text-xs font-bold bg-amber-500/15 text-amber-500"
+                      className="rounded-[3px] border border-accent-line bg-accent-soft px-2 py-0.5 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-accent"
                     >
                       {best.score.toFixed(1)} / 10
                     </span>
@@ -489,7 +485,7 @@ export default function ChatPage() {
                             <span className={`w-24 flex-shrink-0 font-semibold ${'text-text'}`}>
                               {criterion.label}
                             </span>
-                            <span className="w-8 flex-shrink-0 text-amber-500 font-bold">{criterion.score}</span>
+                            <span className="w-8 flex-shrink-0 font-mono text-accent">{criterion.score}</span>
                             <span className={'text-subtle'}>{criterion.reason}</span>
                           </div>
                         ))}
@@ -497,14 +493,14 @@ export default function ChatPage() {
                     </div>
                   )}
 
-                  <p className="text-xs text-slate-500 mt-4">
+                  <p className="text-xs text-subtle mt-4">
                     {best.model && `Produced by ${best.model}`}
                     {best.angle && ` · ${best.angle} angle`}
                     {best.round ? ` · round ${best.round}` : ''}
                   </p>
 
                   {others.length > 0 && (
-                    <div className="mt-5 pt-4 border-t border-slate-700/40">
+                    <div className="mt-5 pt-4 border-t border-line">
                       <button
                         onClick={() => setShowOtherCandidates(!showOtherCandidates)}
                         className={`text-xs font-bold cursor-pointer ${'text-muted hover:text-text'}`}
@@ -517,11 +513,11 @@ export default function ChatPage() {
                           {others.map(candidate => (
                             <div key={candidate.id} className={`p-3 rounded-[3px] text-xs ${'bg-surface-2'}`}>
                               <div className="flex items-center gap-2 mb-1">
-                                <span className="font-bold text-amber-500">
+                                <span className="font-mono font-bold text-accent">
                                   {candidate.score != null ? candidate.score.toFixed(1) : '—'}
                                 </span>
                                 <span className={'text-text'}>{candidate.title}</span>
-                                <span className="text-slate-500">
+                                <span className="text-subtle">
                                   {candidate.angle}{candidate.round ? ` · round ${candidate.round}` : ''}
                                 </span>
                               </div>
@@ -537,14 +533,14 @@ export default function ChatPage() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-slate-700/40">
+              <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-line">
                 <button
                   onClick={() => synthesize(2)}
                   disabled={isSynthesizing}
                   title="Generate candidates, judge them, and retry once if the best scores below 7"
                   className={`px-4 py-3 rounded-[3px] font-bold text-sm transition-all cursor-pointer ${
                     isSynthesizing
-                      ? 'opacity-60 cursor-not-allowed bg-slate-600 text-white'
+                      ? 'cursor-not-allowed bg-surface-3 text-subtle'
                       : 'bg-surface-2 border border-line text-text hover:border-line-strong'
                   }`}
                 >
@@ -555,8 +551,8 @@ export default function ChatPage() {
                   disabled={isSynthesizing}
                   className={`px-5 py-3 rounded-[3px] font-bold text-sm transition-all cursor-pointer ${
                     isSynthesizing
-                      ? 'opacity-60 cursor-not-allowed bg-slate-600 text-white'
-                      : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 shadow-lg'
+                      ? 'cursor-not-allowed bg-surface-3 text-subtle'
+                      : 'border-accent bg-accent text-accent-ink hover:bg-accent-hover'
                   }`}
                 >
                   {isSynthesizing
@@ -581,7 +577,7 @@ export default function ChatPage() {
               </div>
               <div>
                 <h3 className="text-xl font-bold">Delete Debate?</h3>
-                <p className="text-sm opacity-60">This action cannot be undone.</p>
+                <p className="text-sm text-muted">This action cannot be undone.</p>
               </div>
             </div>
 
@@ -596,7 +592,7 @@ export default function ChatPage() {
               </button>
               <button
                 onClick={deleteChat}
-                className="flex-1 bg-red-500 hover:bg-red-600 text-white px-6 py-3.5 rounded-[4px] text-sm font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-500 "
+                className="flex-1 cursor-pointer rounded-[3px] border border-danger bg-danger-soft px-5 py-3 text-sm font-medium text-danger transition-colors hover:bg-danger hover:text-white"
               >
                 Delete
               </button>
@@ -610,14 +606,14 @@ export default function ChatPage() {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className={`p-8 rounded-[4px] max-w-md w-full shadow-2xl ${'bg-surface border border-line'}`}>
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-[4px] bg-amber-500 /10 flex items-center justify-center flex-shrink-0">
-                <svg className="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-[3px] border border-danger/30 bg-danger-soft">
+                <svg className="h-6 w-6 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </div>
               <div>
                 <h3 className="text-xl font-bold">Wipe Messages?</h3>
-                <p className="text-sm opacity-60">This will delete all messages. The debate will remain.</p>
+                <p className="text-sm text-muted">This will delete all messages. The debate will remain.</p>
               </div>
             </div>
 
@@ -632,7 +628,7 @@ export default function ChatPage() {
               </button>
               <button
                 onClick={wipeMessages}
-                className="flex-1 bg-amber-500 hover:bg-amber-600 text-white px-6 py-3.5 rounded-[4px] text-sm font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-amber-500 "
+                className="flex-1 cursor-pointer rounded-[3px] border border-danger bg-danger-soft px-5 py-3 text-sm font-medium text-danger transition-colors hover:bg-danger hover:text-white"
               >
                 Wipe
               </button>
@@ -655,16 +651,24 @@ export default function ChatPage() {
                 </svg>
               </button>
               <div className="min-w-0">
-                <h1 className="text-xl font-bold tracking-tight truncate leading-tight mb-0.5">
+                <h1 className="mb-1 truncate font-display text-lg leading-tight text-text">
                   {chat.topic || chat.title}
                 </h1>
                 <div className="flex items-center gap-2">
-                  <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusBadge}`}>
-                    {chat.isAutoMode && <span className="w-1 h-1 bg-green-500 rounded-full animate-pulse" />}
-                    {chat.isAutoMode ? 'Autonomous' : 'Manual Mode'}
-                  </div>
-                  <span className="text-[10px] font-medium opacity-50">
-                    {chat.participants?.length || 0} Agents active
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-[3px] border px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] ${
+                      chat.isAutoMode
+                        ? 'border-success/30 bg-success-soft text-success'
+                        : 'border-line bg-surface-2 text-subtle'
+                    }`}
+                  >
+                    {chat.isAutoMode && (
+                      <span className="h-1 w-1 animate-pulse rounded-full bg-success" />
+                    )}
+                    {chat.isAutoMode ? 'Running' : 'Manual'}
+                  </span>
+                  <span className="font-mono text-[0.625rem] text-subtle">
+                    {chat.participants?.length || 0} agent{chat.participants?.length === 1 ? '' : 's'}
                   </span>
                 </div>
               </div>
@@ -675,16 +679,7 @@ export default function ChatPage() {
                 onClick={() => setUsernameModalRequested(true)}
                 className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-[3px] transition-all border group cursor-pointer ${identityBtn}`}
               >
-                <div className="w-7 h-7 rounded-[3px] overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-[11px] font-black text-white shadow-sm transition-transform group-hover:scale-110">
-                  <span className="truncate max-w-[90%]">
-                    {username
-                      .split(/\s+/)
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map(w => w[0]?.toUpperCase() || '')
-                      .join('')}
-                  </span>
-                </div>
+                <Avatar name={username} size="sm" />
                 <span className="text-sm font-bold tracking-tight">{username}</span>
               </button>
 
@@ -785,48 +780,19 @@ export default function ChatPage() {
           {messages.map((message, idx) => {
             const persona = chat.participants?.find(p => p.persona?.id === message.personaId)?.persona
             const isUser = message.role === 'user'
-            
-            // Generate a distinct color for each agent based on their ID
-            const agentGradients = [
-              'from-indigo-500 to-purple-600',
-              'from-emerald-500 to-teal-600',
-              'from-rose-500 to-pink-600',
-              'from-blue-600 to-cyan-500',
-              'from-violet-600 to-fuchsia-500',
-              'from-sky-500 to-blue-700',
-              'from-lime-500 to-green-600',
-              'from-red-500 to-rose-700',
-            ];
-            
-            const agentColor = persona 
-              ? agentGradients[persona.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) % agentGradients.length]
-              : 'from-slate-500 to-slate-600';
 
             return (
               <div key={message.id || idx} className={`flex ${isUser ? 'justify-end' : 'justify-start'} group animate-in fade-in slide-in-from-bottom-2 duration-300`}>
                 <div className={`flex gap-4 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                   <div className="flex-shrink-0 mt-1">
-                    <div className={`w-9 h-9 rounded-[4px] overflow-hidden flex items-center justify-center text-sm font-bold text-white shadow-md bg-gradient-to-br ${
-                      isUser 
-                        ? 'from-amber-400 to-orange-600' 
-                        : agentColor
-                    }`}>
-                      <span className="truncate max-w-[90%]">
-                        {(isUser ? username : (persona?.name || 'A'))
-                          .split(/\s+/)
-                          .filter(Boolean)
-                          .slice(0, 2)
-                          .map(w => w[0]?.toUpperCase() || '')
-                          .join('')}
-                      </span>
-                    </div>
+                    <Avatar name={isUser ? username : (persona?.name || message.personaName || "Agent")} size="md" />
                   </div>
 
                   <div className={`space-y-1.5 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
                     {!isUser && (
                       <div className="flex items-center gap-2 px-1">
-                        <span className="text-[11px] font-black uppercase tracking-widest opacity-50">{persona?.name || 'Agent'}</span>
-                        <span className="text-[10px] font-medium opacity-40">{formatTime(message.createdAt)}</span>
+                        <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-muted">{persona?.name || 'Agent'}</span>
+                        <span className="font-mono text-[0.625rem] text-subtle">{formatTime(message.createdAt)}</span>
                       </div>
                     )}
                     
@@ -840,8 +806,8 @@ export default function ChatPage() {
 
                     {isUser && (
                       <div className="flex items-center gap-2 px-1">
-                        <span className="text-[10px] font-medium opacity-40">{formatTime(message.createdAt)}</span>
-                        <span className="text-[11px] font-black uppercase tracking-widest text-amber-500 opacity-80">You</span>
+                        <span className="font-mono text-[0.625rem] text-subtle">{formatTime(message.createdAt)}</span>
+                        <span className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-accent">You</span>
                       </div>
                     )}
                   </div>
@@ -854,17 +820,17 @@ export default function ChatPage() {
             <div className="flex justify-start animate-in fade-in duration-500">
               <div className="flex gap-4">
                 <div className="w-9 h-9 rounded-[4px] bg-surface-2 flex items-center justify-center flex-shrink-0 animate-pulse">
-                  <div className="w-1.5 h-1.5 bg-slate-400 rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-subtle rounded-full" />
                 </div>
                 <div className={`px-5 py-4 rounded-[4px] rounded-tl-none flex items-center gap-3 ${
                   'bg-surface-2'
                 }`}>
                   <div className="flex gap-1.5">
-                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                    <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce" />
+                    <div className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <div className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <div className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce" />
                   </div>
-                  <span className="text-[11px] font-bold uppercase tracking-tighter opacity-50">Processing Round</span>
+                  <span className="eyebrow">Working</span>
                 </div>
               </div>
             </div>
@@ -920,13 +886,11 @@ export default function ChatPage() {
               </button>
             </div>
           ) : (
-            <div className="py-4 text-center rounded-[4px] border-2 border-dashed /20 border-slate-500 opacity-50">
-              <p className="text-sm font-bold uppercase tracking-widest">Read Only Mode</p>
+            <div className="rounded-[4px] border border-dashed border-line py-4 text-center">
+              <p className="eyebrow">Read-only — only the creator can post</p>
             </div>
           )}
-          <p className="text-[10px] text-center mt-4 uppercase tracking-[0.2em] font-black opacity-20">
-            Powered by Tarka Sabha Orchestrator v2.0
-          </p>
+          <p className="eyebrow mt-4 text-center">Brahmodya Protocol</p>
         </div>
       </footer>
     </div>
