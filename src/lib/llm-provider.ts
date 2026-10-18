@@ -653,7 +653,7 @@ class HuggingFaceProvider extends BaseLLMProvider {
     super(config)
     this.client = new OpenAI({
       apiKey: config.apiKey,
-      baseURL: config.apiUrl || 'https://api-inference.huggingface.co/models',
+      baseURL: config.apiUrl || 'https://router.huggingface.co/v1',
     })
   }
 
@@ -806,7 +806,9 @@ export class LLMProviderFactory {
       },
       huggingface: {
         name: 'HuggingFace',
-        defaultUrl: 'https://api-inference.huggingface.co/models',
+        // api-inference.huggingface.co no longer resolves; the OpenAI-compatible
+        // router lives at router.huggingface.co/v1.
+        defaultUrl: 'https://router.huggingface.co/v1',
         requiresKey: true,
       },
       custom: {
@@ -836,7 +838,8 @@ export async function getLLMResponse(
     apiKey: cryptoService.decrypt(apiKey),
     apiUrl: options.apiUrl || LLMProviderFactory.getProviderInfo(provider).defaultUrl,
     model,
-    temperature: options.temperature || 0.7,
+    // ?? not ||: a temperature of 0 is a legitimate, deliberate value.
+    temperature: options.temperature ?? 0.7,
     maxTokens: options.maxTokens,
   }
 

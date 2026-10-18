@@ -21,7 +21,7 @@ const PROVIDER_TYPES: { value: ProviderType; label: string; requiresKey: boolean
   { value: 'together', label: 'Together AI', requiresKey: true, defaultUrl: 'https://api.together.ai/v1' },
   { value: 'openrouter', label: 'OpenRouter', requiresKey: true, defaultUrl: 'https://openrouter.ai/api/v1' },
   { value: 'perplexity', label: 'Perplexity', requiresKey: true, defaultUrl: 'https://api.perplexity.ai' },
-  { value: 'huggingface', label: 'HuggingFace', requiresKey: true, defaultUrl: 'https://api-inference.huggingface.co/models' },
+  { value: 'huggingface', label: 'HuggingFace', requiresKey: true, defaultUrl: 'https://router.huggingface.co/v1' },
   { value: 'custom', label: 'Custom API', requiresKey: true, defaultUrl: '' },
 ]
 

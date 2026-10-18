@@ -18,6 +18,24 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+// How many previous messages each persona sees. These must be the MOST RECENT
+// ones: taking the first N in ascending order feeds every agent a frozen window
+// of ancient history and points the "JUST SAID" instruction at a stale message.
+const MAX_CONTEXT_MESSAGES = 15
+
+/**
+ * Most recent messages for a chat, returned oldest-first so callers can rely on
+ * the last element being the newest.
+ */
+async function getRecentMessages(chatId: string, take: number = MAX_CONTEXT_MESSAGES) {
+  const messages = await prisma.message.findMany({
+    where: { chatId },
+    orderBy: { createdAt: 'desc' },
+    take,
+  })
+  return messages.reverse()
+}
+
 export function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
@@ -487,11 +505,7 @@ export async function orchestrateMessage(
     }
   }
 
-  const previousMessages = await prisma.message.findMany({
-    where: { chatId },
-    orderBy: { createdAt: 'asc' },
-    take: 15,
-  })
+  const previousMessages = await getRecentMessages(chatId)
 
   // Find the human user's name from the history
   const humanParticipant = previousMessages.find(m => m.role === 'user')?.personaName || 'User';
@@ -686,11 +700,7 @@ export async function autoContinueDebate(
 
     console.log(`[Auto-Debate] Turn ${turns + 1}: ${speaker.name} is responding`)
 
-    const previousMessages = await prisma.message.findMany({
-      where: { chatId },
-      orderBy: { createdAt: 'asc' },
-      take: 15,
-    })
+    const previousMessages = await getRecentMessages(chatId)
 
     // Find the human user's name from the history
     const humanParticipant = previousMessages.find(m => m.role === 'user')?.personaName || 'User';

@@ -191,15 +191,20 @@ export function sanitizeContent(content: string): string {
   // Remove null bytes and other dangerous characters
   let sanitized = content.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\u200B\uFEFF]/g, '')
 
-  // Remove potential prompt injection patterns
+  // Prompt-injection heuristics. These run on every user message, so they must
+  // stay narrow: "override", "pretend to be" and "system prompt" are ordinary
+  // debate vocabulary, not attacks. The structural defence lives elsewhere —
+  // untrusted content is always sent as a user-role message, never a system
+  // message — so this is only a cheap secondary filter.
   const injectionPatterns = [
-    /ignore\s+(previous|above|prior)\s+(instruction|command|directive)/gi,
-    /system\s*prompt/gi,
-    /you\s+are\s+(now|a|an?)\s*(ai|assistant|bot)/gi,
-    /jailbreak/gi,
-    /roleplay.*break/gi,
-    /pretend\s+to\s+be/gi,
-    /override/gi,
+    // "ignore all previous instructions"
+    /\b(?:ignore|disregard|forget)\s+(?:all\s+|any\s+|the\s+)?(?:previous|prior|above|earlier|preceding)\s+(?:instruction|command|directive|prompt|rule)s?\b/gi,
+    // "reveal your system prompt"
+    /\b(?:reveal|show|print|repeat|output|tell\s+me)\s+(?:me\s+)?(?:your\s+|the\s+)?(?:system\s+prompt|initial\s+instructions|hidden\s+instructions)\b/gi,
+    // "you are now a different AI"
+    /\byou\s+are\s+now\s+(?:a|an)\s+(?:ai|assistant|chatbot|bot|language\s+model)\b/gi,
+    // explicit jailbreak vocabulary
+    /\b(?:jailbreak|developer\s+mode|dan\s+mode)\b/gi,
   ]
 
   for (const pattern of injectionPatterns) {

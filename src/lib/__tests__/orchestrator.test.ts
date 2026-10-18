@@ -42,9 +42,11 @@ import {
   extractMention,
   getNextSpeaker,
   isRefusal,
+  orchestrateMessage,
   stripRefusal,
 } from '../orchestrator'
 import { prisma } from '../prisma'
+import { getLLMResponse } from '../llm-provider'
 
 type Persona = {
   id: string
@@ -284,5 +286,72 @@ describe('addParticipants ownership', () => {
 
     expect(result).toEqual({ added: 0, skipped: 0 })
     expect(prisma.persona.findMany).not.toHaveBeenCalled()
+  })
+})
+
+describe('orchestrateMessage context window', () => {
+  const provider = {
+    id: 'p1',
+    name: 'P',
+    provider: 'openai',
+    apiUrl: 'https://api.openai.com/v1',
+    apiKey: 'encrypted',
+    model: 'gpt-4o-mini',
+    temperature: 0.7,
+    isDefault: true,
+    createdAt: new Date('2026-01-01'),
+    updatedAt: new Date('2026-01-01'),
+    creatorId: 'u1',
+  }
+
+  beforeEach(() => {
+    vi.mocked(prisma.message.findMany).mockReset()
+    vi.mocked(prisma.provider.findFirst).mockReset()
+    vi.mocked(prisma.message.create).mockReset()
+    vi.mocked(prisma.chat.update).mockReset()
+    vi.mocked(getLLMResponse).mockReset()
+
+    vi.mocked(prisma.provider.findFirst).mockResolvedValue(provider as never)
+    vi.mocked(prisma.message.create).mockResolvedValue({} as never)
+    vi.mocked(prisma.chat.update).mockResolvedValue({} as never)
+    vi.mocked(getLLMResponse).mockResolvedValue({
+      content: 'A considered reply that moves the discussion forward.',
+    })
+  })
+
+  async function run(messages: unknown[]) {
+    vi.mocked(prisma.message.findMany).mockResolvedValue(messages as never)
+    return orchestrateMessage(
+      { chatId: 'c1', topic: 'Housing', isAutoMode: false, lastSpeakerId: null },
+      '',
+      false,
+      [persona('a', 'Ada')],
+      'u1'
+    )
+  }
+
+  it('asks the database for the newest messages first, then reverses them', async () => {
+    await run([])
+
+    expect(prisma.message.findMany).toHaveBeenCalledWith({
+      where: { chatId: 'c1' },
+      orderBy: { createdAt: 'desc' },
+      take: 15,
+    })
+  })
+
+  it('points the JUST SAID instruction at the newest message, not the oldest', async () => {
+    // findMany returns newest-first, exactly as the desc query does.
+    await run([
+      { content: 'THE-NEWEST-THING', role: 'persona', personaName: 'Bo', personaId: 'b', createdAt: new Date('2026-01-02') },
+      { content: 'an older thing', role: 'persona', personaName: 'Bo', personaId: 'b', createdAt: new Date('2026-01-01') },
+    ])
+
+    const sentMessages = vi.mocked(getLLMResponse).mock.calls[0][3] as Array<{ content: string }>
+    const justSaid = sentMessages.find((m) => m.content.includes('JUST SAID'))
+
+    expect(justSaid).toBeDefined()
+    expect(justSaid?.content).toContain('THE-NEWEST-THING')
+    expect(justSaid?.content).not.toContain('an older thing')
   })
 })
