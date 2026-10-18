@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 
+// Upper bound on messages returned per poll. The chat view refreshes every few
+// seconds, so this must never grow with the length of the debate.
+const MAX_MESSAGES_PER_FETCH = 500
+
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -28,17 +32,17 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const lastId = searchParams.get('lastId')
-
+    // The client polls this every few seconds, so the query must be bounded.
+    // It previously fetched every message in the chat with no limit, and the
+    // `lastId` parameter that was meant to make it incremental was never sent by
+    // any caller. Return the most recent window, oldest-first for rendering.
     const messages = await prisma.message.findMany({
-      where: { 
-        chatId: id,
-        ...(lastId ? { id: { gt: lastId } } : {})
-      },
-      orderBy: { createdAt: 'asc' },
+      where: { chatId: id },
+      orderBy: { createdAt: 'desc' },
+      take: MAX_MESSAGES_PER_FETCH,
     })
-    return NextResponse.json(messages)
+
+    return NextResponse.json(messages.reverse())
   } catch (error) {
     console.error('Error fetching messages:', error)
     return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })

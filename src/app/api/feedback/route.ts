@@ -8,13 +8,19 @@ const MAX_MESSAGE_LENGTH = 2000
 const MAX_NAME_LENGTH = 100
 const MAX_EMAIL_LENGTH = 254
 
-function getClientIp(req: Request): string {
+function getClientIp(req: Request): string | null {
+  // x-real-ip is set by the platform and cannot be appended to by the client,
+  // so prefer it over x-forwarded-for.
+  const realIp = req.headers.get('x-real-ip')?.trim()
+  if (realIp) return realIp
+
   const forwarded = req.headers.get('x-forwarded-for')
   if (forwarded) {
     const first = forwarded.split(',')[0]?.trim()
     if (first) return first
   }
-  return req.headers.get('x-real-ip')?.trim() || 'unknown'
+
+  return null
 }
 
 function isValidEmail(email: string): boolean {
@@ -63,13 +69,18 @@ export async function POST(req: Request) {
       }
     }
 
+    // Without an identifiable client we skip the limit rather than dropping every
+    // visitor into one shared "unknown" bucket, where a single abuser could lock
+    // everyone else out of the feedback form.
     const ip = getClientIp(req)
-    const rateLimit = await rateLimitService.limitFeedback(ip)
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: 'Too many feedback submissions. Please try again later.' },
-        { status: 429 }
-      )
+    if (ip) {
+      const rateLimit = await rateLimitService.limitFeedback(ip)
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { error: 'Too many feedback submissions. Please try again later.' },
+          { status: 429 }
+        )
+      }
     }
 
     const feedback = await prisma.feedback.create({
