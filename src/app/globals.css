@@ -1,158 +1,276 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   Tarka Sabha — "The Manuscript Ledger"
+
+   A debating hall rendered as a printed journal of proceedings: warm ink and
+   parchment rather than cold blue-slate, hairline rules rather than drop
+   shadows, and a single saffron accent used sparingly.
+
+   Everything below is semantic. Components say `bg-surface` or `text-muted`,
+   never `isLight ? 'bg-white' : 'bg-slate-900'`, so the theme flips in one
+   place instead of in 149 ternaries.
+   ========================================================================= */
+
 :root {
-  --background: #020617;
-  --foreground: #f8fafc;
+  /* Ink — the default (dark) theme */
+  --bg: #12100e;
+  --surface: #1a1714;
+  --surface-2: #221e1a;
+  --surface-3: #2b2620;
+  --line: #332c25;
+  --line-strong: #4a4036;
+
+  --text: #f2ebe0;
+  --text-muted: #b5a895;
+  --text-subtle: #8a7f70;
+
+  --accent: #e8913a;
+  --accent-hover: #f2a355;
+  --accent-ink: #1a1208;
+  --accent-soft: rgb(232 145 58 / 0.12);
+  --accent-line: rgb(232 145 58 / 0.32);
+
+  --danger: #e0685f;
+  --danger-soft: rgb(224 104 95 / 0.12);
+  --success: #6fb587;
+  --success-soft: rgb(111 181 135 / 0.12);
+
+  --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.8);
+
+  color-scheme: dark;
 }
 
 html.light {
-  --background: #f8fafc;
-  --foreground: #1e293b;
+  /* Parchment */
+  --bg: #faf6ef;
+  --surface: #ffffff;
+  --surface-2: #f4eee3;
+  --surface-3: #ece4d6;
+  --line: #e2d8c8;
+  --line-strong: #cbbda6;
+
+  --text: #1f1a14;
+  --text-muted: #5c5245;
+  --text-subtle: #857a6b;
+
+  --accent: #b4621a;
+  --accent-hover: #9a5214;
+  --accent-ink: #ffffff;
+  --accent-soft: rgb(180 98 26 / 0.1);
+  --accent-line: rgb(180 98 26 / 0.3);
+
+  --danger: #b3403c;
+  --danger-soft: rgb(179 64 60 / 0.1);
+  --success: #3d7f52;
+  --success-soft: rgb(61 127 82 / 0.1);
+
+  --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.6), 0 12px 32px -20px rgb(60 45 25 / 0.28);
+
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-text: var(--text);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
+
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-line: var(--accent-line);
+
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+
+  --font-display: var(--font-display), Georgia, serif;
+  --font-body: var(--font-body), Georgia, serif;
+  --font-mono: var(--font-mono), ui-monospace, monospace;
+
+  --shadow-lift: var(--shadow-lift);
+}
+
+/* ============================== base ==================================== */
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body), Georgia, serif;
+  font-synthesis-weight: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ==================== GLOBAL SMOOTHNESS ==================== */
-html {
-  scroll-behavior: smooth;
+/* A faint paper grain. Two very low-opacity repeating gradients, no image
+   request, and it sits behind everything so it never affects contrast. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 0.014) 3px 4px),
+    repeating-linear-gradient(90deg, transparent 0 3px, rgb(0 0 0 / 0.014) 3px 4px);
 }
 
-/* Apply smooth transitions and pointer cursor to all interactive elements */
-button,
-a,
-[role="button"],
-input[type="submit"],
-input[type="button"],
-input[type="reset"],
-select,
-summary,
-.clickable {
-  cursor: pointer;
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 200ms;
+html.light body::before {
+  opacity: 0.5;
+  background-image:
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(90 70 40 / 0.02) 3px 4px),
+    repeating-linear-gradient(90deg, transparent 0 3px, rgb(90 70 40 / 0.02) 3px 4px);
 }
 
-/* Ensure disabled elements don't have pointer cursor */
-button:disabled,
-a[aria-disabled="true"],
-[role="button"][aria-disabled="true"],
-input:disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
+/* Headings carry the display face and tighter tracking. */
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
 }
 
-/* Add subtle hover effect to all buttons */
-button:hover:not(:disabled),
-[role="button"]:hover:not([aria-disabled="true"]) {
-  transform: translateY(-1px);
+/* Fraunces has a wonk axis; let it show at display sizes. */
+h1 {
+  font-variation-settings: "SOFT" 20, "WONK" 1;
 }
 
-/* Active state for better feedback */
-button:active:not(:disabled),
-[role="button"]:active:not([aria-disabled="true"]) {
-  transform: translateY(0);
+/* ============================ typography ================================ */
+
+.font-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-variation-settings: "SOFT" 20, "WONK" 1;
 }
 
-/* ==================== CUSTOM SCROLLBAR (DEFAULT/DARK) ==================== */
+/* Mono eyebrow used for section labels and metadata. */
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+/* Prose blocks (chat messages, deliverables) get a comfortable measure. */
+.prose-ledger {
+  font-family: var(--font-body), Georgia, serif;
+  line-height: 1.7;
+}
+
+.prose-ledger h1,
+.prose-ledger h2,
+.prose-ledger h3 {
+  font-family: var(--font-display), Georgia, serif;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose-ledger h1 { font-size: 1.5rem; }
+.prose-ledger h2 { font-size: 1.25rem; }
+.prose-ledger h3 { font-size: 1.075rem; }
+.prose-ledger p { margin-bottom: 1em; }
+.prose-ledger ul,
+.prose-ledger ol { margin: 0 0 1em 1.25em; }
+.prose-ledger ul { list-style: disc; }
+.prose-ledger ol { list-style: decimal; }
+.prose-ledger li { margin-bottom: 0.35em; }
+.prose-ledger code {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 0.875em;
+  background: var(--surface-2);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+/* ============================== focus =================================== */
+
+/* Visible, high-contrast focus ring for keyboard users. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* ============================ scrollbar ================================= */
+
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #020617;
+  background: var(--bg);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 5px;
-  border: 2px solid #020617;
+  background: var(--line-strong);
+  border-radius: 6px;
+  border: 3px solid var(--bg);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: var(--text-subtle);
 }
 
-/* ==================== SELECTION ==================== */
 ::selection {
-  background-color: #f97316;
-  color: white;
+  background-color: var(--accent);
+  color: var(--accent-ink);
 }
 
-/* ==================== LIGHT MODE REFINEMENTS ==================== */
-html.light {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #0f172a;
-  --primary-foreground: #f8fafc;
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #64748b;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --destructive: #ef4444;
-  --destructive-foreground: #f8fafc;
-  --border: #e2e8f0;
-  --input: #e2e8f0;
-  --ring: #0f172a;
+/* ============================== motion ================================== */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-html.light body {
-  background-color: var(--background);
-  color: var(--foreground);
+/* One orchestrated entrance, staggered by the caller via --i. */
+.rise {
+  animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 60ms);
 }
 
-/* Remove aggressive overrides to allow Tailwind classes to work */
-html.light .text-white {
-  color: #ffffff !important;
+@keyframes draw-rule {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
 
-html.light .bg-slate-950 {
-  background-color: #020617 !important;
+.draw-rule {
+  transform-origin: left;
+  animation: draw-rule 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-html.light .bg-slate-900 {
-  background-color: #0f172a !important;
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
-
-html.light .bg-slate-800 {
-  background-color: #1e293b !important;
-}
-
-/* Ensure gradients work in light mode */
-html.light .from-slate-800 {
-  --tw-gradient-from: #1e293b !important;
-  --tw-gradient-to: rgb(30 41 59 / 0) !important;
-  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
-}
-
-html.light .to-slate-950 {
-  --tw-gradient-to: #020617 !important;
-}
-
-/* Refined Shadows for Light Mode */
-html.light .shadow-2xl {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08) !important;
-}
-
-html.light .shadow-xl {
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
-}
-

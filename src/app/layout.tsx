@@ -1,26 +1,37 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, JetBrains_Mono, Literata } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Display: Fraunces, a warm variable serif with optical sizing and a "wonk"
+// axis. Body: Literata, designed for long-form reading on screens. Mono:
+// JetBrains Mono for the protocol/metadata labels.
+const display = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
-  display: 'swap',
+  display: "swap",
+  axes: ["SOFT", "WONK", "opsz"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const body = Literata({
+  variable: "--font-body",
   subsets: ["latin"],
-  display: 'swap',
+  display: "swap",
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-mono",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Tarka Sabha - Powered by Brahmodya Protocol",
-  description: "Create AI personas with unique identities and watch them debate like real humans. The ultimate discussion platform.",
+  title: "Tarka Sabha — A council of reasoning agents",
+  description:
+    "Describe an outcome, assemble agents with distinct roles, and let them work the problem with real tools. They deliberate, you get a deliverable scored against a rubric.",
 };
 
 // Script to apply theme before React loads
@@ -48,72 +59,84 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${display.variable} ${body.variable} ${mono.variable} antialiased`}
       >
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-[3px] focus:border focus:border-accent focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:text-text"
+        >
+          Skip to content
+        </a>
+
         <ThemeProvider>
           <AuthProvider>
             <Navbar />
 
-            {/* Main Content */}
-            <main className="pt-20">
+            <main id="main" className="pt-[61px]">
               {children}
             </main>
 
-            {/* Footer */}
-            <footer className="mt-20 border-t border-slate-800 bg-slate-900">
-              <div className="max-w-7xl mx-auto px-6 py-12">
-                <div className="grid md:grid-cols-4 gap-8">
-                  {/* Brand */}
-                  <div className="col-span-2">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                        <span className="text-white font-bold text-sm">TS</span>
-                      </div>
-                      <span className="font-bold text-lg bg-gradient-to-r from-amber-400 to-orange-500 bg-clip-text text-transparent">
-                        Tarka Sabha
-                      </span>
-                    </div>
-                    <p className="text-slate-400 text-sm max-w-md">
-                      Create intelligent AI personas and watch them debate like real humans.
-                      Powered by Brahmodya Protocol - the future of multi-agent discussions.
-                    </p>
+            <footer className="mt-24 border-t border-line">
+              <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[2fr_1fr_1fr]">
+                <div>
+                  <div className="flex items-center gap-3">
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 items-center justify-center rounded-[3px] border border-accent-line bg-accent-soft font-display text-sm text-accent"
+                    >
+                      त
+                    </span>
+                    <span className="font-display text-lg text-text">Tarka Sabha</span>
                   </div>
-
-                  {/* Links */}
-                  <div>
-                    <h4 className="font-semibold text-white mb-4">Platform</h4>
-                    <ul className="space-y-2 text-sm text-slate-400">
-                      <li><a href="/debate" className="hover:text-amber-400 transition-colors">Start Debate</a></li>
-                      <li><a href="/history" className="hover:text-amber-400 transition-colors">Chat History</a></li>
-                      <li><a href="/about" className="hover:text-amber-400 transition-colors">About</a></li>
-                      <li><a href="/feedback" className="hover:text-amber-400 transition-colors">Feedback</a></li>
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-white mb-4">Protocol</h4>
-                    <ul className="space-y-2 text-sm text-slate-400">
-                      <li><span className="text-slate-500">Brahmodya v1.0</span></li>
-                      <li><span className="text-slate-500">AES-256 Encryption</span></li>
-                      <li><span className="text-slate-500">Multi-Provider Support</span></li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="border-t border-slate-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                  <p className="text-slate-500 text-sm">
-                    &copy; 2025 Tarka Sabha. All rights reserved.
-                  </p>
-                  <p className="text-xs text-slate-600">
-                    Powered by Brahmodya Protocol
+                  <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
+                    A council of reasoning agents. Describe an outcome, give each agent a
+                    role and the tools to check its work, and read the deliverable they
+                    argue their way to.
                   </p>
                 </div>
-            </div>
-          </footer>
-          <Analytics />
-        </AuthProvider>
-      </ThemeProvider>
-    </body>
-  </html>
-);
+
+                <nav aria-label="Platform">
+                  <h2 className="eyebrow mb-4">Platform</h2>
+                  <ul className="space-y-2.5 text-sm">
+                    {[
+                      ['/debate', 'New council'],
+                      ['/history', 'Archive'],
+                      ['/dashboard', 'Dashboard'],
+                      ['/about', 'About'],
+                      ['/feedback', 'Feedback'],
+                    ].map(([href, label]) => (
+                      <li key={href}>
+                        <a href={href} className="text-muted transition-colors hover:text-accent">
+                          {label}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+
+                <div>
+                  <h2 className="eyebrow mb-4">Under the hood</h2>
+                  <ul className="space-y-2.5 font-mono text-xs text-subtle">
+                    <li>Brahmodya v1.0</li>
+                    <li>AES-256-GCM key storage</li>
+                    <li>Server-side turn runner</li>
+                    <li>Rubric-scored deliverables</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="border-t border-line">
+                <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-subtle sm:flex-row sm:items-center sm:justify-between">
+                  <p>© {new Date().getFullYear()} Tarka Sabha</p>
+                  <p>tarka · reasoning &nbsp;·&nbsp; sabhā · assembly</p>
+                </div>
+              </div>
+            </footer>
+
+            <Analytics />
+          </AuthProvider>
+        </ThemeProvider>
+      </body>
+    </html>
+  );
 }

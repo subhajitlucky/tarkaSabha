@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Provider, ProviderType } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
-import { useTheme } from '@/components/ThemeProvider'
+import { PageHeader } from '@/components/ui/EmptyState'
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
@@ -109,8 +109,6 @@ const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = 
 export default function DebatePage() {
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading } = useAuth()
-  const { theme } = useTheme()
-  const isLight = theme === 'light'
   const [providers, setProviders] = useState<Provider[]>([])
   const [isCreating, setIsCreating] = useState(false)
   const [createdChatId, setCreatedChatId] = useState<string | null>(null)
@@ -168,7 +166,7 @@ export default function DebatePage() {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${'bg-bg'}`}>
         <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
       </div>
     )
@@ -362,18 +360,18 @@ export default function DebatePage() {
 
   if (createdChatId) {
     return (
-      <div className={`min-h-screen flex items-center justify-center ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
+      <div className={`min-h-screen flex items-center justify-center ${'bg-bg'}`}>
         <div className="text-center">
           <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
             <svg className="w-10 h-10 text-amber-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
-          <h2 className={`text-2xl font-bold mb-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>Debate Created!</h2>
-          <p className={`mb-6 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Your debate is ready</p>
+          <h2 className={`text-2xl font-bold mb-2 ${'text-text'}`}>Debate Created!</h2>
+          <p className={`mb-6 ${'text-muted'}`}>Your debate is ready</p>
           <button
             onClick={goToChat}
-            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-semibold px-8 py-4 rounded-xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
+            className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-900 font-semibold px-8 py-4 rounded-[3px] transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
           >
             Enter Debate Room
           </button>
@@ -382,43 +380,35 @@ export default function DebatePage() {
     )
   }
 
-  const cardClass = isLight 
-    ? 'bg-white border border-slate-200 shadow-sm' 
-    : 'bg-slate-900 border border-slate-800'
+  const cardClass = 'bg-surface border border-line'
   
-  const inputClass = isLight
-    ? 'bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:border-amber-500'
-    : 'bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:border-amber-500/50'
+  const inputClass =
+    'bg-surface-2 border border-line text-text placeholder:text-subtle focus:border-accent'
 
   return (
-    <div className={`min-h-screen py-12 ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>
+    <div className={`min-h-screen py-12 ${'bg-bg'}`}>
       <div className="max-w-6xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            Start a New Debate
-          </h1>
-          <p className={`text-lg ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-            Create agents with unique identities and watch them discuss
-          </p>
-        </div>
+        <PageHeader
+          eyebrow="New council"
+          title="Convene a council"
+          lede="State what you need, then assemble agents with distinct jobs and the tools to check their own claims."
+        />
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Step 1: Brief */}
-          <div className={`${cardClass} rounded-2xl p-6`}>
+          <div className={`${cardClass} rounded-[4px] p-6`}>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <span className="text-amber-500 font-bold">1</span>
-              </div>
-              <h3 className={`text-xl font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              <span className="font-mono text-xs text-accent">01</span>
+              <h3 className={`text-xl font-semibold ${'text-text'}`}>
                 {mode === 'task' ? 'What do you need?' : 'Discussion Topic'}
               </h3>
             </div>
 
             <div className="mb-6">
-              <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+              <label className="eyebrow mb-2 block">
                 Mode
               </label>
-              <div className={`inline-flex p-1 rounded-xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-slate-800 border-slate-700'}`}>
+              <div className={`inline-flex p-1 rounded-[3px] border ${'bg-surface-2 border-line'}`}>
                 {([
                   { value: 'task', label: 'Task', hint: 'Agents cooperate and produce a deliverable' },
                   { value: 'debate', label: 'Debate', hint: 'Agents argue in character' },
@@ -431,7 +421,7 @@ export default function DebatePage() {
                     className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
                       mode === option.value
                         ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-slate-900 shadow'
-                        : isLight ? 'text-slate-600 hover:text-slate-900' : 'text-slate-400 hover:text-white'
+                        : 'text-muted hover:text-text'
                     }`}
                   >
                     {option.label}
@@ -446,7 +436,7 @@ export default function DebatePage() {
             </div>
 
             <div>
-              <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+              <label className="eyebrow mb-2 block">
                 {mode === 'task' ? 'Short title' : 'What should they discuss?'}
               </label>
               <input
@@ -454,14 +444,14 @@ export default function DebatePage() {
                 value={topic}
                 onChange={e => setTopic(e.target.value)}
                 placeholder={mode === 'task' ? 'e.g., Buy vs rent in Bengaluru' : 'e.g., Should AI replace doctors?'}
-                className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
+                className={`w-full rounded-[3px] px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
               />
             </div>
 
             {mode === 'task' && (
               <div className="mt-4 space-y-4">
                 <div>
-                  <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                  <label className="eyebrow mb-2 block">
                     Objective
                   </label>
                   <textarea
@@ -469,12 +459,12 @@ export default function DebatePage() {
                     onChange={e => setObjective(e.target.value)}
                     rows={2}
                     placeholder="What exactly should they work out?"
-                    className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors resize-none ${inputClass}`}
+                    className={`w-full rounded-[3px] px-4 py-3 focus:outline-none transition-colors resize-none ${inputClass}`}
                   />
                 </div>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    <label className="eyebrow mb-2 block">
                       Deliverable
                     </label>
                     <input
@@ -482,11 +472,11 @@ export default function DebatePage() {
                       value={deliverableSpec}
                       onChange={e => setDeliverableSpec(e.target.value)}
                       placeholder="e.g., A one-page recommendation"
-                      className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
+                      className={`w-full rounded-[3px] px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
                     />
                   </div>
                   <div>
-                    <label className={`block text-sm mb-2 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+                    <label className="eyebrow mb-2 block">
                       Audience
                     </label>
                     <input
@@ -494,7 +484,7 @@ export default function DebatePage() {
                       value={audience}
                       onChange={e => setAudience(e.target.value)}
                       placeholder="e.g., A first-time buyer"
-                      className={`w-full rounded-xl px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
+                      className={`w-full rounded-[3px] px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
                     />
                   </div>
                 </div>
@@ -503,19 +493,17 @@ export default function DebatePage() {
           </div>
 
           {/* Step 2: Add Agents */}
-          <div className={`${cardClass} rounded-2xl p-6`}>
+          <div className={`${cardClass} rounded-[4px] p-6`}>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/20 flex items-center justify-center">
-                <span className="text-orange-500 font-bold">2</span>
-              </div>
-              <h3 className={`text-xl font-semibold ${isLight ? 'text-slate-900' : 'text-white'}`}>Add Agents</h3>
+              <span className="font-mono text-xs text-accent">02</span>
+              <h3 className={`text-xl font-semibold ${'text-text'}`}>Add Agents</h3>
             </div>
 
             {/* Agent Form */}
-            <div className={`${isLight ? 'bg-slate-50 border border-slate-100' : 'bg-slate-800/50'} rounded-xl p-4 mb-4`}>
+            <div className={`${'bg-surface-2 border border-line'} rounded-[3px] p-4 mb-4`}>
               <div className="grid gap-4">
                 <div>
-                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Agent Name *</label>
+                  <label className="eyebrow mb-1.5 block">Agent Name *</label>
                   <input
                     type="text"
                     value={newAgent.name}
@@ -527,7 +515,7 @@ export default function DebatePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Provider</label>
+                    <label className="eyebrow mb-1.5 block">Provider</label>
                     <select
                       value={newAgent.providerType}
                       onChange={e => handleProviderTypeChange(e.target.value as ProviderType)}
@@ -539,7 +527,7 @@ export default function DebatePage() {
                     </select>
                   </div>
                   <div>
-                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Model Name</label>
+                    <label className="eyebrow mb-1.5 block">Model Name</label>
                     <input
                       type="text"
                       value={newAgent.model}
@@ -551,7 +539,7 @@ export default function DebatePage() {
                 </div>
 
                 <div>
-                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>API URL</label>
+                  <label className="eyebrow mb-1.5 block">API URL</label>
                   <input
                     type="text"
                     value={newAgent.apiUrl}
@@ -562,7 +550,7 @@ export default function DebatePage() {
 
                 {PROVIDER_TYPES.find(p => p.value === newAgent.providerType)?.requiresKey && (
                   <div>
-                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>API Key</label>
+                    <label className="eyebrow mb-1.5 block">API Key</label>
                     <input
                       type="password"
                       value={newAgent.apiKey}
@@ -575,7 +563,7 @@ export default function DebatePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Bio (optional)</label>
+                    <label className="eyebrow mb-1.5 block">Bio (optional)</label>
                     <input
                       type="text"
                       value={newAgent.bio}
@@ -585,7 +573,7 @@ export default function DebatePage() {
                     />
                   </div>
                   <div>
-                    <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>Personality (optional)</label>
+                    <label className="eyebrow mb-1.5 block">Personality (optional)</label>
                     <input
                       type="text"
                       value={newAgent.personality}
@@ -597,7 +585,7 @@ export default function DebatePage() {
                 </div>
 
                 <div>
-                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <label className="eyebrow mb-1.5 block">
                     Role in the task
                   </label>
                   <select
@@ -614,7 +602,7 @@ export default function DebatePage() {
                 </div>
 
                 <div>
-                  <label className={`block text-xs mb-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
+                  <label className="eyebrow mb-1.5 block">
                     Tools
                   </label>
                   <div className="flex flex-wrap gap-3">
@@ -622,7 +610,7 @@ export default function DebatePage() {
                       <label
                         key={tool.value}
                         title={tool.hint}
-                        className={`flex items-center gap-2 text-xs cursor-pointer ${isLight ? 'text-slate-600' : 'text-slate-300'}`}
+                        className={`flex items-center gap-2 text-xs cursor-pointer ${'text-muted'}`}
                       >
                         <input
                           type="checkbox"
@@ -643,11 +631,7 @@ export default function DebatePage() {
 
                 <button
                   onClick={addAgent}
-                  className={`px-4 py-2 rounded-lg text-sm transition-all cursor-pointer font-bold border shadow-sm hover:shadow-md hover:-translate-y-0.5 ${
-                    isLight 
-                      ? 'bg-white border-slate-200 text-slate-700 hover:border-slate-300' 
-                      : 'bg-slate-700 hover:bg-slate-600 text-white border-transparent'
-                  }`}
+                  className="w-full cursor-pointer rounded-[3px] border border-line-strong bg-surface px-4 py-2.5 text-sm text-text transition-colors hover:border-accent hover:text-accent" 
                 >
                   + Add Agent
                 </button>
@@ -659,7 +643,7 @@ export default function DebatePage() {
               <div className="space-y-2 mb-4">
                 {agents.map((agent) => (
                   <div key={agent.id} className={`flex items-center justify-between rounded-lg px-3 py-2 ${
-                    isLight ? 'bg-slate-50 border border-slate-100' : 'bg-slate-800/50'
+                    'bg-surface-2 border border-line'
                   }`}>
                     <div className="flex items-center gap-2">
                       <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-xs font-bold text-white">
@@ -673,7 +657,7 @@ export default function DebatePage() {
                         </span>
                       </div>
                       <div>
-                        <div className={`text-sm font-medium ${isLight ? 'text-slate-900' : 'text-white'}`}>{agent.name}</div>
+                        <div className={`text-sm font-medium ${'text-text'}`}>{agent.name}</div>
                         <div className="text-xs text-slate-500">
                           <span className="text-amber-500 font-semibold">{agent.role}</span>
                           {' · '}{agent.providerType} · {agent.model}
@@ -703,11 +687,7 @@ export default function DebatePage() {
             <button
               onClick={createDebate}
               disabled={isCreating || agents.length < 2}
-              className={`w-full font-bold px-4 py-4 rounded-xl transition-all cursor-pointer disabled:cursor-not-allowed disabled:transform-none border ${
-                isLight
-                  ? 'bg-gradient-to-b from-slate-800 to-slate-950 border-slate-800 text-white shadow-lg shadow-slate-900/20 hover:shadow-xl hover:shadow-slate-900/30 hover:-translate-y-0.5 disabled:from-slate-200 disabled:to-slate-300 disabled:border-slate-200 disabled:text-slate-400 disabled:shadow-none'
-                  : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 disabled:from-slate-700 disabled:to-slate-700 text-slate-900 shadow-lg hover:shadow-xl hover:-translate-y-0.5 border-transparent'
-              }`}
+              className="w-full cursor-pointer rounded-[3px] border border-accent bg-accent px-4 py-3.5 font-medium text-accent-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-2 disabled:text-subtle" 
             >
               {isCreating ? 'Creating...' : `Start Debate with ${agents.length} Agents`}
             </button>
