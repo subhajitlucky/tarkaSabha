@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { synthesizeChat } from '@/lib/synthesis'
+import {
+  DEFAULT_CANDIDATES,
+  DEFAULT_ROUNDS,
+  MAX_CANDIDATES,
+  MAX_ROUNDS,
+  synthesizeChat,
+} from '@/lib/synthesis'
 import { auth } from '@/auth'
 
 export const maxDuration = 60
@@ -46,6 +52,11 @@ export async function GET(
         title: true,
         content: true,
         model: true,
+        score: true,
+        breakdown: true,
+        selected: true,
+        round: true,
+        angle: true,
         createdAt: true,
       },
     })
@@ -64,7 +75,7 @@ export async function GET(
  * request rather than as another debate turn.
  */
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -72,7 +83,20 @@ export async function POST(
     const access = await authorize(id)
     if ('error' in access) return access.error
 
-    const result = await synthesizeChat(id, access.userId)
+    const body = await request.json().catch(() => ({}))
+
+    const clamp = (value: unknown, min: number, max: number, fallback: number) => {
+      const parsed = Number(value)
+      if (!Number.isFinite(parsed)) return fallback
+      return Math.min(max, Math.max(min, Math.trunc(parsed)))
+    }
+
+    // Generating and judging N candidates costs 2N provider calls, so both
+    // knobs are clamped and the caller opts into more.
+    const result = await synthesizeChat(id, access.userId, {
+      candidates: clamp(body?.candidates, 1, MAX_CANDIDATES, DEFAULT_CANDIDATES),
+      rounds: clamp(body?.rounds, 1, MAX_ROUNDS, DEFAULT_ROUNDS),
+    })
 
     if (!result.ok) {
       return NextResponse.json({ error: result.error || 'Synthesis failed' }, { status: 400 })
@@ -82,6 +106,10 @@ export async function POST(
       id: result.artifactId,
       title: result.title,
       content: result.content,
+      score: result.score,
+      rounds: result.rounds,
+      budgetExhausted: result.budgetExhausted ?? false,
+      candidates: result.candidates ?? [],
     })
   } catch (error) {
     console.error('Error synthesising chat:', error)

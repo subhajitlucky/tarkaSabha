@@ -129,6 +129,32 @@ ranges, link-local (including cloud metadata), CGNAT, multicast, IPv4-mapped
 IPv6, credential-bearing URLs and non-http schemes, re-checks every redirect
 hop, and caps response size, time and redirect count.
 
+## Choosing the Best Answer
+
+A synthesis run does not just generate a deliverable; it generates several and
+picks one.
+
+1. **Candidates.** Three drafts are produced in parallel from deliberately
+   different angles (decisive, risk-aware, actionable) at different
+   temperatures. Sampling one prompt repeatedly mostly yields paraphrases, which
+   makes comparison meaningless.
+2. **Rubric.** Each candidate is graded 1-10 on grounding, coverage,
+   decisiveness, honesty and fit, with a stated weight per criterion. The score
+   is the weighted mean, so a candidate cannot win by being decisive while
+   inventing facts.
+3. **Selection.** The highest score wins, ties break on the lower index so the
+   result is deterministic. Every candidate is stored with its score, breakdown
+   and angle, so a run is auditable rather than a black box.
+4. **Retry.** With `rounds: 2`, a best score below 7 triggers one more round
+   that is fed the judge's specific criticism. It is skipped if the time budget
+   is exhausted.
+
+A run costs 2N provider calls (N drafts, N judgements). `POST
+/api/chats/[id]/artifacts` accepts `candidates` (1-4) and `rounds` (1-2); the UI
+exposes the default and a "Thorough" two-round option. Judge output is parsed
+defensively — malformed JSON leaves candidates unscored rather than failing the
+run.
+
 ## Security & Reliability Notes
 
 - API keys are encrypted before storage and masked when displayed.

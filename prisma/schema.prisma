@@ -159,6 +159,14 @@ model Artifact {
   title      String
   content    String
   model      String?
+  // Rubric results. Every candidate is kept so a run is auditable: which
+  // candidates were produced, how each scored, and which one won.
+  score      Float?
+  breakdown  Json?
+  selected   Boolean  @default(true)
+  round      Int      @default(1)
+  /// Which generation angle produced this candidate (decisive, risk-aware, ...).
+  angle      String?
   providerId String?
   createdById String?
   createdAt  DateTime @default(now())
@@ -167,6 +175,7 @@ model Artifact {
   createdBy  User?     @relation(fields: [createdById], references: [id])
 
   @@index([chatId])
+  @@index([chatId, kind, selected])
   @@index([providerId])
   @@index([createdById])
 }

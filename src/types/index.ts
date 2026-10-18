@@ -59,6 +59,14 @@ export interface Message {
   createdAt: Date
 }
 
+/** One rubric criterion's score for a candidate. */
+export interface CriterionScore {
+  key: string
+  label: string
+  score: number
+  reason: string
+}
+
 /** A produced deliverable, stored separately from the transcript. */
 export interface Artifact {
   id: string
@@ -66,6 +74,14 @@ export interface Artifact {
   title: string
   content: string
   model?: string | null
+  /** Weighted rubric score (0-10); null when judging did not run or failed. */
+  score?: number | null
+  breakdown?: CriterionScore[] | null
+  /** True for the chosen candidate of the latest run. */
+  selected?: boolean
+  round?: number
+  /** Generation angle that produced this candidate. */
+  angle?: string | null
   createdAt: string | Date
 }
 
