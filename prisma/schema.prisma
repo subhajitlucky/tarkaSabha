@@ -40,6 +40,7 @@ model User {
   emailVerified DateTime?
   image         String?
   accounts      Account[]
+  artifacts     Artifact[]
   chats         Chat[]
   feedbacks     Feedback[]
   personas      Persona[]
@@ -81,6 +82,7 @@ model Provider {
   updatedAt   DateTime  @updatedAt
   creatorId   String?
   personas    Persona[]
+  artifacts   Artifact[]
   creator     User?     @relation(fields: [creatorId], references: [id])
 
   @@index([creatorId])
@@ -91,6 +93,10 @@ model Persona {
   name        String
   bio         String
   personality String?
+  // Job this participant does in a task: contributor | researcher | critic |
+  // planner | synthesizer. Stored as text and validated in code so the set can
+  // grow without a migration.
+  role        String          @default("contributor")
   providerId  String?
   model       String?
   temperature Float?
@@ -111,6 +117,13 @@ model Chat {
   id            String          @id @default(cuid())
   title         String          @default("New Chat")
   topic         String?
+  // "debate" is the original adversarial-roleplay experience. "task" asks the
+  // participants to cooperate on an objective and produce a deliverable.
+  mode          String          @default("debate")
+  // Structured brief. topic stays as the short label shown in lists.
+  objective       String?
+  deliverableSpec String?
+  audience        String?
   isAutoMode    Boolean         @default(false)
   lastSpeakerId String?
   // Scheduler state for server-side turn execution. autoAdvanceAt is the next
@@ -128,9 +141,31 @@ model Chat {
   creator       User?           @relation(fields: [creatorId], references: [id])
   messages      Message[]
   participants  PersonaOnChat[]
+  artifacts     Artifact[]
 
   @@index([creatorId])
   @@index([isAutoMode, autoAdvanceAt])
+}
+
+/// A produced deliverable: the synthesised answer for a chat, stored separately
+/// from the transcript so it can be versioned and re-read on its own.
+model Artifact {
+  id         String   @id @default(cuid())
+  chatId     String
+  kind       String   @default("synthesis")
+  title      String
+  content    String
+  model      String?
+  providerId String?
+  createdById String?
+  createdAt  DateTime @default(now())
+  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  provider   Provider? @relation(fields: [providerId], references: [id])
+  createdBy  User?     @relation(fields: [createdById], references: [id])
+
+  @@index([chatId])
+  @@index([providerId])
+  @@index([createdById])
 }
 
 model PersonaOnChat {

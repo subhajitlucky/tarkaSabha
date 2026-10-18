@@ -46,6 +46,8 @@ export interface OrchestrationContext {
   isAutoMode: boolean
   lastSpeakerId: string | null
   mentionedPersonaId?: string
+  /** Structured brief; selects task mode and shapes the participant prompts. */
+  brief?: TaskBrief
 }
 
 export interface Orchestrator {
@@ -243,7 +245,91 @@ export function isRefusal(content: string): boolean {
   return refusalPatterns.some(pattern => pattern.test(content));
 }
 
-export function buildPersonaPrompt(persona: Persona, topic: string | null, otherParticipants: string[]): string {
+/** Jobs a participant can hold in a task. Stored as text, validated here. */
+export const PERSONA_ROLES = [
+  'contributor',
+  'researcher',
+  'critic',
+  'planner',
+  'synthesizer',
+] as const
+
+export type PersonaRole = (typeof PERSONA_ROLES)[number]
+
+export function isPersonaRole(value: unknown): value is PersonaRole {
+  return typeof value === 'string' && (PERSONA_ROLES as readonly string[]).includes(value)
+}
+
+const ROLE_DIRECTIVES: Record<PersonaRole, string> = {
+  contributor:
+    'Contribute your single strongest substantive point. Be concrete and specific.',
+  researcher:
+    'Bring evidence: facts, numbers, precedents, prior art. Mark anything you are unsure of as uncertain instead of asserting it.',
+  critic:
+    'Attack the weakest part of the current reasoning. Name the specific flaw and what would fix it. Do not object for the sake of objecting.',
+  planner:
+    'Turn the discussion into concrete steps: what to do, in what order, and what could go wrong.',
+  synthesizer:
+    'Pull the threads together: where the group actually agrees, where it does not, and what the best combined answer is so far.',
+}
+
+export interface TaskBrief {
+  mode?: string | null
+  objective?: string | null
+  deliverableSpec?: string | null
+  audience?: string | null
+}
+
+function buildTaskPrompt(
+  persona: Persona,
+  topic: string | null,
+  otherParticipants: string[],
+  brief: TaskBrief
+): string {
+  const role: PersonaRole = isPersonaRole(persona.role) ? persona.role : 'contributor'
+  const objective = brief.objective?.trim() || topic || 'General Discussion'
+
+  return `You are ${persona.name}, one of several specialists working together on a task.
+
+OBJECTIVE: ${objective}
+${brief.deliverableSpec?.trim() ? `DELIVERABLE: ${brief.deliverableSpec.trim()}` : ''}
+${brief.audience?.trim() ? `AUDIENCE: ${brief.audience.trim()}` : ''}
+
+YOUR BACKGROUND:
+${persona.bio}
+${persona.personality ? `\nSTYLE: ${persona.personality}` : ''}
+
+YOUR ROLE: ${role}
+${ROLE_DIRECTIVES[role]}
+
+THE TEAM:
+- ${persona.name} (YOU)
+- ${otherParticipants.join('\n- ')}
+
+HOW TO WORK:
+1. You are collaborating to produce the best possible answer. You are not trying to win an argument.
+2. Change your position when someone gives you a better reason, and say plainly when you do.
+3. Build on what others have said instead of restating it.
+4. If you do not know something, say so. Never invent specifics, numbers, or sources.
+5. Be brief and substantive — a few sentences. This is a working session, not a speech.
+6. Reply to a specific person with @Name.
+
+STRICT FORMAT:
+Output ONLY what you say to the team. No preamble, no reasoning, no stage directions.
+
+Speak as ${persona.name}:`
+}
+
+export function buildPersonaPrompt(
+  persona: Persona,
+  topic: string | null,
+  otherParticipants: string[],
+  brief: TaskBrief = {}
+): string {
+  if (brief.mode === 'task') {
+    return buildTaskPrompt(persona, topic, otherParticipants, brief)
+  }
+
   const isAnon = !persona.bio || persona.bio.length < 20 || persona.bio.toLowerCase().includes("i am " + persona.name.toLowerCase());
   
   return `You are ${persona.name}. You are a real human being in a group chat.
@@ -409,7 +495,7 @@ export function cleanResponse(content: string, personaName: string): string {
   return cleaned.trim();
 }
 
-async function getPersonaWithProvider(persona: Persona, userId?: string | null) {
+export async function getPersonaWithProvider(persona: Persona, userId?: string | null) {
   if (persona.providerId) {
     const provider = await prisma.provider.findFirst({
       where: { 
@@ -441,7 +527,7 @@ export async function orchestrateMessage(
   participants: Persona[],
   userId?: string | null
 ): Promise<{ message: string; speakerId?: string; error?: string }> {
-  const { chatId, topic, isAutoMode, mentionedPersonaId } = context
+  const { chatId, topic, isAutoMode, mentionedPersonaId, brief } = context
 
   if (isUserMessage) {
     const mention = extractMention(messageContent)
@@ -539,7 +625,7 @@ export async function orchestrateMessage(
   // Add system prompt for persona
   conversationContext.unshift({
     role: 'system',
-    content: buildPersonaPrompt(persona, topic, otherParticipants),
+    content: buildPersonaPrompt(persona, topic, otherParticipants, brief),
   })
 
   let lastError: unknown = null;
@@ -722,7 +808,7 @@ export async function autoContinueDebate(
 
     conversationContext.unshift({
       role: 'system',
-      content: buildPersonaPrompt(speaker, chat.topic, otherParticipants),
+      content: buildPersonaPrompt(speaker, chat.topic, otherParticipants, chat),
     })
 
     // DYNAMIC FORWARD MOTION INSTRUCTION

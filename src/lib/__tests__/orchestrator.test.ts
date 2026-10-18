@@ -53,6 +53,7 @@ type Persona = {
   name: string
   bio: string
   personality: string | null
+  role: string
   temperature: number | null
   model: string | null
   providerId: string | null
@@ -62,12 +63,13 @@ type Persona = {
   avatarUrl: string | null
 }
 
-function persona(id: string, name: string): Persona {
+function persona(id: string, name: string, role = 'contributor'): Persona {
   return {
     id,
     name,
     bio: `A thoughtful participant named ${name} with strong opinions.`,
     personality: 'direct',
+    role,
     temperature: 0.7,
     model: null,
     providerId: null,
@@ -353,5 +355,60 @@ describe('orchestrateMessage context window', () => {
     expect(justSaid).toBeDefined()
     expect(justSaid?.content).toContain('THE-NEWEST-THING')
     expect(justSaid?.content).not.toContain('an older thing')
+  })
+})
+
+describe('buildPersonaPrompt task mode', () => {
+  const brief = {
+    mode: 'task',
+    objective: 'Decide whether to buy or rent',
+    deliverableSpec: 'A one-page recommendation',
+    audience: 'A first-time buyer',
+  }
+
+  it('renders the structured brief and the participant role', () => {
+    const prompt = buildPersonaPrompt(persona('a', 'Ada', 'critic'), 'Housing', ['Bo'], brief)
+
+    expect(prompt).toContain('OBJECTIVE: Decide whether to buy or rent')
+    expect(prompt).toContain('DELIVERABLE: A one-page recommendation')
+    expect(prompt).toContain('AUDIENCE: A first-time buyer')
+    expect(prompt).toContain('YOUR ROLE: critic')
+    expect(prompt).toContain('Attack the weakest part')
+  })
+
+  it('drops the adversarial debate instructions', () => {
+    const prompt = buildPersonaPrompt(persona('a', 'Ada'), 'Housing', [], brief)
+
+    expect(prompt).not.toContain('GASLIGHTING')
+    expect(prompt).not.toContain('Do NOT change your mind')
+    expect(prompt).not.toContain('You are NOT an AI')
+    expect(prompt).toContain('Change your position when someone gives you a better reason')
+  })
+
+  it('gives each role a different directive', () => {
+    const researcher = buildPersonaPrompt(persona('a', 'Ada', 'researcher'), 'T', [], brief)
+    const planner = buildPersonaPrompt(persona('a', 'Ada', 'planner'), 'T', [], brief)
+
+    expect(researcher).toContain('Bring evidence')
+    expect(planner).toContain('concrete steps')
+    expect(researcher).not.toEqual(planner)
+  })
+
+  it('falls back to contributor for an unrecognised role', () => {
+    const prompt = buildPersonaPrompt(persona('a', 'Ada', 'wizard'), 'T', [], brief)
+    expect(prompt).toContain('YOUR ROLE: contributor')
+  })
+
+  it('prefers the objective over the short topic label', () => {
+    const prompt = buildPersonaPrompt(persona('a', 'Ada'), 'short label', [], brief)
+    expect(prompt).toContain('OBJECTIVE: Decide whether to buy or rent')
+  })
+
+  it('leaves debate mode untouched', () => {
+    const prompt = buildPersonaPrompt(persona('a', 'Ada'), 'Housing', ['Bo'], { mode: 'debate' })
+
+    expect(prompt).toContain('GASLIGHTING')
+    expect(prompt).toContain('TOPIC: Housing')
+    expect(prompt).not.toContain('YOUR ROLE:')
   })
 })

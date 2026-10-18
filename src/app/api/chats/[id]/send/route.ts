@@ -88,6 +88,7 @@ export async function POST(
         isAutoMode: chat.isAutoMode,
         lastSpeakerId: chat.lastSpeakerId,
         mentionedPersonaId,
+        brief: chat,
       },
       sanitizedContent,
       false,

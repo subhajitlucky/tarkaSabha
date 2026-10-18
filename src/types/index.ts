@@ -31,6 +31,10 @@ export interface Chat {
   id: string
   title: string
   topic?: string | null
+  mode?: ChatMode | string
+  objective?: string | null
+  deliverableSpec?: string | null
+  audience?: string | null
   isAutoMode: boolean
   lastSpeakerId?: string | null
   /** Next scheduled turn; null when the chat is not running server-side. */
@@ -54,6 +58,25 @@ export interface Message {
   chatId: string
   createdAt: Date
 }
+
+/** A produced deliverable, stored separately from the transcript. */
+export interface Artifact {
+  id: string
+  kind: string
+  title: string
+  content: string
+  model?: string | null
+  createdAt: string | Date
+}
+
+export type ChatMode = 'debate' | 'task'
+
+export type PersonaRole =
+  | 'contributor'
+  | 'researcher'
+  | 'critic'
+  | 'planner'
+  | 'synthesizer'
 
 export interface PersonaOnChat {
   id: string

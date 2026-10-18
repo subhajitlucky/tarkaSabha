@@ -70,6 +70,7 @@ export async function runTurn(chatId: string): Promise<TurnResult> {
       topic: chat.topic,
       isAutoMode: chat.isAutoMode,
       lastSpeakerId: chat.lastSpeakerId,
+      brief: chat,
     },
     '',
     false,

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { addParticipants, removeParticipants } from '@/lib/orchestrator'
 import { auth } from '@/auth'
+import { CHAT_MODES, isChatMode, validateBriefFields } from '@/lib/chat-brief'
 
 export async function GET(
   request: NextRequest,
@@ -21,6 +22,10 @@ export async function GET(
         id: true,
         title: true,
         topic: true,
+        mode: true,
+        objective: true,
+        deliverableSpec: true,
+        audience: true,
         isAutoMode: true,
         creatorId: true,
         createdAt: true,
@@ -73,7 +78,18 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { title, topic, isAutoMode, turns, addParticipantIds, removeParticipantIds } = body
+    const {
+      title,
+      topic,
+      mode,
+      objective,
+      deliverableSpec,
+      audience,
+      isAutoMode,
+      turns,
+      addParticipantIds,
+      removeParticipantIds,
+    } = body
 
     const session = await auth()
     const userId = session?.user?.id
@@ -104,6 +120,16 @@ export async function PUT(
     }
     if (topic !== undefined && topic !== null && typeof topic !== 'string') {
       return NextResponse.json({ error: 'Topic must be a string' }, { status: 400 })
+    }
+    if (mode !== undefined && mode !== null && !isChatMode(mode)) {
+      return NextResponse.json(
+        { error: `Mode must be one of: ${CHAT_MODES.join(', ')}` },
+        { status: 400 }
+      )
+    }
+    const briefValidation = validateBriefFields({ objective, deliverableSpec, audience })
+    if (!briefValidation.ok) {
+      return NextResponse.json({ error: briefValidation.error }, { status: 400 })
     }
     if (isAutoMode !== undefined && typeof isAutoMode !== 'boolean') {
       return NextResponse.json({ error: 'isAutoMode must be a boolean' }, { status: 400 })
@@ -138,6 +164,10 @@ export async function PUT(
     const updateData: Record<string, unknown> = {}
     if (title !== undefined) updateData.title = title.trim()
     if (topic !== undefined) updateData.topic = topic?.trim() || null
+    if (mode !== undefined) updateData.mode = mode
+    if (objective !== undefined) updateData.objective = objective?.trim() || null
+    if (deliverableSpec !== undefined) updateData.deliverableSpec = deliverableSpec?.trim() || null
+    if (audience !== undefined) updateData.audience = audience?.trim() || null
     if (isAutoMode !== undefined) {
       updateData.isAutoMode = isAutoMode
       if (isAutoMode) {

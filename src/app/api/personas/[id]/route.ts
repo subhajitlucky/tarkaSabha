@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { PERSONA_ROLES, isPersonaRole } from '@/lib/orchestrator'
 
 function withoutApiKey<T extends { apiKey: string }>(provider: T): Omit<T, 'apiKey'> {
   const clone = { ...provider } as { apiKey?: string }
@@ -80,7 +81,7 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, bio, personality, providerId, model, temperature } = body
+    const { name, bio, personality, role, providerId, model, temperature } = body
 
     if (name !== undefined && typeof name !== 'string') {
       return NextResponse.json({ error: 'Name must be a string' }, { status: 400 })
@@ -99,6 +100,12 @@ export async function PUT(
     }
     if (providerId !== undefined && providerId !== null && typeof providerId !== 'string') {
       return NextResponse.json({ error: 'Provider ID must be a string' }, { status: 400 })
+    }
+    if (role !== undefined && role !== null && !isPersonaRole(role)) {
+      return NextResponse.json(
+        { error: `Role must be one of: ${PERSONA_ROLES.join(', ')}` },
+        { status: 400 }
+      )
     }
 
     if (name !== undefined && name.trim().length === 0) {
@@ -125,6 +132,7 @@ export async function PUT(
       name?: string
       bio?: string
       personality?: string | null
+      role?: string
       providerId?: string | null
       model?: string | null
       temperature?: number | null
@@ -133,6 +141,7 @@ export async function PUT(
     if (name !== undefined) data.name = name.trim()
     if (bio !== undefined) data.bio = bio.trim()
     if (personality !== undefined) data.personality = personality?.trim() || null
+    if (role !== undefined) data.role = role || 'contributor'
     if (providerId !== undefined) data.providerId = providerId || null
     if (model !== undefined) data.model = model || null
     if (temperature !== undefined) data.temperature = temperature ?? null

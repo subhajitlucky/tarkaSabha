@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { CHAT_MODES, MAX_BRIEF_FIELD_LENGTH, isChatMode } from '@/lib/chat-brief'
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,13 +66,34 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, topic, participantIds } = body
+    const { title, topic, mode, objective, deliverableSpec, audience, participantIds } = body
 
     if (title !== undefined && title !== null && typeof title !== 'string') {
       return NextResponse.json({ error: 'Title must be a string' }, { status: 400 })
     }
     if (topic !== undefined && topic !== null && typeof topic !== 'string') {
       return NextResponse.json({ error: 'Topic must be a string' }, { status: 400 })
+    }
+    if (mode !== undefined && mode !== null && !isChatMode(mode)) {
+      return NextResponse.json(
+        { error: `Mode must be one of: ${CHAT_MODES.join(', ')}` },
+        { status: 400 }
+      )
+    }
+    for (const [label, value] of [
+      ['objective', objective],
+      ['deliverableSpec', deliverableSpec],
+      ['audience', audience],
+    ] as const) {
+      if (value !== undefined && value !== null && typeof value !== 'string') {
+        return NextResponse.json({ error: `${label} must be a string` }, { status: 400 })
+      }
+      if (typeof value === 'string' && value.length > MAX_BRIEF_FIELD_LENGTH) {
+        return NextResponse.json(
+          { error: `${label} must be at most ${MAX_BRIEF_FIELD_LENGTH} characters` },
+          { status: 400 }
+        )
+      }
     }
     if (
       participantIds !== undefined &&
@@ -84,14 +106,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Only personas the caller owns may join. Without this the create path had
+    // the same hole the PUT path was fixed for: attach someone else's persona at
+    // creation time, then read its bio and personality back through
+    // GET /api/chats/[id].
+    let ownedParticipantIds: string[] = []
+    if (participantIds?.length > 0) {
+      const owned = await prisma.persona.findMany({
+        where: { id: { in: participantIds }, creatorId: session.user.id },
+        select: { id: true },
+      })
+      ownedParticipantIds = owned.map((persona) => persona.id)
+    }
+
     const chat = await prisma.chat.create({
       data: {
         title: title || 'New Discussion',
         topic: topic?.trim() || null,
+        mode: mode || 'debate',
+        objective: objective?.trim() || null,
+        deliverableSpec: deliverableSpec?.trim() || null,
+        audience: audience?.trim() || null,
         creatorId: session.user.id,
-        participants: participantIds?.length > 0
+        participants: ownedParticipantIds.length > 0
           ? {
-              create: participantIds.map((id: string) => ({
+              create: ownedParticipantIds.map((id) => ({
                 personaId: id,
               })),
             }

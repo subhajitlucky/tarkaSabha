@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { PERSONA_ROLES, isPersonaRole } from '@/lib/orchestrator'
 
 export async function GET() {
   try {
@@ -18,6 +19,7 @@ export async function GET() {
         name: true,
         bio: true,
         personality: true,
+        role: true,
         avatarUrl: true,
         model: true,
         temperature: true,
@@ -47,7 +49,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, bio, personality, providerId, model, temperature } = body
+    const { name, bio, personality, role, providerId, model, temperature } = body
 
     // Validate required fields
     if (!name || typeof name !== 'string' || name.trim().length < 2) {
@@ -65,6 +67,12 @@ export async function POST(request: NextRequest) {
     }
     if (providerId !== undefined && providerId !== null && typeof providerId !== 'string') {
       return NextResponse.json({ error: 'Provider ID must be a string' }, { status: 400 })
+    }
+    if (role !== undefined && role !== null && !isPersonaRole(role)) {
+      return NextResponse.json(
+        { error: `Role must be one of: ${PERSONA_ROLES.join(', ')}` },
+        { status: 400 }
+      )
     }
     if (model !== undefined && model !== null && typeof model !== 'string') {
       return NextResponse.json({ error: 'Model must be a string' }, { status: 400 })
@@ -97,6 +105,7 @@ export async function POST(request: NextRequest) {
         name: normalizedName,
         bio: finalBio,
         personality: finalPersonality,
+        role: role || 'contributor',
         providerId: providerId || null,
         model: model || null,
         temperature: temperature ?? null,
