@@ -101,6 +101,13 @@ export async function PUT(
       return NextResponse.json({ error: 'Provider ID must be a string' }, { status: 400 })
     }
 
+    if (name !== undefined && name.trim().length === 0) {
+      return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 })
+    }
+    if (bio !== undefined && (bio === null || bio.trim().length === 0)) {
+      return NextResponse.json({ error: 'Bio cannot be empty' }, { status: 400 })
+    }
+
     if (providerId) {
       const provider = await prisma.provider.findFirst({
         where: { id: providerId, creatorId: session.user.id },
@@ -110,16 +117,29 @@ export async function PUT(
       }
     }
 
+    // Only touch the fields the caller actually sent. Writing
+    // `providerId: providerId || null` unconditionally nulled providerId, model
+    // and temperature on any partial update, so renaming a persona silently
+    // unbound it from its provider and discarded its tuned model settings.
+    const data: {
+      name?: string
+      bio?: string
+      personality?: string | null
+      providerId?: string | null
+      model?: string | null
+      temperature?: number | null
+    } = {}
+
+    if (name !== undefined) data.name = name.trim()
+    if (bio !== undefined) data.bio = bio.trim()
+    if (personality !== undefined) data.personality = personality?.trim() || null
+    if (providerId !== undefined) data.providerId = providerId || null
+    if (model !== undefined) data.model = model || null
+    if (temperature !== undefined) data.temperature = temperature ?? null
+
     const persona = await prisma.persona.update({
       where: { id },
-      data: {
-        name: name?.trim(),
-        bio: bio?.trim(),
-        personality: personality?.trim(),
-        providerId: providerId || null,
-        model: model || null,
-        temperature: temperature ?? null,
-      },
+      data,
       include: { provider: true },
     })
 
