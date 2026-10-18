@@ -99,7 +99,7 @@ The current production path favors deterministic round-robin speaker selection. 
 
 ### Prerequisites
 
-- Node.js 20+
+- Node.js 22+ (required by the OpenAI v7 SDK)
 - PostgreSQL database
 - At least one supported LLM provider API key
 
