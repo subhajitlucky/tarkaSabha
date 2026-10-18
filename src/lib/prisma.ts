@@ -24,9 +24,12 @@ function getPrismaClient(): PrismaClient {
   if (existing) return existing
 
   const client = createPrismaClient()
-  if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.prisma = client
-  }
+
+  // Cache in EVERY environment, not just development. The proxy below resolves
+  // the client on each property access, so if this is skipped in production a
+  // fresh PrismaClient — and therefore a fresh pg connection pool — is built for
+  // every access, and Postgres runs out of connection slots under load.
+  globalForPrisma.prisma = client
   return client
 }
 
