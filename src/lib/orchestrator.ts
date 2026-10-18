@@ -470,7 +470,11 @@ export async function orchestrateMessage(
     if (participants.length === 0) {
       return { message: '', error: 'No participants in chat' }
     }
-    speaker = participants[Math.floor(Math.random() * participants.length)]
+    // Round-robin, not random. Picking uniformly at random each turn samples with
+    // replacement, so a manual "Start Debate" round could give one persona every
+    // turn while another never spoke. The README documents deterministic
+    // round-robin as the production path; this now matches it.
+    speaker = await getNextSpeaker(chatId, context.lastSpeakerId, participants)
   }
 
   if (!speaker) {
@@ -732,7 +736,10 @@ export async function autoContinueDebate(
         });
     }
 
-    const { persona, provider } = await getPersonaWithProvider(speaker)
+    // Scope provider lookup to the chat owner. Passing no userId made
+    // getPersonaWithProvider ignore the creatorId filter entirely, which would
+    // have let one user's debate run on another user's provider and API key.
+    const { persona, provider } = await getPersonaWithProvider(speaker, chat.creatorId)
 
     if (!provider) {
       console.log(`[Auto-Debate] No provider for ${speaker.name}`)

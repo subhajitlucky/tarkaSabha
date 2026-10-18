@@ -93,7 +93,7 @@ const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = 
 
 export default function DebatePage() {
   const router = useRouter()
-  const { session, isAuthenticated, isLoading: authLoading } = useAuth()
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const { theme } = useTheme()
   const isLight = theme === 'light'
   const [providers, setProviders] = useState<Provider[]>([])
@@ -198,12 +198,24 @@ export default function DebatePage() {
       setError('You need at least 2 agents to start a debate')
       return
     }
+
+    // Catch a missing key here rather than letting the provider POST 400 and
+    // silently produce a debate whose every turn fails.
+    const missingKey = agents.find((agent) => {
+      const option = PROVIDER_TYPES.find((o) => o.value === agent.providerType)
+      return option?.requiresKey && !agent.apiKey.trim()
+    })
+    if (missingKey) {
+      setError(`${missingKey.name} needs an API key`)
+      return
+    }
+
     setError(null)
     setIsCreating(true)
 
-    try {
-      const createdPersonas: string[] = []
+    const createdPersonas: string[] = []
 
+    try {
       for (const agent of agents) {
         let providerId: string
 
@@ -215,6 +227,25 @@ export default function DebatePage() {
 
         if (existingProvider) {
           providerId = existingProvider.id
+
+          // The client only ever receives a masked key, so it cannot tell whether
+          // the stored one differs from what was just typed. Push the typed key
+          // through, otherwise a corrected key would be silently discarded.
+          if (agent.apiKey.trim()) {
+            const updateRes = await fetch(`/api/providers/${existingProvider.id}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                apiKey: agent.apiKey,
+                model: agent.model,
+                temperature: agent.temperature,
+              }),
+            })
+            if (!updateRes.ok) {
+              const body = await updateRes.json().catch(() => null)
+              throw new Error(body?.error || `Could not update the provider for ${agent.name}`)
+            }
+          }
         } else {
           const providerRes = await fetch('/api/providers', {
             method: 'POST',
@@ -228,7 +259,10 @@ export default function DebatePage() {
               temperature: agent.temperature,
             }),
           })
-          const provider = await providerRes.json()
+          const provider = await providerRes.json().catch(() => null)
+          if (!providerRes.ok || !provider?.id) {
+            throw new Error(provider?.error || `Could not save the provider for ${agent.name}`)
+          }
           providerId = provider.id
         }
 
@@ -242,7 +276,10 @@ export default function DebatePage() {
             providerId,
           }),
         })
-        const persona = await personaRes.json()
+        const persona = await personaRes.json().catch(() => null)
+        if (!personaRes.ok || !persona?.id) {
+          throw new Error(persona?.error || `Could not create ${agent.name}`)
+        }
         createdPersonas.push(persona.id)
       }
 
@@ -253,21 +290,34 @@ export default function DebatePage() {
           title: topic,
           topic,
           isAutoMode: true,
-          creatorId: session?.user?.id,
         }),
       })
-      const chat = await chatRes.json()
+      const chat = await chatRes.json().catch(() => null)
+      if (!chatRes.ok || !chat?.id) {
+        throw new Error(chat?.error || 'Could not create the debate room')
+      }
 
-      await fetch(`/api/chats/${chat.id}`, {
+      const linkRes = await fetch(`/api/chats/${chat.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           addParticipantIds: createdPersonas,
         }),
       })
+      if (!linkRes.ok) {
+        const body = await linkRes.json().catch(() => null)
+        throw new Error(body?.error || 'Could not add the agents to the debate')
+      }
 
       setCreatedChatId(chat.id)
     } catch (err: unknown) {
+      // Roll back the personas this attempt created. Leaving them behind produced
+      // orphans the user could neither see nor delete from the UI.
+      await Promise.allSettled(
+        createdPersonas.map((personaId) =>
+          fetch(`/api/personas/${personaId}`, { method: 'DELETE' })
+        )
+      )
       setError(getErrorMessage(err, 'Failed to create debate'))
       setIsCreating(false)
     }
