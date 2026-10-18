@@ -12,7 +12,7 @@ import {
   recordFailure,
   detectLoop,
 } from './llm-protection'
-import type { Persona } from '@prisma/client'
+import type { Persona } from '@/generated/prisma/client'
 
 function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)

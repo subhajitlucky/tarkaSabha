@@ -33,6 +33,11 @@ jobs:
       - name: Validate Prisma Schema
         run: npm run prisma:validate
 
+      # Prisma 7 generates the client into src/generated/prisma, so lint,
+      # typecheck, and tests all need it to exist. Do not rely on postinstall.
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Lint
         run: npm run lint
 

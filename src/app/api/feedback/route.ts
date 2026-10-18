@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { rateLimitService } from '@/lib/rate-limit'
-import type { Prisma } from '@prisma/client'
+import type { Prisma } from '@/generated/prisma/client'
 
 const MAX_MESSAGE_LENGTH = 2000
 const MAX_NAME_LENGTH = 100
