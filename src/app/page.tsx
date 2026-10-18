@@ -10,10 +10,12 @@ export default function Home() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [providers, setProviders] = useState<Provider[]>([])
   const [chats, setChats] = useState<Chat[]>([])
-  const [dataLoading, setDataLoading] = useState(false)
+  const [dataLoaded, setDataLoaded] = useState(false)
   const { theme } = useTheme()
   const { isAuthenticated } = useAuth()
   const isLight = theme === 'light'
+  // Derived rather than set inside an effect: authenticated, first pass not landed yet.
+  const dataLoading = isAuthenticated && !dataLoaded
 
   const fetchPersonas = useCallback(async () => {
     const res = await fetch('/api/personas')
@@ -34,7 +36,6 @@ export default function Home() {
   }, [])
 
   const fetchData = useCallback(async () => {
-    setDataLoading(true)
     try {
       await Promise.all([
         fetchPersonas(),
@@ -42,7 +43,7 @@ export default function Home() {
         fetchChats()
       ])
     } finally {
-      setDataLoading(false)
+      setDataLoaded(true)
     }
   }, [fetchPersonas, fetchProviders, fetchChats])
 

@@ -12,32 +12,33 @@ export default function HistoryPage() {
   const isLight = theme === 'light'
 
   useEffect(() => {
-    fetchChats()
-  }, [])
+    let cancelled = false
 
-  const fetchChats = async () => {
-    try {
-      const res = await fetch('/api/chats')
-      if (!res.ok) {
-        if (res.status === 401) {
-          // Redirect handled by middleware/auth provider usually, but we can set empty
-          setChats([])
+    const loadChats = async () => {
+      try {
+        const res = await fetch('/api/chats')
+        if (cancelled) return
+        if (!res.ok) {
+          // 401 is handled by the auth provider; just render an empty list.
+          if (res.status === 401) setChats([])
+          return
         }
-        return
+        const data = await res.json()
+        if (cancelled) return
+        setChats(Array.isArray(data) ? data : [])
+      } catch (e) {
+        console.error('Failed to fetch history', e)
+        if (!cancelled) setChats([])
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-      const data = await res.json()
-      if (Array.isArray(data)) {
-        setChats(data)
-      } else {
-        setChats([])
-      }
-    } catch (e) {
-      console.error('Failed to fetch history', e)
-      setChats([])
-    } finally {
-      setLoading(false)
     }
-  }
+
+    loadChats()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   return (
     <div className={`min-h-screen py-12 ${isLight ? 'bg-slate-50' : 'bg-slate-950'}`}>

@@ -23,20 +23,6 @@ export default function DashboardPage() {
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const loadData = async () => {
-      setLoading(true)
-      try {
-        await Promise.all([fetchChats(), fetchFeedback()])
-      } catch (e) {
-        console.error('Error loading dashboard data:', e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadData()
-  }, [])
-
   const fetchChats = async () => {
     try {
       const res = await fetch('/api/chats?limit=6')
@@ -60,6 +46,20 @@ export default function DashboardPage() {
       console.error('Failed to fetch feedback:', e)
     }
   }
+
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true)
+      try {
+        await Promise.all([fetchChats(), fetchFeedback()])
+      } catch (e) {
+        console.error('Error loading dashboard data:', e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadData()
+  }, [])
 
   const userName = session?.user?.name || 'User'
   const userEmail = session?.user?.email

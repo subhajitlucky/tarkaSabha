@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Chat, Message } from '@/types'
 import { useTheme } from '@/components/ThemeProvider'
@@ -8,6 +8,33 @@ import { useAuth } from '@/components/AuthProvider'
 
 function getErrorMessage(error: unknown, fallback: string) {
   return error instanceof Error ? error.message : fallback
+}
+
+const USERNAME_STORAGE_KEY = 'tarka_username'
+
+function subscribeToStoredUsername(onChange: () => void) {
+  window.addEventListener('storage', onChange)
+  return () => window.removeEventListener('storage', onChange)
+}
+
+function getStoredUsername() {
+  return localStorage.getItem(USERNAME_STORAGE_KEY) || ''
+}
+
+// SSR and the hydration pass have no localStorage, so render the default and let
+// React re-read the real value once the client takes over.
+function getServerStoredUsername() {
+  return ''
+}
+
+const subscribeToNothing = () => () => {}
+
+function useHydrated() {
+  return useSyncExternalStore(
+    subscribeToNothing,
+    () => true,
+    () => false
+  )
 }
 
 export default function ChatPage() {
@@ -27,25 +54,31 @@ export default function ChatPage() {
   const [manualTurnsLeft, setManualTurnsLeft] = useState(0)
   const [showChatSettings, setShowChatSettings] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [showUsernameModal, setShowUsernameModal] = useState(false)
+  const [usernameModalRequested, setUsernameModalRequested] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showWipeConfirm, setShowWipeConfirm] = useState(false)
-  const [localUsername, setLocalUsername] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [isOwner, setIsOwner] = useState(false)
 
-  const fetchChat = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/chats/${chatId}`)
-      if (res.ok) {
-        const data = await res.json()
-        setChat(data)
-      }
-    } catch (e) {
-      console.error('Failed to fetch chat', e)
-    }
-  }, [chatId])
+  // The display name lives in an external store (localStorage). useSyncExternalStore
+  // reads it without a setState-in-effect cascade and defers to the SSR default
+  // during hydration, so server and client markup agree.
+  const storedUsername = useSyncExternalStore(
+    subscribeToStoredUsername,
+    getStoredUsername,
+    getServerStoredUsername
+  )
+  const [savedUsername, setSavedUsername] = useState<string | null>(null)
+  const localUsername = savedUsername ?? storedUsername
+
+  const hydrated = useHydrated()
+  const needsUsername = !localUsername || localUsername === 'You'
+  const showUsernameModal = usernameModalRequested || (hydrated && needsUsername)
+
+  // Ownership is derived from the loaded chat and the session — no effect needed.
+  const isOwner = Boolean(
+    chat?.creatorId && session?.user?.id && chat.creatorId === session.user.id
+  )
 
   const fetchMessages = useCallback(async () => {
     try {
@@ -71,52 +104,17 @@ export default function ChatPage() {
     }
   }, [chatId])
 
-  // Load username from localStorage on client mount
-  useEffect(() => {
-    const saved = localStorage.getItem('tarka_username') || ''
-    if (saved && saved !== 'You') {
-      setLocalUsername(saved)
-    } else {
-      setShowUsernameModal(true)
-    }
-  }, [])
-
   // Get username
   const username = localUsername || 'Guest'
-
-  // Check ownership
-  useEffect(() => {
-    if (chat?.creatorId && session?.user?.id) {
-      setIsOwner(chat.creatorId === session.user.id)
-    } else {
-      setIsOwner(false)
-    }
-  }, [chat?.creatorId, session?.user?.id])
 
   const saveUsername = (name: string) => {
     const trimmed = name.trim()
     if (trimmed) {
-      localStorage.setItem('tarka_username', trimmed)
-      setLocalUsername(trimmed)
-      setShowUsernameModal(false)
+      localStorage.setItem(USERNAME_STORAGE_KEY, trimmed)
+      setSavedUsername(trimmed)
+      setUsernameModalRequested(false)
     }
   }
-
-  // Poll for messages continuously
-  useEffect(() => {
-    let isActive = true
-
-    // Poll every 3 seconds
-    const interval = setInterval(async () => {
-      if (!isActive) return
-      await fetchMessages()
-    }, 3000)
-
-    return () => {
-      isActive = false
-      clearInterval(interval)
-    }
-  }, [fetchMessages])
 
   // Client-driven Debate Loop (Vercel Stable)
   useEffect(() => {
@@ -184,17 +182,41 @@ export default function ChatPage() {
     }
   }, [messages.length, scrollToBottom])
 
+  // Load the chat once, then poll for new messages every 3 seconds.
   useEffect(() => {
-    if (chatId) {
-      fetchChat()
-      fetchMessages()
+    if (!chatId) return
+    let isActive = true
+
+    const loadChat = async () => {
+      try {
+        const res = await fetch(`/api/chats/${chatId}`)
+        if (!res.ok || !isActive) return
+        const data = await res.json()
+        if (isActive) setChat(data)
+      } catch (e) {
+        console.error('Failed to fetch chat', e)
+      }
     }
-  }, [chatId, fetchChat, fetchMessages])
+
+    const tick = async () => {
+      if (!isActive) return
+      await fetchMessages()
+    }
+
+    loadChat()
+    tick()
+    const interval = setInterval(tick, 3000)
+
+    return () => {
+      isActive = false
+      clearInterval(interval)
+    }
+  }, [chatId, fetchMessages])
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !chat) return
     if (!localUsername) {
-      setShowUsernameModal(true)
+      setUsernameModalRequested(true)
       return
     }
 
@@ -510,7 +532,7 @@ export default function ChatPage() {
 
             <div className="flex items-center gap-2">
               <button 
-                onClick={() => setShowUsernameModal(true)}
+                onClick={() => setUsernameModalRequested(true)}
                 className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl transition-all border group cursor-pointer ${identityBtn}`}
               >
                 <div className="w-7 h-7 rounded-lg overflow-hidden bg-gradient-to-br from-amber-400 to-orange-600 flex items-center justify-center text-[11px] font-black text-white shadow-sm transition-transform group-hover:scale-110">
@@ -558,7 +580,7 @@ export default function ChatPage() {
           <div className="max-w-5xl mx-auto px-6 pb-4 animate-in slide-in-from-top-2 duration-200">
             <div className={`p-2 rounded-2xl border flex flex-col sm:flex-row gap-1 ${trayBg}`}>
               <button
-                onClick={() => setShowUsernameModal(true)}
+                onClick={() => setUsernameModalRequested(true)}
                 className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold transition-all hover:scale-[1.02] active:scale-95 cursor-pointer ${trayItem}`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
