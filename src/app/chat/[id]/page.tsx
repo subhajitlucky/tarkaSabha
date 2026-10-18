@@ -48,10 +48,7 @@ export default function ChatPage() {
   const [chat, setChat] = useState<Chat | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
   const [isSending, setIsSending] = useState(false)
-  const [isProcessing, setIsProcessing] = useState(false)
-  const [manualTurnsLeft, setManualTurnsLeft] = useState(0)
   const [showChatSettings, setShowChatSettings] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [usernameModalRequested, setUsernameModalRequested] = useState(false)
@@ -116,52 +113,27 @@ export default function ChatPage() {
     }
   }
 
-  // Client-driven Debate Loop (Vercel Stable)
-  useEffect(() => {
-    // Should we trigger a persona response?
-    const shouldTrigger = chat?.isAutoMode || manualTurnsLeft > 0;
-    if (!shouldTrigger || isProcessing || isSending) return;
-
-    const timer = setTimeout(async () => {
-      // Re-verify conditions
-      if ((!chat?.isAutoMode && manualTurnsLeft <= 0) || isProcessing || isSending) return;
-
-      setIsProcessing(true);
-      setIsTyping(true);
-
-      try {
-        const res = await fetch(`/api/chats/${chatId}/send`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ isUser: false }),
-        });
-
-        if (res.ok) {
-          await fetchMessages();
-          if (manualTurnsLeft > 0) {
-            setManualTurnsLeft(prev => prev - 1);
-          }
-        } else {
-          const data = await res.json();
-          setError(data.error || 'Agent failed to respond');
-          setManualTurnsLeft(0);
-          // If it's a persistent error, stop auto mode to prevent spamming
-          if (chat?.isAutoMode) {
-             setChat(prev => prev ? { ...prev, isAutoMode: false } : null);
-          }
-        }
-      } catch (err) {
-        console.error("Failed to trigger persona", err);
-        setError("Connection error: Failed to reach the debate server.");
-        setManualTurnsLeft(0);
-      } finally {
-        setIsProcessing(false);
-        setIsTyping(false);
+  // Turns are executed server-side by the debate runner, so this component only
+  // polls for messages. Previously a timer here POSTed to /send every 4 seconds,
+  // which meant closing the tab stopped the debate.
+  const startRun = async (turns?: number) => {
+    setError(null)
+    try {
+      const res = await fetch(`/api/chats/${chatId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isAutoMode: true, turns }),
+      })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Could not start the debate')
       }
-    }, 4000); // 4 second wait between turns
-
-    return () => clearTimeout(timer);
-  }, [chat?.isAutoMode, manualTurnsLeft, messages.length, isProcessing, isSending, chatId, fetchMessages]);
+      const data = await res.json()
+      setChat(data.chat)
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Could not start the debate'))
+    }
+  }
   const adjustTextareaHeight = useCallback(() => {
     const textarea = textareaRef.current
     if (textarea) {
@@ -256,9 +228,10 @@ export default function ChatPage() {
       // Replace optimistic message with saved one to get real ID
       setMessages(prev => prev.map(m => m.id === tempId ? savedMessage : m))
       
-      // If manual mode, trigger one round of persona responses
+      // If manual mode, let every participant respond once. The server runs the
+      // turns, so this does not depend on the tab staying open.
       if (!chat.isAutoMode) {
-        setManualTurnsLeft(chat.participants?.length || 0)
+        await startRun(chat.participants?.length || 1)
       }
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Failed to send message'))
@@ -311,7 +284,6 @@ export default function ChatPage() {
         throw new Error(data.error || 'Failed to stop debate')
       }
       setChat({ ...chat, isAutoMode: false })
-      setIsTyping(false)
     } catch (error: unknown) {
       setError(getErrorMessage(error, 'Failed to stop debate'))
     }
@@ -705,7 +677,7 @@ export default function ChatPage() {
             )
           })}
 
-          {isTyping && (
+          {chat?.isAutoMode && (
             <div className="flex justify-start animate-in fade-in duration-500">
               <div className="flex gap-4">
                 <div className="w-9 h-9 rounded-2xl bg-slate-500 bg-opacity-10 flex items-center justify-center flex-shrink-0 animate-pulse">

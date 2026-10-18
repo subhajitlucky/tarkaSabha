@@ -74,6 +74,37 @@ User starts a topic
 
 The current production path favors deterministic round-robin speaker selection. Mention detection can prioritize a named persona, while the LLM-based dynamic speaker selector remains isolated as an optional orchestration path.
 
+## Server-Side Debate Runner
+
+Turns are executed by the server, not by the browser. Starting a debate sets
+`autoAdvanceAt` on the chat; a runner then claims chats that are due and advances
+one turn each. **A debate therefore keeps going after the tab is closed.**
+
+Two triggers drive the same endpoint:
+
+| Trigger | Use case |
+|---|---|
+| `vercel.json` cron calling `/api/debates/tick` | Vercel deployments |
+| `npm run worker` | Self-hosted and local development |
+
+Both authenticate with `Authorization: Bearer $CRON_SECRET`. The endpoint fails
+closed if `CRON_SECRET` is unset.
+
+Claiming is atomic — the claim statement pushes `autoAdvanceAt` forward with
+`FOR UPDATE SKIP LOCKED` — so overlapping ticks divide the work instead of
+advancing the same chat twice.
+
+Two modes:
+
+- **Auto** (`isAutoMode: true`, no turn budget) runs until stopped or a turn fails.
+- **Bounded** (`turns: N`) runs N turns and then clears `isAutoMode` automatically.
+
+Manual mode stays user-driven: `POST /api/chats/[id]/advance` runs exactly one
+turn on demand.
+
+Note that Vercel's Hobby plan only allows daily cron schedules. For frequent
+ticks on Hobby, run the worker yourself; Pro allows per-minute schedules.
+
 ## Security & Reliability Notes
 
 - API keys are encrypted before storage and masked when displayed.
@@ -118,6 +149,8 @@ DATABASE_URL="postgresql://user:password@localhost:5432/tarka_sabha"
 ENCRYPTION_KEY="use_at_least_32_characters_here"
 AUTH_SECRET="generate_a_strong_auth_secret"
 NEXTAUTH_URL="http://localhost:3000"
+# Shared secret for the debate runner. Vercel Cron sends it automatically.
+CRON_SECRET="generate_a_strong_random_secret"
 ```
 
 Generate a strong encryption key:
@@ -151,7 +184,10 @@ http://localhost:3000
 npm run dev
 npm run build
 npm run start
+npm run worker    # self-hosted debate runner; needs CRON_SECRET
 npm run lint
+npm run typecheck
+npm test
 ```
 
 ## Tradeoffs

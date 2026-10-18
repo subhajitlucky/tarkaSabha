@@ -113,6 +113,15 @@ model Chat {
   topic         String?
   isAutoMode    Boolean         @default(false)
   lastSpeakerId String?
+  // Scheduler state for server-side turn execution. autoAdvanceAt is the next
+  // time this chat is due for a turn; null means it is not scheduled. The worker
+  // claims due chats by pushing this forward, so a chat can never be advanced
+  // twice by overlapping ticks.
+  autoAdvanceAt  DateTime?
+  // null while running open-ended (auto mode); a countdown for a bounded run
+  // started from the "Start Debate" button.
+  turnsRemaining Int?
+  turnCount      Int             @default(0)
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   creatorId     String?
@@ -121,6 +130,7 @@ model Chat {
   participants  PersonaOnChat[]
 
   @@index([creatorId])
+  @@index([isAutoMode, autoAdvanceAt])
 }
 
 model PersonaOnChat {

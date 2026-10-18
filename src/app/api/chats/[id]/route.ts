@@ -26,6 +26,9 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         lastSpeakerId: true,
+        autoAdvanceAt: true,
+        turnsRemaining: true,
+        turnCount: true,
         participants: {
           select: {
             id: true,
@@ -70,7 +73,7 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
-    const { title, topic, isAutoMode, addParticipantIds, removeParticipantIds } = body
+    const { title, topic, isAutoMode, turns, addParticipantIds, removeParticipantIds } = body
 
     const session = await auth()
     const userId = session?.user?.id
@@ -105,6 +108,16 @@ export async function PUT(
     if (isAutoMode !== undefined && typeof isAutoMode !== 'boolean') {
       return NextResponse.json({ error: 'isAutoMode must be a boolean' }, { status: 400 })
     }
+    if (
+      turns !== undefined &&
+      turns !== null &&
+      (!Number.isInteger(turns) || turns < 1 || turns > 50)
+    ) {
+      return NextResponse.json(
+        { error: 'turns must be an integer between 1 and 50' },
+        { status: 400 }
+      )
+    }
     for (const [label, value] of [
       ['addParticipantIds', addParticipantIds],
       ['removeParticipantIds', removeParticipantIds],
@@ -125,7 +138,18 @@ export async function PUT(
     const updateData: Record<string, unknown> = {}
     if (title !== undefined) updateData.title = title.trim()
     if (topic !== undefined) updateData.topic = topic?.trim() || null
-    if (isAutoMode !== undefined) updateData.isAutoMode = isAutoMode
+    if (isAutoMode !== undefined) {
+      updateData.isAutoMode = isAutoMode
+      if (isAutoMode) {
+        // Hand the debate to the server-side runner. Scheduling it immediately
+        // is what lets turns continue after the browser tab is closed.
+        updateData.autoAdvanceAt = new Date()
+        updateData.turnsRemaining = turns ?? null
+      } else {
+        updateData.autoAdvanceAt = null
+        updateData.turnsRemaining = null
+      }
+    }
 
     // Handle participant changes
     let participantChanges = { added: 0, removed: 0 }

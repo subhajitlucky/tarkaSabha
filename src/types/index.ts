@@ -33,6 +33,11 @@ export interface Chat {
   topic?: string | null
   isAutoMode: boolean
   lastSpeakerId?: string | null
+  /** Next scheduled turn; null when the chat is not running server-side. */
+  autoAdvanceAt?: string | Date | null
+  /** Turns left in a bounded run; null while running open-ended. */
+  turnsRemaining?: number | null
+  turnCount?: number
   createdAt: Date
   updatedAt: Date
   creatorId?: string | null
