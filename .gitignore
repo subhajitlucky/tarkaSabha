@@ -33,6 +33,12 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
+# Defence in depth: the deploy secrets currently live outside the repo, which
+# is the only reason `git add -A` has never staged them. Ignore the path anyway
+# so moving them inside cannot leak a Supabase token or a database password.
+.secrets/
+*.pem
+
 # local database
 *.db
 *.sqlite
