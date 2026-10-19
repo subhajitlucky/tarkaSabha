@@ -852,8 +852,8 @@ export class LLMProviderFactory {
 
   static getModelsForProvider(provider: ProviderType): string[] {
     const models: Record<ProviderType, string[]> = {
-      openai: ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o', 'o1', 'o1-mini'],
-      anthropic: ['claude-sonnet-4-20250514', 'claude-opus-4-20250514', 'claude-haiku-3-20250514'],
+      openai: ['gpt-5.4-mini', 'gpt-5.4', 'gpt-5.4-nano', 'gpt-5.4-pro', 'gpt-4o'],
+      anthropic: ['claude-sonnet-4-20250514', 'claude-opus-4-20250514', 'claude-3-5-haiku-20241022'],
       google: ['gemini-1.5-pro', 'gemini-1.5-flash', 'gemini-1.0-pro'],
       groq: ['llama-3.1-70b-versatile', 'llama-3.1-8b-instant', 'mixtral-8x7b-32768'],
       ollama: ['llama3.2', 'llama3.1', 'mistral', 'codellama', 'deepseek-r1'],

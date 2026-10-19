@@ -42,18 +42,22 @@ const TOOL_OPTIONS = [
   { value: 'calculator', label: 'Calculator', hint: 'Exact arithmetic, no guessing' },
 ]
 
+// Debates make many calls per run (one per agent turn, plus two per synthesis
+// candidate), so the default trades a little quality for a lot of cost. The
+// field is free text: anything the account can reach will work.
+const DEFAULT_MODEL = 'gpt-5.4-mini'
+
 const MODEL_OPTIONS: Record<ProviderType, { value: string; label: string }[]> = {  openai: [
-    { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo' },
-    { value: 'gpt-4', label: 'GPT-4' },
-    { value: 'gpt-4-turbo', label: 'GPT-4 Turbo' },
-    { value: 'gpt-4o', label: 'GPT-4o' },
-    { value: 'o1', label: 'o1' },
-    { value: 'o1-mini', label: 'o1-mini' },
+    { value: 'gpt-5.4-mini', label: 'GPT-5.4 mini' },
+    { value: 'gpt-5.4', label: 'GPT-5.4' },
+    { value: 'gpt-5.4-nano', label: 'GPT-5.4 nano' },
+    { value: 'gpt-5.4-pro', label: 'GPT-5.4 pro' },
+    { value: 'gpt-4o', label: 'GPT-4o (legacy)' },
   ],
   anthropic: [
     { value: 'claude-sonnet-4-20250514', label: 'Claude Sonnet 4' },
     { value: 'claude-opus-4-20250514', label: 'Claude Opus 4' },
-    { value: 'claude-haiku-3-20250514', label: 'Claude Haiku 3' },
+    { value: 'claude-3-5-haiku-20241022', label: 'Claude 3.5 Haiku' },
   ],
   google: [
     { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro' },
@@ -143,7 +147,7 @@ export default function DebatePage() {
     providerType: 'openai' as ProviderType,
     apiUrl: 'https://api.openai.com/v1',
     apiKey: '',
-    model: 'gpt-3.5-turbo',
+    model: DEFAULT_MODEL,
     temperature: 0.7,
   })
 
@@ -203,7 +207,7 @@ export default function DebatePage() {
       providerType: 'openai',
       apiUrl: 'https://api.openai.com/v1',
       apiKey: '',
-      model: 'gpt-3.5-turbo',
+      model: DEFAULT_MODEL,
       temperature: 0.7,
     })
     setError(null)
@@ -528,12 +532,12 @@ export default function DebatePage() {
                     </select>
                   </div>
                   <div>
-                    <label className="eyebrow mb-1.5 block">Model Name</label>
+                    <label className="eyebrow mb-1.5 block">Model name</label>
                     <input
                       type="text"
                       value={newAgent.model}
                       onChange={e => setNewAgent({ ...newAgent, model: e.target.value })}
-                      placeholder="e.g., gpt-4, claude-opus-4"
+                      placeholder="e.g., gpt-5.4-mini, claude-sonnet-4-20250514"
                       className={`w-full rounded-lg px-3 py-2 text-sm focus:outline-none font-mono ${inputClass}`}
                     />
                   </div>
