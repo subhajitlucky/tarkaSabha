@@ -38,7 +38,8 @@ export async function GET(request: NextRequest) {
                 avatarUrl: true,
               }
             }
-          }
+          },
+          orderBy: { sortOrder: 'asc' },
         },
         messages: {
           take: 1,
@@ -130,8 +131,13 @@ export async function POST(request: NextRequest) {
         creatorId: session.user.id,
         participants: ownedParticipantIds.length > 0
           ? {
-              create: ownedParticipantIds.map((id) => ({
+              // sortOrder must be explicit. The column defaults to 0, so omitting
+              // it ties every participant and turns the speaker query's
+              // ORDER BY into a no-op — the order the caller gave would be
+              // silently discarded and the speaker chosen by heap order.
+              create: ownedParticipantIds.map((id, index) => ({
                 personaId: id,
+                sortOrder: index,
               })),
             }
           : undefined,
@@ -139,6 +145,9 @@ export async function POST(request: NextRequest) {
       include: {
         participants: {
           include: { persona: true },
+          // Distinct sortOrder is what makes this deterministic; without an
+          // explicit order the display order is whatever the heap returns.
+          orderBy: { sortOrder: 'asc' },
         },
       },
     })

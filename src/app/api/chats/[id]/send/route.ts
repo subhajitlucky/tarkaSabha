@@ -39,6 +39,9 @@ export async function POST(
       include: {
         participants: {
           include: { persona: true },
+          // Distinct sortOrder is what makes this deterministic; without an
+          // explicit order the display order is whatever the heap returns.
+          orderBy: { sortOrder: 'asc' },
         },
       },
     })
