@@ -963,13 +963,22 @@ export async function addParticipants(
 
   let added = 0
 
+  // Continue numbering from whatever is already on the chat, so appending
+  // participants extends the speaking order rather than colliding with it.
+  const highest = await prisma.personaOnChat.aggregate({
+    where: { chatId },
+    _max: { sortOrder: true },
+  })
+  let nextOrder = (highest._max.sortOrder ?? -1) + 1
+
   for (const personaId of personaIds) {
     if (!allowed.has(personaId)) continue
 
     try {
       await prisma.personaOnChat.create({
-        data: { personaId, chatId },
+        data: { personaId, chatId, sortOrder: nextOrder },
       })
+      nextOrder++
       added++
     } catch {
       // already a participant, or a concurrent insert won the race

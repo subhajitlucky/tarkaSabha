@@ -18,7 +18,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
       className={cx(
         'rounded-[4px] border border-line bg-surface',
         !flush && 'p-5',
-        raised && 'shadow-lift',
+        raised && 'raised',
         className
       )}
       {...rest}

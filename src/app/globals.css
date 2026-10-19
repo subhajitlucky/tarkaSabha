@@ -13,38 +13,66 @@
    ========================================================================= */
 
 :root {
-  /* Ink — the default (dark) theme */
-  --bg: #12100e;
-  --surface: #1a1714;
-  --surface-2: #221e1a;
-  --surface-3: #2b2620;
-  --line: #332c25;
-  --line-strong: #4a4036;
+  /* ============================ Ink — the night theme ====================
+     Dark interfaces fail in predictable ways: a single flat near-black that
+     reads as a void, shadows that are invisible so nothing has depth, borders
+     darker than their surface so they vanish, and full-brightness text that
+     glares. This palette addresses each: a four-step surface ramp that gets
+     LIGHTER as it comes forward, borders lighter than the surface, a text ramp
+     that stops short of pure white, and an accent pulled back from full
+     saturation because saturated hues vibrate against dark.
+     ====================================================================== */
 
-  --text: #f2ebe0;
-  --text-muted: #b5a895;
-  --text-subtle: #8a7f70;
+  /* Surfaces, back to front */
+  --bg: #0d0b0a;
+  --surface: #17140f;
+  --surface-2: #211d16;
+  --surface-3: #2c261d;
 
-  --accent: #e8913a;
-  --accent-hover: #f2a355;
+  /* Borders sit ABOVE the surface in lightness so they read as edges */
+  --line: #362f26;
+  --line-strong: #4d4234;
+
+  /* Text ramp — deliberately not pure white, which glares on dark */
+  --text: #e9e1d4;
+  --text-muted: #ab9f8a;
+  --text-subtle: #9a9084;
+
+  /* Saffron, pulled back from full saturation for dark */
+  --accent: #dd8f42;
+  --accent-hover: #eda55f;
   --accent-ink: #1a1208;
-  --accent-soft: rgb(232 145 58 / 0.12);
-  --accent-line: rgb(232 145 58 / 0.32);
+  --accent-soft: rgb(221 143 66 / 0.1);
+  --accent-line: rgb(221 143 66 / 0.26);
+  --accent-glow: rgb(221 143 66 / 0.22);
 
   --danger: #e0685f;
   --danger-soft: rgb(224 104 95 / 0.12);
-  --success: #6fb587;
-  --success-soft: rgb(111 181 135 / 0.12);
+  --danger-glow: rgb(224 104 95 / 0.2);
+  --success: #74b98b;
+  --success-soft: rgb(116 185 139 / 0.12);
 
-  /* Avatar tones. Five earthy hues that sit inside the manuscript palette
-     instead of the indigo/purple gradients the old design used. */
-  --tone-1: #e8913a; /* saffron */
-  --tone-2: #c07a5a; /* clay */
-  --tone-3: #93a06a; /* moss */
-  --tone-4: #7d90b5; /* ink blue */
-  --tone-5: #b483a2; /* plum */
+  /* A 1px light top edge is what makes a raised surface read as raised when
+     there is no ambient light to cast a shadow. */
+  --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.045);
+  --shadow-lift: var(--inset-top), 0 18px 40px -24px rgb(0 0 0 / 0.9);
+  --shadow-pop: var(--inset-top), 0 24px 60px -28px rgb(0 0 0 / 0.95);
 
-  --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.04), 0 12px 32px -16px rgb(0 0 0 / 0.8);
+  /* Ambient light. Three wide, very low-opacity washes give the page a sense of
+     being lit from somewhere instead of uniformly dark. */
+  --atmosphere:
+    radial-gradient(58rem 38rem at 12% -8%, rgb(221 143 66 / 0.07), transparent 62%),
+    radial-gradient(48rem 32rem at 88% -4%, rgb(125 144 181 / 0.05), transparent 58%),
+    radial-gradient(46rem 40rem at 60% 108%, rgb(180 131 162 / 0.035), transparent 62%);
+  --grain-opacity: 0.55;
+  --grain-color: rgb(255 255 255 / 0.018);
+
+  /* Avatar tones */
+  --tone-1: #dd8f42;
+  --tone-2: #c07a5a;
+  --tone-3: #93a06a;
+  --tone-4: #7d90b5;
+  --tone-5: #b483a2;
 
   color-scheme: dark;
 }
@@ -60,18 +88,26 @@ html.light {
 
   --text: #1f1a14;
   --text-muted: #5c5245;
-  --text-subtle: #857a6b;
+  --text-subtle: #6f6757;
 
-  --accent: #b4621a;
-  --accent-hover: #9a5214;
+  --accent: #a5570f;
+  --accent-hover: #8c4a0c;
   --accent-ink: #ffffff;
   --accent-soft: rgb(180 98 26 / 0.1);
   --accent-line: rgb(180 98 26 / 0.3);
 
   --danger: #b3403c;
   --danger-soft: rgb(179 64 60 / 0.1);
+  --danger-glow: rgb(179 64 60 / 0.16);
   --success: #3d7f52;
   --success-soft: rgb(61 127 82 / 0.1);
+
+  --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.7);
+  --atmosphere:
+    radial-gradient(58rem 38rem at 12% -8%, rgb(180 98 26 / 0.05), transparent 62%),
+    radial-gradient(48rem 32rem at 88% -4%, rgb(74 92 125 / 0.04), transparent 58%);
+  --grain-opacity: 0.5;
+  --grain-color: rgb(90 70 40 / 0.02);
 
   --tone-1: #b4621a;
   --tone-2: #8c5334;
@@ -79,7 +115,8 @@ html.light {
   --tone-4: #4a5c7d;
   --tone-5: #7d4d6b;
 
-  --shadow-lift: 0 1px 0 0 rgb(255 255 255 / 0.6), 0 12px 32px -20px rgb(60 45 25 / 0.28);
+  --shadow-lift: var(--inset-top), 0 14px 34px -22px rgb(60 45 25 / 0.3);
+  --shadow-pop: var(--inset-top), 0 20px 50px -26px rgb(60 45 25 / 0.36);
 
   color-scheme: light;
 }
@@ -101,6 +138,8 @@ html.light {
   --color-accent-ink: var(--accent-ink);
   --color-accent-soft: var(--accent-soft);
   --color-accent-line: var(--accent-line);
+  --color-accent-glow: var(--accent-glow);
+  --color-danger-glow: var(--danger-glow);
 
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
@@ -112,6 +151,7 @@ html.light {
   --font-mono: var(--font-mono), ui-monospace, monospace;
 
   --shadow-lift: var(--shadow-lift);
+  --shadow-pop: var(--shadow-pop);
 }
 
 /* ============================== base ==================================== */
@@ -131,25 +171,29 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* A faint paper grain. Two very low-opacity repeating gradients, no image
-   request, and it sits behind everything so it never affects contrast. */
+/* Atmospheric light. Wide, very low-opacity washes behind everything, so the
+   page reads as lit rather than uniformly dark. Tokenised per theme. */
 body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background: var(--atmosphere);
+}
+
+/* Paper grain. The lines must be LIGHT on the night theme: the first pass used
+   black at 1.4% alpha, which on a near-black background is invisible. */
+body::after {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.4;
+  opacity: var(--grain-opacity);
   background-image:
-    repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 0.014) 3px 4px),
-    repeating-linear-gradient(90deg, transparent 0 3px, rgb(0 0 0 / 0.014) 3px 4px);
-}
-
-html.light body::before {
-  opacity: 0.5;
-  background-image:
-    repeating-linear-gradient(0deg, transparent 0 3px, rgb(90 70 40 / 0.02) 3px 4px),
-    repeating-linear-gradient(90deg, transparent 0 3px, rgb(90 70 40 / 0.02) 3px 4px);
+    repeating-linear-gradient(0deg, transparent 0 3px, var(--grain-color) 3px 4px),
+    repeating-linear-gradient(90deg, transparent 0 3px, var(--grain-color) 3px 4px);
 }
 
 /* Headings carry the display face and tighter tracking. */
@@ -212,6 +256,27 @@ h1 {
   background: var(--surface-2);
   padding: 0.1em 0.35em;
   border-radius: 3px;
+}
+
+/* ============================ surfaces ================================== */
+
+/* A raised surface. The inset top edge is doing the work here: with no ambient
+   light to cast a shadow, a 1px highlight is what reads as "above". */
+.raised {
+  box-shadow: var(--shadow-lift);
+}
+
+.pop {
+  box-shadow: var(--shadow-pop);
+}
+
+/* A lit edge for primary actions on the night theme. */
+.glow-accent {
+  box-shadow: var(--inset-top), 0 8px 24px -10px var(--accent-glow);
+}
+
+.glow-danger {
+  box-shadow: var(--inset-top), 0 8px 24px -10px var(--danger-glow);
 }
 
 /* ============================== focus =================================== */

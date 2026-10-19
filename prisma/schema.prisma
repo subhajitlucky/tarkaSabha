@@ -185,10 +185,17 @@ model PersonaOnChat {
   personaId String
   chatId    String
   joinedAt  DateTime @default(now())
+  /// Explicit turn order. Without this the participants array came back in
+  /// whatever order Postgres chose for the join rows, so speaker rotation was
+  /// non-deterministic and a debate could open with a different agent each run.
+  /// joinedAt cannot serve: Postgres now() is transaction-time, so every
+  /// participant added in one call shares a timestamp.
+  sortOrder Int      @default(0)
   chat      Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
   persona   Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
 
   @@unique([personaId, chatId])
+  @@index([chatId, sortOrder])
 }
 
 model Message {

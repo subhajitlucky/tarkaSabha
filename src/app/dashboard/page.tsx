@@ -89,31 +89,39 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
-          <div className={`p-6 rounded-2xl border ${'bg-surface border-line'}`}>
-            <p className={`text-sm font-bold uppercase tracking-wider mb-1 ${'text-subtle'}`}>Debates</p>
-            {loading ? (
-              <div className="h-9 w-16 animate-pulse rounded-[3px] bg-surface-2" />
-            ) : (
-              <p className="font-display text-3xl text-accent tabular-nums">{chats.length}</p>
-            )}
-          </div>
-          <div className={`p-6 rounded-2xl border ${'bg-surface border-line'}`}>
-            <p className={`text-sm font-bold uppercase tracking-wider mb-1 ${'text-subtle'}`}>Personas</p>
-            {loading ? (
-              <div className="h-9 w-16 animate-pulse rounded-[3px] bg-surface-2" />
-            ) : (
-              <p className="font-display text-3xl text-text tabular-nums">
-                {new Set(chats.flatMap(c => c.participants?.map(p => p.personaId))).size || 0}
-              </p>
-            )}
-          </div>
+        {/* Stats Grid — four columns, so four stats. Previously the grid
+            declared four but rendered two, which stretched both cards. */}
+        <div className="mb-10 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {[
+            { label: 'Debates', value: chats.length, accent: true },
+            {
+              label: 'Agents',
+              value: new Set(chats.flatMap((c) => c.participants?.map((p) => p.personaId))).size || 0,
+              accent: false,
+            },
+            { label: 'Running', value: chats.filter((c) => c.isAutoMode).length, accent: false },
+            { label: 'Feedback', value: feedbacks.length, accent: false },
+          ].map((stat) => (
+            <div key={stat.label} className="rounded-[4px] border border-line bg-surface p-4">
+              <p className="eyebrow mb-2">{stat.label}</p>
+              {loading ? (
+                <span className="block h-8 w-12 animate-pulse rounded-[3px] bg-surface-2" />
+              ) : (
+                <p
+                  className={`font-display text-3xl tabular-nums ${
+                    stat.accent ? 'text-accent' : 'text-text'
+                  }`}
+                >
+                  {stat.value}
+                </p>
+              )}
+            </div>
+          ))}
         </div>
 
         {/* History Section */}
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-bold">Recent Debates</h2>
+          <h2 className="text-xl text-text">Recent debates</h2>
           <Link 
             href="/debate" 
             className="rounded-[3px] border border-accent bg-accent px-3.5 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-hover" 
@@ -127,7 +135,7 @@ export default function DashboardPage() {
             <div className="w-8 h-8 border-2 border-accent/30 border-t-accent rounded-[3px] animate-spin" />
           </div>
         ) : chats.length === 0 ? (
-          <div className={`text-center py-16 rounded-[4px] border-2 border-dashed ${
+          <div className={`rounded-[4px] border border-dashed border-line py-16 text-center ${
             'border-line bg-surface-2'
           }`}>
             <div className={`w-16 h-16 mx-auto mb-4 rounded-[3px] flex items-center justify-center ${
@@ -219,7 +227,7 @@ export default function DashboardPage() {
             <h2 className={`text-2xl font-bold mb-6 ${'text-text'}`}>Feedback Reports</h2>
             <div className="grid gap-4">
               {feedbacks.map((item) => (
-                <div key={item.id} className={`p-6 rounded-2xl border ${'bg-surface border-line'}`}>
+                <div key={item.id} className={`p-6 rounded-[4px] border ${'bg-surface border-line'}`}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
                       <span className={`mb-2 inline-block rounded-[3px] px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] ${

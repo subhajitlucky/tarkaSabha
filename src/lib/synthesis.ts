@@ -167,7 +167,7 @@ export async function synthesizeChat(
 
   const chat = await prisma.chat.findUnique({
     where: { id: chatId },
-    include: { participants: { include: { persona: true } } },
+    include: { participants: { include: { persona: true }, orderBy: { sortOrder: 'asc' } } },
   })
 
   if (!chat) return { ok: false, error: 'Chat not found' }

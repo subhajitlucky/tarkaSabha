@@ -60,7 +60,7 @@ export default function Navbar() {
     href === '/' ? pathname === '/' : pathname.startsWith(href)
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/85 backdrop-blur-md">
+    <nav className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/80 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/65">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-3">
         <Wordmark />
 

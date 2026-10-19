@@ -5,7 +5,7 @@ vi.mock('../prisma', () => ({
     provider: { findFirst: vi.fn() },
     message: { findMany: vi.fn(), create: vi.fn() },
     chat: { update: vi.fn(), findUnique: vi.fn() },
-    personaOnChat: { create: vi.fn(), deleteMany: vi.fn() },
+    personaOnChat: { create: vi.fn(), deleteMany: vi.fn(), aggregate: vi.fn() },
     persona: { findMany: vi.fn() },
   },
 }))
@@ -242,6 +242,11 @@ describe('addParticipants ownership', () => {
     vi.mocked(prisma.persona.findMany).mockReset()
     vi.mocked(prisma.personaOnChat.create).mockReset()
     vi.mocked(prisma.personaOnChat.create).mockResolvedValue({} as never)
+    vi.mocked(prisma.personaOnChat.aggregate).mockReset()
+    // Empty chat by default: the first participant lands at position 0.
+    vi.mocked(prisma.personaOnChat.aggregate).mockResolvedValue({
+      _max: { sortOrder: null },
+    } as never)
   })
 
   it('scopes the ownership lookup to the requesting user', async () => {
@@ -272,7 +277,55 @@ describe('addParticipants ownership', () => {
     expect(result).toEqual({ added: 1, skipped: 1 })
     expect(prisma.personaOnChat.create).toHaveBeenCalledTimes(1)
     expect(prisma.personaOnChat.create).toHaveBeenCalledWith({
-      data: { personaId: 'mine', chatId: 'chat-1' },
+      data: { personaId: 'mine', chatId: 'chat-1', sortOrder: 0 },
+    })
+  })
+
+  it('numbers participants from the highest position already on the chat', async () => {
+    vi.mocked(prisma.persona.findMany).mockResolvedValue([
+      { id: 'a' },
+      { id: 'b' },
+    ] as never)
+    vi.mocked(prisma.personaOnChat.aggregate).mockResolvedValue({
+      _max: { sortOrder: 2 },
+    } as never)
+
+    await addParticipants('chat-1', ['a', 'b'], 'user-1')
+
+    // Appending must continue the speaking order, not restart it.
+    expect(prisma.personaOnChat.create).toHaveBeenNthCalledWith(1, {
+      data: { personaId: 'a', chatId: 'chat-1', sortOrder: 3 },
+    })
+    expect(prisma.personaOnChat.create).toHaveBeenNthCalledWith(2, {
+      data: { personaId: 'b', chatId: 'chat-1', sortOrder: 4 },
+    })
+  })
+
+  it('starts a fresh chat at position 0', async () => {
+    vi.mocked(prisma.persona.findMany).mockResolvedValue([
+      { id: 'first' },
+      { id: 'second' },
+    ] as never)
+
+    await addParticipants('chat-1', ['first', 'second'], 'user-1')
+
+    expect(prisma.personaOnChat.create).toHaveBeenNthCalledWith(1, {
+      data: { personaId: 'first', chatId: 'chat-1', sortOrder: 0 },
+    })
+    expect(prisma.personaOnChat.create).toHaveBeenNthCalledWith(2, {
+      data: { personaId: 'second', chatId: 'chat-1', sortOrder: 1 },
+    })
+  })
+
+  it('does not advance the order for a persona that was skipped', async () => {
+    vi.mocked(prisma.persona.findMany).mockResolvedValue([{ id: 'mine' }] as never)
+
+    await addParticipants('chat-1', ['theirs', 'mine'], 'user-1')
+
+    // 'theirs' is rejected, so 'mine' still takes the first free slot.
+    expect(prisma.personaOnChat.create).toHaveBeenCalledTimes(1)
+    expect(prisma.personaOnChat.create).toHaveBeenCalledWith({
+      data: { personaId: 'mine', chatId: 'chat-1', sortOrder: 0 },
     })
   })
 

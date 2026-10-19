@@ -378,21 +378,21 @@ export default function ChatPage() {
   // Dynamic style variables to avoid parser errors with forward slashes
   const themeBg = 'bg-bg';
   const themeText = 'text-text';
-  const headerBg = 'bg-surface border-line';
+  const headerBg = 'bg-surface/70 border-line';
   const sidebarBtn = 'hover:bg-surface-2 text-muted';
   const identityBtn = 'bg-surface border border-line text-text hover:bg-surface-2';
-  const actionGroup = 'bg-surface border-line';
+  const actionGroup = 'bg-surface-2/70 border-line';
   const toggleBtn = chat.isAutoMode 
     ? 'border-danger bg-danger-soft text-danger' 
     : ('bg-surface-2 text-text hover:bg-surface-3');
   const settingsBtn = showChatSettings 
     ? ('bg-surface-3 text-text')
     : ('hover:bg-surface-2 text-muted');
-  const trayBg = 'bg-surface border-line shadow-lift';
-  const trayItem = 'bg-surface border border-line text-text hover:bg-surface-2';
+  const trayBg = 'bg-surface border-line pop';
+  const trayItem = 'bg-surface border border-line text-text hover:bg-surface-2 hover:border-line-strong';
   const deleteBtn = 'bg-danger-soft text-danger border border-danger/30 hover:border-danger';
   const signOutBtn = 'bg-surface border border-line text-muted hover:bg-surface-2 hover:text-text';
-  const messageInputBg = 'bg-surface shadow-lift border border-line';
+  const messageInputBg = 'raised bg-surface-2 border border-line';
 
   return (
     <div className={`min-h-screen flex flex-col font-sans ${themeBg} ${themeText}`}>
@@ -638,7 +638,7 @@ export default function ChatPage() {
       )}
 
       {/* Header */}
-      <header className={`sticky top-0 z-30 border-b transition-colors duration-300 ${headerBg} backdrop-blur-md`}>
+      <header className={`sticky top-0 z-30 border-b transition-colors duration-300 ${headerBg} backdrop-blur-xl`}>
         <div className="max-w-5xl mx-auto px-6 py-4 text-inherit">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4 min-w-0">
@@ -798,8 +798,8 @@ export default function ChatPage() {
                     
                     <div className={`prose-ledger rounded-[4px] px-4 py-3 text-[0.9375rem] ${
                       isUser
-                        ? 'bg-accent text-accent-ink'
-                        : 'border border-line bg-surface text-text'
+                        ? 'glow-accent bg-accent text-accent-ink'
+                        : 'raised border border-line bg-surface-2 text-text'
                     }`}>
                       {message.content}
                     </div>

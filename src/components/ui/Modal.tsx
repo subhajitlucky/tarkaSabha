@@ -66,7 +66,7 @@ export function Modal({
         if (event.target === event.currentTarget) onClose()
       }}
     >
-      <div className="absolute inset-0 bg-black/65 backdrop-blur-[2px]" aria-hidden="true" />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" aria-hidden="true" />
 
       <div
         ref={panelRef}
@@ -76,7 +76,7 @@ export function Modal({
         tabIndex={-1}
         className={cx(
           'relative flex max-h-[86vh] w-full max-w-2xl flex-col',
-          'rounded-[5px] border border-line bg-surface shadow-lift focus:outline-none',
+          'rounded-[5px] border border-line bg-surface pop focus:outline-none',
           className
         )}
       >
