@@ -533,7 +533,16 @@ export default function ChatPage() {
                 </div>
               )}
 
-              <div className="flex justify-end gap-2 mt-5 pt-4 border-t border-line">
+              <div className="mt-5 flex items-center justify-between gap-2 border-t border-line pt-4">
+                <a
+                  href={`/api/chats/${chat.id}/export`}
+                  download
+                  className="rounded-[3px] px-2 py-2 text-xs font-bold text-muted transition-colors hover:text-accent"
+                  title="Download the whole run, including the candidates that lost"
+                >
+                  ↓ Export
+                </a>
+                <div className="flex gap-2">
                 <button
                   onClick={() => synthesize(2)}
                   disabled={isSynthesizing}
@@ -559,6 +568,7 @@ export default function ChatPage() {
                     ? 'Synthesising…'
                     : artifacts.length > 0 ? 'Regenerate' : 'Synthesise'}
                 </button>
+                </div>
               </div>
             </div>
           </div>
@@ -693,6 +703,15 @@ export default function ChatPage() {
                     Deliverable{artifacts.length > 0 ? ` (${artifacts.length})` : ''}
                   </button>
                 )}
+
+                <a
+                  href={`/api/chats/${chat.id}/export`}
+                  download
+                  className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all ${'text-muted hover:text-text hover:bg-surface-3'}`}
+                  title="Download this run as Markdown — brief, verdict, rubric and rejected candidates"
+                >
+                  Export
+                </a>
 
                 {isOwner && (
                   <button
