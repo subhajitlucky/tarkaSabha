@@ -84,12 +84,28 @@ One endpoint drives it, and you choose the trigger:
 
 | Trigger | Notes |
 |---|---|
+| GitHub Actions schedule | **What this repo uses.** Five-minute floor, free on public repos. |
 | `npm run worker` | Self-hosted, a container, or local development. Ticks every few seconds. |
 | Vercel Cron | **Pro plans only** — see below. |
 | Any external scheduler | GitHub Actions on a schedule, cron-job.org, etc. |
 
 All of them authenticate with `Authorization: Bearer $CRON_SECRET`. The endpoint
 fails closed if `CRON_SECRET` is unset.
+
+**GitHub Actions (what this repo uses).** `.github/workflows/runner.yml` calls
+the endpoint every five minutes, which is GitHub's scheduling floor. It needs one
+repository secret, `CRON_SECRET`, matching the Vercel environment variable of the
+same name:
+
+```bash
+gh secret set CRON_SECRET --repo <owner>/<repo>
+```
+
+Two behaviours of the GitHub scheduler are worth knowing: runs can be delayed by
+several minutes under load, and GitHub disables a schedule after 60 days without
+repository activity. Any push re-enables it, and the workflow can be run on demand
+from the Actions tab. Because a trigger may be late, the endpoint advances several
+turns per call rather than one.
 
 **Vercel Cron and plan limits.** Vercel's Hobby plan only permits *daily* cron
 schedules; a per-minute expression is rejected at deploy time and the whole
