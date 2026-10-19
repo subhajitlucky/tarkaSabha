@@ -101,6 +101,8 @@ export default function RootLayout({
                     {[
                       ['/debate', 'New council'],
                       ['/history', 'Archive'],
+                      ['/personas', 'Agents'],
+                      ['/providers', 'Providers'],
                       ['/dashboard', 'Dashboard'],
                       ['/about', 'About'],
                       ['/feedback', 'Feedback'],

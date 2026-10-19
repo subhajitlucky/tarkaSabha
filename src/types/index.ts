@@ -18,6 +18,10 @@ export interface Persona {
   name: string
   bio: string
   personality?: string | null
+  /** The job this agent does in a task, which shapes what it is told to do. */
+  role?: PersonaRole | string | null
+  /** Tool names granted to this agent, e.g. web_search, calculator. */
+  tools?: string[] | null
   providerId?: string | null
   model?: string | null
   temperature?: number | null

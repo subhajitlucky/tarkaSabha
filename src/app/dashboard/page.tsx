@@ -119,6 +119,36 @@ export default function DashboardPage() {
           ))}
         </div>
 
+        {/* Manage — the two things a new account has to set up before a council
+            can run, surfaced where a first-run user actually lands. */}
+        <div className="mb-10 grid gap-3 sm:grid-cols-2">
+          {[
+            {
+              href: '/personas',
+              title: 'Agents',
+              body: 'Give each one a job, and the tools to check its own claims.',
+            },
+            {
+              href: '/providers',
+              title: 'Providers',
+              body: 'Add an API key from any of twelve providers. Encrypted at rest.',
+            },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group rounded-[4px] border border-line bg-surface p-4 transition-colors hover:border-accent-line"
+            >
+              <h2 className="font-display text-[0.9375rem] text-text transition-colors group-hover:text-accent">
+                {item.title}
+              </h2>
+              <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted">
+                {item.body}
+              </p>
+            </Link>
+          ))}
+        </div>
+
         {/* History Section */}
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-xl text-text">Recent debates</h2>

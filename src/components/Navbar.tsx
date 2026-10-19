@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/debate', label: 'New council' },
   { href: '/history', label: 'Archive' },
+  { href: '/personas', label: 'Agents' },
   { href: '/about', label: 'About' },
   { href: '/feedback', label: 'Feedback' },
 ]
