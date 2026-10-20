@@ -6,6 +6,7 @@ import { rateLimitService } from './rate-limit'
 import {
   CriterionScore,
   buildJudgePrompt,
+  getRubricPreset,
   parseJudgeVerdict,
 } from './synthesis-rubric'
 
@@ -119,6 +120,7 @@ export async function compareCouncilToSingle(
   }
 
   const objective = chat.objective?.trim() || chat.topic?.trim() || chat.title
+  const rubric = getRubricPreset(chat.rubricPreset).criteria
   const model = preferred?.model || provider.model
   const providerType = provider.provider as
     | 'openai'
@@ -155,10 +157,11 @@ export async function compareCouncilToSingle(
         deliverableSpec: chat.deliverableSpec,
         audience: chat.audience,
         candidate: content,
+        rubric,
       }),
       0
     )
-    const verdict = parseJudgeVerdict(response.content)
+    const verdict = parseJudgeVerdict(response.content, rubric)
     return {
       verdict,
       usage: response.usage,

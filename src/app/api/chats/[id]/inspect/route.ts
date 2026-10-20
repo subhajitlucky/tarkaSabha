@@ -23,6 +23,7 @@ export async function GET(
         creatorId: true,
         title: true,
         objective: true,
+        rubricPreset: true,
         topic: true,
         createdAt: true,
         updatedAt: true,

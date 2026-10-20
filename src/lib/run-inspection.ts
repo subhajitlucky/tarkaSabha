@@ -32,6 +32,7 @@ export interface RunInspection {
     title: string
     objective: string | null
     topic: string | null
+    rubricPreset: string
     createdAt: string
     updatedAt: string
     turnCount: number

@@ -6,6 +6,7 @@ import { Artifact, Chat, Message } from '@/types'
 import type { HeadToHeadResult } from '@/lib/head-to-head'
 import type { EvidenceMap } from '@/lib/evidence-map'
 import type { RunInspection } from '@/lib/run-inspection'
+import { getRubricPreset } from '@/lib/synthesis-rubric'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/components/AuthProvider'
 
@@ -792,6 +793,9 @@ export default function ChatPage() {
                         </span>
                       </span>
                     ))}
+                    <span className="rounded-[3px] border border-line bg-surface-2 px-2 py-1 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">
+                      Rubric: {getRubricPreset(inspection.chat.rubricPreset).label}
+                    </span>
                     <span className="ml-auto font-mono text-xs text-subtle">
                       {formatMs(inspection.summary.totalLatencyMs)} recorded
                     </span>

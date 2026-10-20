@@ -10,6 +10,7 @@ import {
   angleFor,
   buildJudgePrompt,
   parseJudgeVerdict,
+  getRubricPreset,
   selectBest,
 } from './synthesis-rubric'
 
@@ -216,6 +217,7 @@ export async function synthesizeChat(
   }
 
   const objective = chat.objective?.trim() || chat.topic?.trim() || chat.title
+  const rubric = getRubricPreset(chat.rubricPreset).criteria
   // Captured as locals so the nested generateRound closure keeps the narrowing.
   const deliverableSpec = chat.deliverableSpec
   const audience = chat.audience
@@ -244,10 +246,12 @@ export async function synthesizeChat(
           deliverableSpec,
           audience,
           candidate: content,
+          rubric,
         }),
         // Judging should be as reproducible as the provider allows.
         0
-      )
+      ),
+      rubric
     )
 
     if (!verdict) return { score: null, breakdown: null, critique: '' }

@@ -127,6 +127,8 @@ model Chat {
   objective       String?
   deliverableSpec String?
   audience        String?
+  // Which scoring rubric the synthesis judge should use for this run.
+  rubricPreset  String          @default("balanced")
   isAutoMode    Boolean         @default(false)
   // Public share links are opt-in. The chat id is the public handle; keys are never selected.
   isPublic      Boolean         @default(false)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { CHAT_MODES, MAX_BRIEF_FIELD_LENGTH, isChatMode } from '@/lib/chat-brief'
+import { DEFAULT_RUBRIC_PRESET, isRubricPreset } from '@/lib/synthesis-rubric'
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,7 +68,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { title, topic, mode, objective, deliverableSpec, audience, participantIds } = body
+    const { title, topic, mode, objective, deliverableSpec, audience, rubricPreset, participantIds } = body
 
     if (title !== undefined && title !== null && typeof title !== 'string') {
       return NextResponse.json({ error: 'Title must be a string' }, { status: 400 })
@@ -95,6 +96,9 @@ export async function POST(request: NextRequest) {
           { status: 400 }
         )
       }
+    }
+    if (rubricPreset !== undefined && !isRubricPreset(rubricPreset)) {
+      return NextResponse.json({ error: 'Unknown rubric preset' }, { status: 400 })
     }
     if (
       participantIds !== undefined &&
@@ -128,6 +132,7 @@ export async function POST(request: NextRequest) {
         objective: objective?.trim() || null,
         deliverableSpec: deliverableSpec?.trim() || null,
         audience: audience?.trim() || null,
+        rubricPreset: rubricPreset || DEFAULT_RUBRIC_PRESET,
         creatorId: session.user.id,
         participants: ownedParticipantIds.length > 0
           ? {

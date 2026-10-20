@@ -11,6 +11,7 @@ import {
   ROLE_OPTIONS,
   TOOL_OPTIONS,
 } from '@/lib/provider-catalog'
+import { DEFAULT_RUBRIC_PRESET, RUBRIC_PRESETS } from '@/lib/synthesis-rubric'
 import { PageHeader } from '@/components/ui/EmptyState'
 import { Avatar } from '@/components/ui/Avatar'
 
@@ -38,6 +39,7 @@ type StarterCouncil = {
   objective: string
   deliverableSpec: string
   audience: string
+  rubricPreset: string
   agents: StarterAgent[]
 }
 
@@ -51,6 +53,7 @@ const STARTER_COUNCILS: StarterCouncil[] = [
       'Review the proposed architecture for [system]. Identify the strongest failure modes, the assumptions that need testing, and the smallest change that materially reduces risk.',
     deliverableSpec: 'A one-page decision memo: recommendation, evidence, risks, and next steps.',
     audience: 'The engineering lead and the team shipping the change.',
+    rubricPreset: 'safety',
     agents: [
       {
         name: 'Meera',
@@ -91,6 +94,7 @@ const STARTER_COUNCILS: StarterCouncil[] = [
       'Decide whether [decision]. Compare the realistic options, state the trade-offs, and recommend one.',
     deliverableSpec: 'A one-page decision memo for a skeptical reader.',
     audience: 'A decision-maker who has five minutes.',
+    rubricPreset: 'decision',
     agents: [
       {
         name: 'Meera',
@@ -124,6 +128,7 @@ const STARTER_COUNCILS: StarterCouncil[] = [
       'Review [incident]. Separate the trigger from the root cause, identify contributing factors, and propose corrective actions with owners.',
     deliverableSpec: 'A blameless postmortem with a timeline, root cause, and action items.',
     audience: 'The on-call team and engineering leadership.',
+    rubricPreset: 'incident',
     agents: [
       {
         name: 'Meera',
@@ -164,6 +169,7 @@ const STARTER_COUNCILS: StarterCouncil[] = [
       'Review [PRD]. Find the unmet user need, the weakest assumption, and the scope that should be cut.',
     deliverableSpec: 'A review memo with a recommendation and a revised scope.',
     audience: 'The product and engineering team.',
+    rubricPreset: 'product',
     agents: [
       {
         name: 'Meera',
@@ -195,6 +201,47 @@ const STARTER_COUNCILS: StarterCouncil[] = [
       },
     ],
   },
+  {
+    id: 'risk',
+    name: 'Risk register',
+    blurb: 'Name the failure modes before they happen.',
+    topic: 'Risk register',
+    objective:
+      'Assess [initiative]. Build a risk register: the failure modes that matter, how likely they are, how bad they would be, and what would reduce them.',
+    deliverableSpec: 'A risk register with likelihood, impact, owner, and mitigation for each risk.',
+    audience: 'The team deciding whether to proceed.',
+    rubricPreset: 'safety',
+    agents: [
+      {
+        name: 'Meera',
+        bio: 'Finds evidence from comparable systems and flags unknowns.',
+        personality: 'Calm and evidence-led.',
+        role: 'researcher',
+        tools: [],
+      },
+      {
+        name: 'Arjun',
+        bio: 'Attacks the risk register for missing failure modes and optimistic ratings.',
+        personality: 'Direct and skeptical.',
+        role: 'critic',
+        tools: [],
+      },
+      {
+        name: 'Leela',
+        bio: 'Turns each risk into an owner and a testable mitigation.',
+        personality: 'Practical and concrete.',
+        role: 'planner',
+        tools: [],
+      },
+      {
+        name: 'Kabir',
+        bio: 'Resolves the ratings and writes the final register.',
+        personality: 'Even-handed and decisive.',
+        role: 'synthesizer',
+        tools: [],
+      },
+    ],
+  },
 ]
 
 
@@ -217,6 +264,7 @@ export default function DebatePage() {
   const [objective, setObjective] = useState('')
   const [deliverableSpec, setDeliverableSpec] = useState('')
   const [audience, setAudience] = useState('')
+  const [rubricPreset, setRubricPreset] = useState(DEFAULT_RUBRIC_PRESET)
   const [agents, setAgents] = useState<Array<{
     id: string
     name: string
@@ -333,6 +381,7 @@ export default function DebatePage() {
     setObjective(starter.objective)
     setDeliverableSpec(starter.deliverableSpec)
     setAudience(starter.audience)
+    setRubricPreset(starter.rubricPreset)
     setAgents(
       starter.agents.map((agent, index) => ({
         ...agent,
@@ -462,6 +511,7 @@ export default function DebatePage() {
           objective: mode === 'task' ? objective : null,
           deliverableSpec: mode === 'task' ? deliverableSpec : null,
           audience: mode === 'task' ? audience : null,
+          rubricPreset,
           isAutoMode: true,
         }),
       })
@@ -609,6 +659,29 @@ export default function DebatePage() {
                   : 'Agents stay in character and argue. For exploration, not for a settled answer.'}
               </p>
             </div>
+
+            {mode === 'task' && (
+              <div className="mb-6">
+                <label className="eyebrow mb-2 block" htmlFor="rubric-preset">
+                  Outcome rubric
+                </label>
+                <select
+                  id="rubric-preset"
+                  value={rubricPreset}
+                  onChange={(event) => setRubricPreset(event.target.value)}
+                  className={`w-full rounded-[3px] px-4 py-3 focus:outline-none transition-colors ${inputClass}`}
+                >
+                  {RUBRIC_PRESETS.map((preset) => (
+                    <option key={preset.id} value={preset.id}>
+                      {preset.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-2 text-xs leading-relaxed text-subtle">
+                  {RUBRIC_PRESETS.find((preset) => preset.id === rubricPreset)?.description}
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="eyebrow mb-2 block">

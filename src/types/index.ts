@@ -39,6 +39,7 @@ export interface Chat {
   objective?: string | null
   deliverableSpec?: string | null
   audience?: string | null
+  rubricPreset?: string
   isAutoMode: boolean
   isPublic?: boolean
   lastSpeakerId?: string | null

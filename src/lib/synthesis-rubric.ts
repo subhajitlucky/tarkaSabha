@@ -12,41 +12,122 @@ export interface RubricCriterion {
   description: string
 }
 
-export const SYNTHESIS_RUBRIC: RubricCriterion[] = [
-  {
+const CRITERIA: Record<string, Omit<RubricCriterion, 'weight'>> = {
+  grounding: {
     key: 'grounding',
     label: 'Grounding',
-    weight: 0.25,
     description:
       'Every factual claim is supported by the discussion. Nothing is invented, and no source is cited that was not actually consulted.',
   },
-  {
+  coverage: {
     key: 'coverage',
     label: 'Coverage',
-    weight: 0.25,
     description: 'The objective is answered fully, including the parts that are inconvenient.',
   },
-  {
+  decisiveness: {
     key: 'decisiveness',
     label: 'Decisiveness',
-    weight: 0.2,
     description:
       'It commits to an answer and defends it, rather than listing options and leaving the choice open.',
   },
-  {
+  honesty: {
     key: 'honesty',
     label: 'Honesty',
-    weight: 0.15,
     description:
       'Uncertainty, weak evidence and remaining disagreement are stated plainly instead of being smoothed over.',
   },
-  {
+  fit: {
     key: 'fit',
     label: 'Fit',
-    weight: 0.15,
     description: 'It matches the requested deliverable and is written for the stated audience.',
   },
+}
+
+function rubric(weights: Record<string, number>): RubricCriterion[] {
+  return Object.keys(weights).map((key) => ({ ...CRITERIA[key], weight: weights[key] }))
+}
+
+export interface RubricPreset {
+  id: string
+  label: string
+  description: string
+  criteria: RubricCriterion[]
+}
+
+export const RUBRIC_PRESETS: RubricPreset[] = [
+  {
+    id: 'balanced',
+    label: 'Balanced',
+    description: 'The default: grounding and coverage matter most, but a clear answer is required.',
+    criteria: rubric({
+      grounding: 0.25,
+      coverage: 0.25,
+      decisiveness: 0.2,
+      honesty: 0.15,
+      fit: 0.15,
+    }),
+  },
+  {
+    id: 'decision',
+    label: 'Decision-grade',
+    description: 'For a choice that has to be made: decisiveness and fit outrank exhaustive coverage.',
+    criteria: rubric({
+      grounding: 0.25,
+      coverage: 0.2,
+      decisiveness: 0.3,
+      honesty: 0.1,
+      fit: 0.15,
+    }),
+  },
+  {
+    id: 'safety',
+    label: 'Safety-critical',
+    description: 'For architecture and risk work: grounding and honesty dominate.',
+    criteria: rubric({
+      grounding: 0.35,
+      coverage: 0.15,
+      decisiveness: 0.1,
+      honesty: 0.25,
+      fit: 0.15,
+    }),
+  },
+  {
+    id: 'product',
+    label: 'Product review',
+    description: 'For PRDs: coverage of the need and fit to the audience carry more weight.',
+    criteria: rubric({
+      grounding: 0.2,
+      coverage: 0.25,
+      decisiveness: 0.2,
+      honesty: 0.1,
+      fit: 0.25,
+    }),
+  },
+  {
+    id: 'incident',
+    label: 'Incident review',
+    description: 'For postmortems: evidence and a candid account of uncertainty matter most.',
+    criteria: rubric({
+      grounding: 0.3,
+      coverage: 0.15,
+      decisiveness: 0.1,
+      honesty: 0.25,
+      fit: 0.2,
+    }),
+  },
 ]
+
+export const DEFAULT_RUBRIC_PRESET = 'balanced'
+
+export const SYNTHESIS_RUBRIC: RubricCriterion[] = RUBRIC_PRESETS[0].criteria
+
+export function getRubricPreset(id: string | null | undefined): RubricPreset {
+  return RUBRIC_PRESETS.find((preset) => preset.id === id) ?? RUBRIC_PRESETS[0]
+}
+
+export function isRubricPreset(value: unknown): value is string {
+  return typeof value === 'string' && RUBRIC_PRESETS.some((preset) => preset.id === value)
+}
 
 export const MIN_CRITERION_SCORE = 1
 export const MAX_CRITERION_SCORE = 10
@@ -107,11 +188,14 @@ export function angleFor(index: number): CandidateAngle {
 }
 
 /** Weighted mean of the per-criterion scores, rounded to two decimals. */
-export function weightedTotal(scores: Array<{ key: string; score: number }>): number {
+export function weightedTotal(
+  scores: Array<{ key: string; score: number }>,
+  criteria: RubricCriterion[] = SYNTHESIS_RUBRIC
+): number {
   let total = 0
   let weightUsed = 0
 
-  for (const criterion of SYNTHESIS_RUBRIC) {
+  for (const criterion of criteria) {
     const found = scores.find((entry) => entry.key === criterion.key)
     if (!found) continue
     total += found.score * criterion.weight
@@ -129,8 +213,10 @@ export function buildJudgePrompt(input: {
   deliverableSpec?: string | null
   audience?: string | null
   candidate: string
+  rubric?: RubricCriterion[]
 }): string {
-  const criteria = SYNTHESIS_RUBRIC.map(
+  const rubric = input.rubric ?? SYNTHESIS_RUBRIC
+  const criteria = rubric.map(
     (criterion) =>
       `- "${criterion.key}" (${criterion.label}, weight ${criterion.weight}): ${criterion.description}`
   ).join('\n')
@@ -154,7 +240,7 @@ ${input.candidate}
 Respond with ONLY a JSON object, no prose and no code fences:
 {
   "scores": [
-${SYNTHESIS_RUBRIC.map((c) => `    { "key": "${c.key}", "score": 0, "reason": "one short sentence" }`).join(',\n')}
+${rubric.map((c) => `    { "key": "${c.key}", "score": 0, "reason": "one short sentence" }`).join(',\n')}
   ],
   "critique": "one or two sentences on the single biggest weakness, addressed to the author"
 }`
@@ -205,7 +291,10 @@ function clampScore(value: unknown): number | null {
  * Parse a judge response. Never throws: a malformed verdict yields null so the
  * caller can treat the candidate as unscored rather than failing the run.
  */
-export function parseJudgeVerdict(text: string): JudgeVerdict | null {
+export function parseJudgeVerdict(
+  text: string,
+  rubric: RubricCriterion[] = SYNTHESIS_RUBRIC
+): JudgeVerdict | null {
   const parsed = extractJsonObject(text)
   if (!parsed || typeof parsed !== 'object') return null
 
@@ -214,7 +303,7 @@ export function parseJudgeVerdict(text: string): JudgeVerdict | null {
 
   const scores: CriterionScore[] = []
 
-  for (const criterion of SYNTHESIS_RUBRIC) {
+  for (const criterion of rubric) {
     const entry = raw.find(
       (candidate): candidate is { key?: unknown; score?: unknown; reason?: unknown } =>
         typeof candidate === 'object' &&
@@ -239,7 +328,7 @@ export function parseJudgeVerdict(text: string): JudgeVerdict | null {
 
   return {
     scores,
-    total: weightedTotal(scores),
+    total: weightedTotal(scores, rubric),
     critique: typeof critiqueRaw === 'string' ? critiqueRaw.trim().slice(0, 600) : '',
   }
 }

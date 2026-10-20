@@ -3,10 +3,13 @@ import {
   CANDIDATE_ANGLES,
   MAX_CRITERION_SCORE,
   MIN_CRITERION_SCORE,
+  RUBRIC_PRESETS,
   SYNTHESIS_RUBRIC,
   angleFor,
   buildJudgePrompt,
   extractJsonObject,
+  getRubricPreset,
+  isRubricPreset,
   parseJudgeVerdict,
   selectBest,
   weightedTotal,
@@ -25,6 +28,37 @@ describe('rubric definition', () => {
       expect(criterion.description.length).toBeGreaterThan(10)
       expect(criterion.weight).toBeGreaterThan(0)
     }
+  })
+
+  it('keeps every preset weighted to 1 with unique keys', () => {
+    expect(RUBRIC_PRESETS.length).toBeGreaterThan(1)
+    for (const preset of RUBRIC_PRESETS) {
+      const total = preset.criteria.reduce((sum, criterion) => sum + criterion.weight, 0)
+      expect(total).toBeCloseTo(1, 10)
+      expect(new Set(preset.criteria.map((criterion) => criterion.key)).size).toBe(
+        preset.criteria.length
+      )
+    }
+  })
+
+  it('validates preset ids and builds a prompt from the chosen weights', () => {
+    expect(isRubricPreset('decision')).toBe(true)
+    expect(isRubricPreset('imaginary')).toBe(false)
+    expect(isRubricPreset(null)).toBe(false)
+
+    const preset = getRubricPreset('decision')
+    const prompt = buildJudgePrompt({
+      objective: 'Pick a queue.',
+      candidate: 'Use SQS.',
+      rubric: preset.criteria,
+    })
+    expect(prompt).toContain('"decisiveness"')
+    expect(prompt).toContain('weight 0.3')
+  })
+
+  it('falls back to the balanced preset for an unknown id', () => {
+    expect(getRubricPreset('nope').id).toBe('balanced')
+    expect(getRubricPreset(null).id).toBe('balanced')
   })
 
   it('cycles candidate angles deterministically', () => {
