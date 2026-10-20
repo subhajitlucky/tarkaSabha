@@ -54,12 +54,20 @@ export interface Chat {
   participants?: PersonaOnChat[]
 }
 
+export interface EvidenceEntry {
+  name: string
+  arguments: string
+  ok: boolean
+  preview: string
+}
+
 export interface Message {
   id: string
   content: string
   role: 'user' | 'persona' | 'system'
   personaId?: string | null
   personaName?: string | null
+  evidence?: EvidenceEntry[] | null
   chatId: string
   createdAt: Date
 }

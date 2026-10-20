@@ -206,6 +206,9 @@ model Message {
   role        String
   personaId   String?
   personaName String?
+  // Tool calls made while producing this turn. Kept so a deliverable can be
+  // checked against the sources its agents actually consulted.
+  evidence    Json?
   chatId      String
   createdAt   DateTime @default(now())
   chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)

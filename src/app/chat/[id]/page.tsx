@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from '
 import { useParams, useRouter } from 'next/navigation'
 import { Artifact, Chat, Message } from '@/types'
 import type { HeadToHeadResult } from '@/lib/head-to-head'
+import type { EvidenceMap } from '@/lib/evidence-map'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/components/AuthProvider'
 
@@ -55,6 +56,10 @@ export default function ChatPage() {
   const [isComparing, setIsComparing] = useState(false)
   const [comparison, setComparison] = useState<HeadToHeadResult | null>(null)
   const [compareError, setCompareError] = useState<string | null>(null)
+  const [showEvidence, setShowEvidence] = useState(false)
+  const [evidenceMap, setEvidenceMap] = useState<(EvidenceMap & { title: string; source: string }) | null>(null)
+  const [evidenceLoading, setEvidenceLoading] = useState(false)
+  const [evidenceError, setEvidenceError] = useState<string | null>(null)
   const [isSynthesizing, setIsSynthesizing] = useState(false)
   const [showOtherCandidates, setShowOtherCandidates] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -140,6 +145,25 @@ export default function ChatPage() {
       setChat(data.chat)
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Could not start the debate'))
+    }
+  }
+
+  const openEvidence = async () => {
+    setShowEvidence(true)
+    setEvidenceLoading(true)
+    setEvidenceError(null)
+    try {
+      const res = await fetch(`/api/chats/${chatId}/evidence-map`)
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || 'Could not build the evidence map')
+      }
+      setEvidenceMap(data)
+    } catch (err: unknown) {
+      setEvidenceMap(null)
+      setEvidenceError(getErrorMessage(err, 'Could not build the evidence map'))
+    } finally {
+      setEvidenceLoading(false)
     }
   }
 
@@ -669,6 +693,165 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Evidence Map Modal */}
+      {showEvidence && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="evidence-title"
+            className="flex max-h-[90vh] w-full max-w-3xl flex-col rounded-[4px] border border-line bg-surface p-6 shadow-2xl"
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <p className="eyebrow mb-1">Evidence map</p>
+                <h2 id="evidence-title" className="text-xl font-bold text-text">
+                  What the answer can point to
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted">
+                  Claims in the {evidenceMap?.source || 'selected answer'}, checked against the tool calls
+                  recorded during this run.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowEvidence(false)}
+                className="h-8 w-8 rounded-[3px] text-muted hover:bg-surface-2 hover:text-text"
+                aria-label="Close evidence map"
+              >
+                ✕
+              </button>
+            </div>
+
+            {evidenceLoading && (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 py-20">
+                <div className="h-8 w-8 animate-spin rounded-[3px] border-2 border-accent/30 border-t-accent" />
+                <p className="text-sm text-muted">Reading the record.</p>
+              </div>
+            )}
+
+            {!evidenceLoading && evidenceError && (
+              <div className="rounded-[3px] border border-danger/30 bg-danger-soft p-4 text-sm text-danger">
+                {evidenceError}
+              </div>
+            )}
+
+            {!evidenceLoading && !evidenceError && evidenceMap && (
+              <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-[3px] border border-line bg-surface-2 px-2 py-1 font-mono text-xs uppercase tracking-[0.08em] text-muted">
+                    {evidenceMap.claims.length} claims
+                  </span>
+                  <span className="rounded-[3px] border border-success/30 bg-success-soft px-2 py-1 font-mono text-xs uppercase tracking-[0.08em] text-success">
+                    {evidenceMap.claims.length - evidenceMap.unsupportedCount} linked
+                  </span>
+                  <span className="rounded-[3px] border border-danger/30 bg-danger-soft px-2 py-1 font-mono text-xs uppercase tracking-[0.08em] text-danger">
+                    {evidenceMap.unsupportedCount} unsupported
+                  </span>
+                  <span className="rounded-[3px] border border-line bg-surface-2 px-2 py-1 font-mono text-xs uppercase tracking-[0.08em] text-muted">
+                    {evidenceMap.toolCallCount} tool call{evidenceMap.toolCallCount === 1 ? '' : 's'}
+                  </span>
+                </div>
+
+                {evidenceMap.toolCallCount === 0 && (
+                  <div className="rounded-[3px] border border-line bg-surface-2 p-4 text-sm leading-relaxed text-muted">
+                    No tool calls were recorded for this run, so no claim has a source trail here.
+                    Give an agent a research tool before the run to build one.
+                  </div>
+                )}
+
+                {evidenceMap.claims.length === 0 ? (
+                  <div className="rounded-[3px] border border-dashed border-line p-6 text-center text-sm text-muted">
+                    There is no deliverable or message to map yet.
+                  </div>
+                ) : (
+                  <div>
+                    <p className="eyebrow mb-2">Claims</p>
+                    <ol className="space-y-2">
+                      {evidenceMap.claims.map((claim) => {
+                        const source = claim.evidenceId
+                          ? evidenceMap.evidence.find((entry) => entry.id === claim.evidenceId)
+                          : null
+                        return (
+                          <li
+                            key={claim.id}
+                            className={`rounded-[3px] border p-3 ${
+                              claim.status === 'linked'
+                                ? 'border-success/30 bg-success-soft/30'
+                                : 'border-line bg-surface-2'
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <span
+                                className={`mt-0.5 shrink-0 rounded-[3px] border px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] ${
+                                  claim.status === 'linked'
+                                    ? 'border-success/30 text-success'
+                                    : 'border-danger/30 text-danger'
+                                }`}
+                              >
+                                {claim.status === 'linked' ? 'Linked' : 'No evidence'}
+                              </span>
+                              <div className="min-w-0">
+                                <p className="text-sm leading-relaxed text-text">{claim.text}</p>
+                                <p className="mt-1 text-xs leading-relaxed text-subtle">
+                                  {claim.reason}
+                                  {source ? ` Source: ${source.name} by ${source.speaker}.` : ''}
+                                </p>
+                              </div>
+                            </div>
+                          </li>
+                        )
+                      })}
+                    </ol>
+                  </div>
+                )}
+
+                {evidenceMap.evidence.length > 0 && (
+                  <div>
+                    <p className="eyebrow mb-2">Tool calls</p>
+                    <ul className="space-y-2">
+                      {evidenceMap.evidence.map((entry) => (
+                        <li key={entry.id} className="rounded-[3px] border border-line p-3">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-mono text-xs text-text">{entry.name}</span>
+                            <span
+                              className={`font-mono text-[11px] uppercase tracking-[0.08em] ${
+                                entry.ok ? 'text-success' : 'text-danger'
+                              }`}
+                            >
+                              {entry.ok ? 'ok' : 'failed'}
+                            </span>
+                            <span className="text-xs text-subtle">{entry.speaker}</span>
+                          </div>
+                          <p className="mt-1 break-all font-mono text-[11px] leading-relaxed text-subtle">
+                            {entry.arguments}
+                          </p>
+                          <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-xs leading-relaxed text-muted">
+                            {entry.preview}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <p className="text-xs leading-relaxed text-subtle">
+                  Links are lexical matches, not proof. Inspect the tool call before relying on a claim.
+                </p>
+
+                <div className="flex justify-end border-t border-line pt-4">
+                  <button
+                    onClick={() => setShowEvidence(false)}
+                    className="rounded-[3px] bg-accent px-4 py-2 text-sm font-bold text-accent-ink"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Head-to-Head Modal */}
       {showComparison && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -948,6 +1131,16 @@ export default function ChatPage() {
                     title="Compare this council's deliverable with a single-model answer, blind-judged on the same rubric"
                   >
                     Compare
+                  </button>
+                )}
+
+                {isOwner && (
+                  <button
+                    onClick={openEvidence}
+                    className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all cursor-pointer ${settingsBtn} ${'text-muted'}`}
+                    title="Check the deliverable's claims against the tool calls recorded during this run"
+                  >
+                    Evidence
                   </button>
                 )}
 

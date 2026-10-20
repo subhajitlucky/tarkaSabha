@@ -14,7 +14,7 @@ import {
   recordFailure,
   detectLoop,
 } from './llm-protection'
-import type { Persona } from '@/generated/prisma/client'
+import type { Persona, Prisma } from '@/generated/prisma/client'
 
 
 // How many previous messages each persona sees. These must be the MOST RECENT
@@ -721,6 +721,10 @@ export async function orchestrateMessage(
           chatId,
           personaId: speaker.id,
           personaName: speaker.name,
+          evidence:
+            toolRun.invocations.length > 0
+              ? (toolRun.invocations as unknown as Prisma.InputJsonValue)
+              : undefined,
         },
       })
 
