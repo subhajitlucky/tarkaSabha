@@ -8,17 +8,21 @@ import { useAuth } from './AuthProvider'
 import { Button } from './ui/Button'
 import { cx } from './ui/cx'
 
-const NAV_LINKS = [
+const PRIMARY_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/demo', label: 'Sample council' },
   { href: '/debate', label: 'New council' },
   { href: '/history', label: 'Archive' },
+]
+
+const MENU_LINKS = [
+  ...PRIMARY_LINKS,
   { href: '/personas', label: 'Agents' },
+  { href: '/providers', label: 'Providers' },
   { href: '/about', label: 'About' },
   { href: '/feedback', label: 'Feedback' },
 ]
 
-/** Wordmark: a small letterpress-style block plus the name set in the display face. */
 function Wordmark() {
   return (
     <Link href="/" className="group flex items-center gap-3">
@@ -32,7 +36,7 @@ function Wordmark() {
         <span className="block font-display text-[1.0625rem] tracking-tight text-text">
           Tarka Sabha
         </span>
-        <span className="mt-0.5 block font-mono text-xs uppercase tracking-[0.12em] text-subtle">
+        <span className="mt-1 block whitespace-nowrap font-mono text-xs uppercase tracking-[0.12em] text-subtle">
           Brahmodya Protocol
         </span>
       </span>
@@ -46,9 +50,6 @@ export default function Navbar() {
   const { isAuthenticated, signOut } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // The panel closes on navigation via each link's onClick rather than an effect
-  // on pathname: a setState-in-effect here trips the React Compiler rule, and
-  // the explicit handler is clearer anyway.
   useEffect(() => {
     if (!isMenuOpen) return
     const onKeyDown = (event: KeyboardEvent) => {
@@ -63,17 +64,17 @@ export default function Navbar() {
 
   return (
     <nav className="fixed inset-x-0 top-0 z-50 border-b border-line bg-bg/80 backdrop-blur-xl supports-[backdrop-filter]:bg-bg/65">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-3">
+      <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-2.5">
         <Wordmark />
 
-        <div className="hidden items-center gap-0.5 md:flex">
-          {NAV_LINKS.map((link) => (
+        <div className="hidden items-center gap-0.5 lg:flex">
+          {PRIMARY_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               aria-current={isActive(link.href) ? 'page' : undefined}
               className={cx(
-                'rounded-[3px] px-3 py-1.5 text-sm transition-colors',
+                'rounded-[3px] px-3 py-2 text-sm transition-colors',
                 isActive(link.href)
                   ? 'bg-surface-2 text-text'
                   : 'text-muted hover:bg-surface-2 hover:text-text'
@@ -95,10 +96,10 @@ export default function Navbar() {
           </button>
 
           {isAuthenticated ? (
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="hidden items-center gap-2 lg:flex">
               <Link
                 href="/dashboard"
-                className="rounded-[3px] px-3 py-1.5 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
+                className="rounded-[3px] px-3 py-2 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
               >
                 Dashboard
               </Link>
@@ -107,7 +108,7 @@ export default function Navbar() {
               </Button>
             </div>
           ) : (
-            <Link href="/login" className="hidden md:block">
+            <Link href="/login" className="hidden lg:block">
               <Button variant="primary" size="sm">
                 Sign in
               </Button>
@@ -120,7 +121,7 @@ export default function Navbar() {
             aria-expanded={isMenuOpen}
             aria-controls="mobile-nav"
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-            className="rounded-[3px] border border-line px-2.5 py-1.5 font-mono text-xs text-muted md:hidden"
+            className="rounded-[3px] border border-line px-2.5 py-1.5 font-mono text-xs text-muted lg:hidden"
           >
             {isMenuOpen ? '✕' : '☰'}
           </button>
@@ -130,10 +131,10 @@ export default function Navbar() {
       <div
         id="mobile-nav"
         hidden={!isMenuOpen}
-        className="border-t border-line bg-surface md:hidden"
+        className="border-t border-line bg-surface lg:hidden"
       >
         <div className="mx-auto max-w-6xl space-y-0.5 px-4 py-3">
-          {NAV_LINKS.map((link) => (
+          {MENU_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}

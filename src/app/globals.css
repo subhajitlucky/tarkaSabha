@@ -146,6 +146,11 @@ html.light {
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
 
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 1rem;
+  --text-sm--line-height: 1.6;
+
   --font-display: var(--font-display), Georgia, serif;
   --font-body: var(--font-body), Georgia, serif;
   --font-mono: var(--font-mono), ui-monospace, monospace;
@@ -221,8 +226,8 @@ h1 {
 /* Mono eyebrow used for section labels and metadata. */
 .eyebrow {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.75rem;
-  letter-spacing: 0.10em;
+  font-size: 0.8125rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text-muted);
 }

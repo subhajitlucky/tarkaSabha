@@ -77,7 +77,7 @@ export default function RootLayout({
             </main>
 
             <footer className="mt-24 border-t border-line">
-              <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[2fr_1fr_1fr]">
+              <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[1.4fr_1fr]">
                 <div>
                   <div className="flex items-center gap-3">
                     <span
@@ -95,42 +95,32 @@ export default function RootLayout({
                   </p>
                 </div>
 
-                <nav aria-label="Platform">
-                  <h2 className="eyebrow mb-4">Platform</h2>
-                  <ul className="space-y-2.5 text-sm">
-                    {[
-                      ['/debate', 'New council'],
-                      ['/history', 'Archive'],
-                      ['/personas', 'Agents'],
-                      ['/providers', 'Providers'],
-                      ['/dashboard', 'Dashboard'],
-                      ['/about', 'About'],
-                      ['/feedback', 'Feedback'],
-                    ].map(([href, label]) => (
-                      <li key={href}>
-                        <a href={href} className="text-muted transition-colors hover:text-accent">
-                          {label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+                  {[
+                    ['/debate', 'New council'],
+                    ['/demo', 'Sample council'],
+                    ['/history', 'Archive'],
+                    ['/personas', 'Agents'],
+                    ['/providers', 'Providers'],
+                    ['/dashboard', 'Dashboard'],
+                    ['/about', 'About'],
+                    ['/feedback', 'Feedback'],
+                  ].map(([href, label]) => (
+                    <a
+                      key={href}
+                      href={href}
+                      className="text-muted transition-colors hover:text-accent"
+                    >
+                      {label}
+                    </a>
+                  ))}
                 </nav>
-
-                <div>
-                  <h2 className="eyebrow mb-4">Under the hood</h2>
-                  <ul className="space-y-2.5 font-mono text-xs text-subtle">
-                    <li>Brahmodya v1.0</li>
-                    <li>AES-256-GCM key storage</li>
-                    <li>Server-side turn runner</li>
-                    <li>Rubric-scored deliverables</li>
-                  </ul>
-                </div>
               </div>
 
               <div className="border-t border-line">
-                <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 font-mono text-xs uppercase tracking-[0.12em] text-subtle sm:flex-row sm:items-center sm:justify-between">
+                <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-subtle sm:flex-row sm:items-center sm:justify-between">
                   <p>© {new Date().getFullYear()} Tarka Sabha</p>
-                  <p>tarka · reasoning &nbsp;·&nbsp; sabhā · assembly</p>
+                  <p>A council of reasoning agents.</p>
                 </div>
               </div>
             </footer>
