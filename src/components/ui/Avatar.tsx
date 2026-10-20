@@ -27,7 +27,7 @@ export function initialsOf(name: string): string {
 
 const SIZES = {
   xs: 'h-6 w-6 text-[0.5625rem]',
-  sm: 'h-7 w-7 text-[0.625rem]',
+  sm: 'h-7 w-7 text-xs',
   md: 'h-9 w-9 text-xs',
   lg: 'h-16 w-16 text-lg',
 } as const

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Chat } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
@@ -16,7 +17,8 @@ interface Feedback {
 }
 
 export default function DashboardPage() {
-  const { session } = useAuth()
+  const router = useRouter()
+  const { session, isLoading: authLoading, isAuthenticated } = useAuth()
   const [chats, setChats] = useState<Chat[]>([])
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,6 +48,14 @@ export default function DashboardPage() {
   }
 
   useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.replace('/login?callbackUrl=/dashboard')
+    }
+  }, [authLoading, isAuthenticated, router])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+
     const loadData = async () => {
       setLoading(true)
       try {
@@ -57,7 +67,15 @@ export default function DashboardPage() {
       }
     }
     loadData()
-  }, [])
+  }, [isAuthenticated])
+
+  if (authLoading || !isAuthenticated) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-[3px] border-2 border-accent/30 border-t-accent" />
+      </div>
+    )
+  }
 
   const userName = session?.user?.name || 'User'
   const userEmail = session?.user?.email
@@ -74,12 +92,12 @@ export default function DashboardPage() {
               <h1 className="text-3xl text-text">{userName}</h1>
               <p className="text-base text-muted">{userEmail}</p>
               <div className="flex flex-wrap gap-3 justify-center md:justify-start mt-2">
-                <span className={`rounded-[3px] border border-line px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.1em] ${
+                <span className={`rounded-[3px] border border-line px-2.5 py-1 font-mono text-xs uppercase tracking-[0.1em] ${
                   'bg-accent-soft text-accent'
                 }`}>
                   Free Tier
                 </span>
-                <span className={`rounded-[3px] border border-line px-2.5 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.1em] ${
+                <span className={`rounded-[3px] border border-line px-2.5 py-1 font-mono text-xs uppercase tracking-[0.1em] ${
                   'bg-surface-2 text-muted'
                 }`}>
                   Member since {new Date().getFullYear()}
@@ -142,7 +160,7 @@ export default function DashboardPage() {
               <h2 className="font-display text-[0.9375rem] text-text transition-colors group-hover:text-accent">
                 {item.title}
               </h2>
-              <p className="mt-1.5 text-[0.8125rem] leading-relaxed text-muted">
+              <p className="mt-1.5 text-sm leading-relaxed text-muted">
                 {item.body}
               </p>
             </Link>
@@ -221,7 +239,7 @@ export default function DashboardPage() {
                     )}
                   </div>
                   {chat.isAutoMode && (
-                    <span className="flex items-center gap-1.5 rounded-[3px] border border-success/30 bg-success-soft px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-success">
+                    <span className="flex items-center gap-1.5 rounded-[3px] border border-success/30 bg-success-soft px-2 py-0.5 font-mono text-xs uppercase tracking-[0.1em] text-success">
                       <span className="h-1 w-1 animate-pulse rounded-full bg-success" />
                       Auto
                     </span>
@@ -260,7 +278,7 @@ export default function DashboardPage() {
                 <div key={item.id} className={`p-6 rounded-[4px] border ${'bg-surface border-line'}`}>
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <span className={`mb-2 inline-block rounded-[3px] px-2 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] ${
+                      <span className={`mb-2 inline-block rounded-[3px] px-2 py-0.5 font-mono text-xs uppercase tracking-[0.1em] ${
                         item.type === 'bug' ? 'border border-danger/30 bg-danger-soft text-danger' :
                         item.type === 'feature' ? 'border border-accent-line bg-accent-soft text-accent' :
                         'border border-line bg-surface-2 text-subtle'

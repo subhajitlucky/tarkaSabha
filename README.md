@@ -5,6 +5,7 @@ Tarka Sabha is a multi-agent AI debate platform. Users create personas, configur
 The project focuses on orchestration rather than a single chatbot prompt: provider configuration, encrypted credentials, persona state, conversation history, rate limiting, and speaker selection are modeled as separate parts of the system.
 
 - Live: https://tarkasabha.vercel.app
+- Sample council: https://tarkasabha.vercel.app/demo
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
 - Status: Live platform
 
@@ -233,6 +234,10 @@ AUTH_SECRET="generate_a_strong_auth_secret"
 NEXTAUTH_URL="http://localhost:3000"
 # Shared secret for the debate runner. Vercel Cron sends it automatically.
 CRON_SECRET="generate_a_strong_random_secret"
+
+# Optional: reliable web search for agents. Add one of these.
+# TAVILY_API_KEY="tvly-..."
+# BRAVE_API_KEY="..."
 ```
 
 Generate a strong encryption key:

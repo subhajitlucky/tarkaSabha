@@ -133,9 +133,9 @@ export default function Home() {
                 Convene a council
               </Button>
             </Link>
-            <Link href="/history">
+            <Link href={isAuthenticated ? '/history' : '/demo'}>
               <Button variant="secondary" size="lg">
-                Open the archive
+                {isAuthenticated ? 'Open your archive' : 'See a sample council'}
               </Button>
             </Link>
           </div>
@@ -168,7 +168,7 @@ export default function Home() {
                   <span className="block font-display text-[0.9375rem] text-text">
                     {stage.title}
                   </span>
-                  <span className="mt-1 block text-[0.8125rem] leading-relaxed text-muted">
+                  <span className="mt-1 block text-sm leading-relaxed text-muted">
                     {stage.body}
                   </span>
                 </span>
@@ -185,7 +185,7 @@ export default function Home() {
           {CAPABILITIES.map((item) => (
             <div key={item.label}>
               <h2 className="font-display text-[0.9375rem] text-text">{item.label}</h2>
-              <p className="mt-2 text-[0.8125rem] leading-relaxed text-muted">
+              <p className="mt-2 text-sm leading-relaxed text-muted">
                 {item.body}
               </p>
             </div>

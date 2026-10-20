@@ -10,6 +10,7 @@ import { cx } from './ui/cx'
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
+  { href: '/demo', label: 'Sample council' },
   { href: '/debate', label: 'New council' },
   { href: '/history', label: 'Archive' },
   { href: '/personas', label: 'Agents' },
@@ -31,7 +32,7 @@ function Wordmark() {
         <span className="block font-display text-[1.0625rem] tracking-tight text-text">
           Tarka Sabha
         </span>
-        <span className="mt-0.5 block font-mono text-[0.625rem] uppercase tracking-[0.16em] text-subtle">
+        <span className="mt-0.5 block font-mono text-xs uppercase tracking-[0.12em] text-subtle">
           Brahmodya Protocol
         </span>
       </span>

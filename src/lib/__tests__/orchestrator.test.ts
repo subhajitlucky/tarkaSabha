@@ -459,10 +459,12 @@ describe('buildPersonaPrompt task mode', () => {
     expect(prompt).toContain('OBJECTIVE: Decide whether to buy or rent')
   })
 
-  it('leaves debate mode untouched', () => {
+  it('keeps debate mode in character without adversarial instructions', () => {
     const prompt = buildPersonaPrompt(persona('a', 'Ada'), 'Housing', ['Bo'], { mode: 'debate' })
 
-    expect(prompt).toContain('GASLIGHTING')
+    expect(prompt).not.toContain('GASLIGHTING')
+    expect(prompt).not.toContain('Do NOT change your mind')
+    expect(prompt).toContain('change it when someone gives you a better reason')
     expect(prompt).toContain('TOPIC: Housing')
     expect(prompt).not.toContain('YOUR ROLE:')
   })

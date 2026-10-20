@@ -3,15 +3,20 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Chat } from '@/types'
+import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 
 export default function HistoryPage() {
   const [chats, setChats] = useState<Chat[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loaded, setLoaded] = useState(false)
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
+  const loading = authLoading || (isAuthenticated && !loaded)
 
   useEffect(() => {
+    if (authLoading || !isAuthenticated) return
+
     let cancelled = false
 
     const loadChats = async () => {
@@ -30,7 +35,7 @@ export default function HistoryPage() {
         console.error('Failed to fetch history', e)
         if (!cancelled) setChats([])
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoaded(true)
       }
     }
 
@@ -38,7 +43,7 @@ export default function HistoryPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [authLoading, isAuthenticated])
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-14">
@@ -57,6 +62,21 @@ export default function HistoryPage() {
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
+      ) : !isAuthenticated ? (
+        <EmptyState
+          title="Sign in to see your archive"
+          description="Your councils are private to your account. Sign in to open the record, or look at the public sample first."
+          action={
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <Link href="/login?callbackUrl=/history">
+                <Button variant="primary">Sign in</Button>
+              </Link>
+              <Link href="/demo">
+                <Button variant="secondary">See a sample council</Button>
+              </Link>
+            </div>
+          }
+        />
       ) : chats.length === 0 ? (
         <EmptyState
           title="Nothing on the record yet"
@@ -82,7 +102,7 @@ export default function HistoryPage() {
                       {participants.slice(0, 3).map((participant, index) => (
                         <span
                           key={participant.id ?? index}
-                          className="flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2 font-mono text-[0.625rem] text-muted"
+                          className="flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2 font-mono text-xs text-muted"
                         >
                           {(participant.persona?.name || '?')
                             .split(/\s+/)
@@ -93,7 +113,7 @@ export default function HistoryPage() {
                         </span>
                       ))}
                       {participants.length > 3 && (
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2 font-mono text-[0.625rem] text-subtle">
+                        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2 font-mono text-xs text-subtle">
                           +{participants.length - 3}
                         </span>
                       )}
@@ -105,7 +125,7 @@ export default function HistoryPage() {
                     {chat.topic || chat.title}
                   </h2>
 
-                  <p className="mt-auto pt-3 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-subtle">
+                  <p className="mt-auto pt-3 font-mono text-xs uppercase tracking-[0.1em] text-subtle">
                     {participants.length} agent{participants.length === 1 ? '' : 's'}
                     <span className="mx-1.5">·</span>
                     {new Date(chat.createdAt).toLocaleDateString()}

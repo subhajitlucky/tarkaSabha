@@ -86,16 +86,16 @@ function LoginForm() {
           {isLoading ? 'Signing in…' : 'Continue with Google'}
         </Button>
 
-        <p className="mt-4 text-center text-xs text-subtle">
+        <p className="mt-4 text-center text-[0.8125rem] text-subtle">
           By continuing you agree to the terms of service and privacy policy.
         </p>
 
         <Rule className="my-6" />
 
-        <p className="text-center text-xs text-subtle">
-          Just here to read?{' '}
-          <a href="/history" className="text-accent transition-colors hover:text-accent-hover">
-            Browse the archive
+        <p className="text-center text-[0.8125rem] text-subtle">
+          Just here to look?{' '}
+          <a href="/demo" className="text-accent transition-colors hover:text-accent-hover">
+            See a sample council
           </a>
         </p>
       </Card>

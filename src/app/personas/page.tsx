@@ -238,13 +238,13 @@ export default function PersonasPage() {
                     <h2 className="truncate font-display text-base text-text">
                       {persona.name}
                     </h2>
-                    <p className="mt-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] text-accent">
+                    <p className="mt-0.5 font-mono text-xs uppercase tracking-[0.1em] text-accent">
                       {roleLabel(persona.role)}
                     </p>
                   </div>
                 </div>
 
-                <p className="mt-3 line-clamp-3 text-[0.8125rem] leading-relaxed text-muted">
+                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
                   {persona.bio}
                 </p>
 
@@ -258,7 +258,7 @@ export default function PersonasPage() {
                   </div>
                 )}
 
-                <p className="mt-3 font-mono text-[0.625rem] text-subtle">
+                <p className="mt-3 font-mono text-xs text-subtle">
                   {persona.provider?.name
                     ? `via ${persona.provider.name}`
                     : 'default provider'}

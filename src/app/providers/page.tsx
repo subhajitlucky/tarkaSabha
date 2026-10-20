@@ -239,14 +239,14 @@ export default function ProvidersPage() {
                     </h2>
                     {provider.isDefault && <Badge tone="accent">Default</Badge>}
                   </div>
-                  <p className="mt-1 font-mono text-[0.6875rem] text-subtle">
+                  <p className="mt-1 font-mono text-xs text-subtle">
                     {presetFor(provider.provider)?.label ?? provider.provider}
                     <span className="mx-1.5">·</span>
                     {provider.model}
                     <span className="mx-1.5">·</span>
                     temp {provider.temperature}
                   </p>
-                  <p className="mt-0.5 truncate font-mono text-[0.625rem] text-subtle">
+                  <p className="mt-0.5 truncate font-mono text-xs text-subtle">
                     {provider.apiUrl}
                   </p>
                 </div>

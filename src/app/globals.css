@@ -221,10 +221,10 @@ h1 {
 /* Mono eyebrow used for section labels and metadata. */
 .eyebrow {
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.6875rem;
-  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  letter-spacing: 0.10em;
   text-transform: uppercase;
-  color: var(--text-subtle);
+  color: var(--text-muted);
 }
 
 /* Prose blocks (chat messages, deliverables) get a comfortable measure. */

@@ -128,7 +128,7 @@ export default function RootLayout({
               </div>
 
               <div className="border-t border-line">
-                <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 font-mono text-[0.6875rem] uppercase tracking-[0.12em] text-subtle sm:flex-row sm:items-center sm:justify-between">
+                <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 font-mono text-xs uppercase tracking-[0.12em] text-subtle sm:flex-row sm:items-center sm:justify-between">
                   <p>© {new Date().getFullYear()} Tarka Sabha</p>
                   <p>tarka · reasoning &nbsp;·&nbsp; sabhā · assembly</p>
                 </div>

@@ -446,7 +446,7 @@ export default function ChatPage() {
                   {best?.score != null && (
                     <span
                       title="Weighted rubric score out of 10"
-                      className="rounded-[3px] border border-accent-line bg-accent-soft px-2 py-0.5 font-mono text-[0.6875rem] uppercase tracking-[0.1em] text-accent"
+                      className="rounded-[3px] border border-accent-line bg-accent-soft px-2 py-0.5 font-mono text-xs uppercase tracking-[0.1em] text-accent"
                     >
                       {best.score.toFixed(1)} / 10
                     </span>
@@ -666,7 +666,7 @@ export default function ChatPage() {
                 </h1>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`inline-flex items-center gap-1.5 rounded-[3px] border px-1.5 py-0.5 font-mono text-[0.625rem] uppercase tracking-[0.1em] ${
+                    className={`inline-flex items-center gap-1.5 rounded-[3px] border px-1.5 py-0.5 font-mono text-xs uppercase tracking-[0.1em] ${
                       chat.isAutoMode
                         ? 'border-success/30 bg-success-soft text-success'
                         : 'border-line bg-surface-2 text-subtle'
@@ -677,7 +677,7 @@ export default function ChatPage() {
                     )}
                     {chat.isAutoMode ? 'Running' : 'Manual'}
                   </span>
-                  <span className="font-mono text-[0.625rem] text-subtle">
+                  <span className="font-mono text-xs text-subtle">
                     {chat.participants?.length || 0} agent{chat.participants?.length === 1 ? '' : 's'}
                   </span>
                 </div>
@@ -810,8 +810,8 @@ export default function ChatPage() {
                   <div className={`space-y-1.5 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
                     {!isUser && (
                       <div className="flex items-center gap-2 px-1">
-                        <span className="font-mono text-[0.625rem] uppercase tracking-[0.12em] text-muted">{persona?.name || 'Agent'}</span>
-                        <span className="font-mono text-[0.625rem] text-subtle">{formatTime(message.createdAt)}</span>
+                        <span className="font-mono text-xs uppercase tracking-[0.12em] text-muted">{persona?.name || 'Agent'}</span>
+                        <span className="font-mono text-xs text-subtle">{formatTime(message.createdAt)}</span>
                       </div>
                     )}
                     
@@ -825,8 +825,8 @@ export default function ChatPage() {
 
                     {isUser && (
                       <div className="flex items-center gap-2 px-1">
-                        <span className="font-mono text-[0.625rem] text-subtle">{formatTime(message.createdAt)}</span>
-                        <span className="font-mono text-[0.625rem] uppercase tracking-[0.14em] text-accent">You</span>
+                        <span className="font-mono text-xs text-subtle">{formatTime(message.createdAt)}</span>
+                        <span className="font-mono text-xs uppercase tracking-[0.14em] text-accent">You</span>
                       </div>
                     )}
                   </div>
