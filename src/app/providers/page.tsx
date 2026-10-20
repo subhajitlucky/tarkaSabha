@@ -50,6 +50,7 @@ export default function ProvidersPage() {
   const [saving, setSaving] = useState(false)
   const [formError, setFormError] = useState<string | null>(null)
   const [pendingDelete, setPendingDelete] = useState<Provider | null>(null)
+  const [testStatus, setTestStatus] = useState<Record<string, string>>({})
 
   const load = useCallback(async () => {
     try {
@@ -152,6 +153,26 @@ export default function ProvidersPage() {
     }
   }
 
+  const testProvider = async (provider: Provider) => {
+    setTestStatus((current) => ({ ...current, [provider.id]: 'Testing…' }))
+    try {
+      const res = await fetch(`/api/providers/${provider.id}/test`, { method: 'POST' })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || 'The provider test failed')
+      }
+      setTestStatus((current) => ({
+        ...current,
+        [provider.id]: `Ready · ${data.latencyMs} ms${data.sample ? ` · “${data.sample}”` : ''}`,
+      }))
+    } catch (err) {
+      setTestStatus((current) => ({
+        ...current,
+        [provider.id]: err instanceof Error ? err.message : 'The provider test failed',
+      }))
+    }
+  }
+
   const confirmDelete = async () => {
     if (!pendingDelete) return
     const target = pendingDelete
@@ -249,9 +270,31 @@ export default function ProvidersPage() {
                   <p className="mt-0.5 truncate font-mono text-xs text-subtle">
                     {provider.apiUrl}
                   </p>
+                  {testStatus[provider.id] && (
+                    <p
+                      role="status"
+                      className={`mt-1 text-xs ${
+                        testStatus[provider.id].startsWith('Ready')
+                          ? 'text-success'
+                          : testStatus[provider.id] === 'Testing…'
+                            ? 'text-subtle'
+                            : 'text-danger'
+                      }`}
+                    >
+                      {testStatus[provider.id]}
+                    </p>
+                  )}
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => testProvider(provider)}
+                    disabled={testStatus[provider.id] === 'Testing…'}
+                  >
+                    {testStatus[provider.id] === 'Testing…' ? 'Testing…' : 'Test key'}
+                  </Button>
                   <Button size="sm" onClick={() => openEdit(provider)}>
                     Edit
                   </Button>

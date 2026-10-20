@@ -22,6 +22,182 @@ function getErrorMessage(error: unknown, fallback: string) {
 type PersonaRole = 'contributor' | 'researcher' | 'critic' | 'planner' | 'synthesizer'
 
 
+type StarterAgent = {
+  name: string
+  bio: string
+  personality: string
+  role: PersonaRole
+  tools: string[]
+}
+
+type StarterCouncil = {
+  id: string
+  name: string
+  blurb: string
+  topic: string
+  objective: string
+  deliverableSpec: string
+  audience: string
+  agents: StarterAgent[]
+}
+
+const STARTER_COUNCILS: StarterCouncil[] = [
+  {
+    id: 'architecture',
+    name: 'Architecture review',
+    blurb: 'Pressure-test a design before it ships.',
+    topic: 'Architecture review',
+    objective:
+      'Review the proposed architecture for [system]. Identify the strongest failure modes, the assumptions that need testing, and the smallest change that materially reduces risk.',
+    deliverableSpec: 'A one-page decision memo: recommendation, evidence, risks, and next steps.',
+    audience: 'The engineering lead and the team shipping the change.',
+    agents: [
+      {
+        name: 'Meera',
+        bio: 'Finds evidence, prior art, and unknowns. Flags what is assumed rather than known.',
+        personality: 'Calm, precise, and allergic to unsupported claims.',
+        role: 'researcher',
+        tools: [],
+      },
+      {
+        name: 'Arjun',
+        bio: 'Attacks the weakest part of the design and names the failure mode.',
+        personality: 'Direct, skeptical, and constructive.',
+        role: 'critic',
+        tools: [],
+      },
+      {
+        name: 'Leela',
+        bio: 'Turns the discussion into an ordered, testable plan.',
+        personality: 'Practical and concrete.',
+        role: 'planner',
+        tools: [],
+      },
+      {
+        name: 'Kabir',
+        bio: 'Resolves disagreement and writes the recommendation.',
+        personality: 'Even-handed and decisive.',
+        role: 'synthesizer',
+        tools: [],
+      },
+    ],
+  },
+  {
+    id: 'decision',
+    name: 'Decision memo',
+    blurb: 'Choose between real options, not a list.',
+    topic: 'Decision memo',
+    objective:
+      'Decide whether [decision]. Compare the realistic options, state the trade-offs, and recommend one.',
+    deliverableSpec: 'A one-page decision memo for a skeptical reader.',
+    audience: 'A decision-maker who has five minutes.',
+    agents: [
+      {
+        name: 'Meera',
+        bio: 'Brings the evidence and separates fact from assumption.',
+        personality: 'Calm and exact.',
+        role: 'researcher',
+        tools: [],
+      },
+      {
+        name: 'Arjun',
+        bio: 'Argues the strongest case against the leading option.',
+        personality: 'Direct and hard to impress.',
+        role: 'critic',
+        tools: [],
+      },
+      {
+        name: 'Kabir',
+        bio: 'Resolves the disagreement and writes the recommendation.',
+        personality: 'Even-handed and decisive.',
+        role: 'synthesizer',
+        tools: [],
+      },
+    ],
+  },
+  {
+    id: 'postmortem',
+    name: 'Incident postmortem',
+    blurb: 'Separate the trigger from the root cause.',
+    topic: 'Incident postmortem',
+    objective:
+      'Review [incident]. Separate the trigger from the root cause, identify contributing factors, and propose corrective actions with owners.',
+    deliverableSpec: 'A blameless postmortem with a timeline, root cause, and action items.',
+    audience: 'The on-call team and engineering leadership.',
+    agents: [
+      {
+        name: 'Meera',
+        bio: 'Reconstructs the timeline from the evidence and marks what is still unknown.',
+        personality: 'Calm and forensic.',
+        role: 'researcher',
+        tools: [],
+      },
+      {
+        name: 'Arjun',
+        bio: 'Tests the proposed root cause against the counterfactuals.',
+        personality: 'Skeptical and precise.',
+        role: 'critic',
+        tools: [],
+      },
+      {
+        name: 'Leela',
+        bio: 'Turns the findings into owned, testable corrective actions.',
+        personality: 'Practical and direct.',
+        role: 'planner',
+        tools: [],
+      },
+      {
+        name: 'Kabir',
+        bio: 'Writes the final blameless narrative and recommendation.',
+        personality: 'Even-handed and concise.',
+        role: 'synthesizer',
+        tools: [],
+      },
+    ],
+  },
+  {
+    id: 'prd',
+    name: 'PRD review',
+    blurb: 'Find the unmet need and the scope to cut.',
+    topic: 'PRD review',
+    objective:
+      'Review [PRD]. Find the unmet user need, the weakest assumption, and the scope that should be cut.',
+    deliverableSpec: 'A review memo with a recommendation and a revised scope.',
+    audience: 'The product and engineering team.',
+    agents: [
+      {
+        name: 'Meera',
+        bio: 'Checks the user need and evidence behind the proposal.',
+        personality: 'Curious and evidence-led.',
+        role: 'researcher',
+        tools: [],
+      },
+      {
+        name: 'Arjun',
+        bio: 'Finds the assumption that would make the whole plan fail.',
+        personality: 'Direct and skeptical.',
+        role: 'critic',
+        tools: [],
+      },
+      {
+        name: 'Leela',
+        bio: 'Turns the review into a smaller, testable scope.',
+        personality: 'Practical and decisive.',
+        role: 'planner',
+        tools: [],
+      },
+      {
+        name: 'Kabir',
+        bio: 'Writes the review and the revised scope.',
+        personality: 'Even-handed and concise.',
+        role: 'synthesizer',
+        tools: [],
+      },
+    ],
+  },
+]
+
+
 
 // Debates make many calls per run (one per agent turn, plus two per synthesis
 // candidate), so the default trades a little quality for a lot of cost. The
@@ -133,6 +309,47 @@ export default function DebatePage() {
     setAgents(agents.filter(a => a.id !== id))
   }
 
+  const applyStarter = (starter: StarterCouncil) => {
+    const changed = Boolean(topic.trim() || objective.trim() || agents.length > 0)
+    if (changed && !window.confirm('Replace the current brief and council with this starter?')) {
+      return
+    }
+
+    const savedProvider = providers.find((provider) => provider.isDefault) ?? providers[0]
+    const providerDefaults = savedProvider
+      ? {
+          providerType: savedProvider.provider,
+          apiUrl: savedProvider.apiUrl,
+          model: savedProvider.model,
+        }
+      : {
+          providerType: 'openai' as ProviderType,
+          apiUrl: 'https://api.openai.com/v1',
+          model: DEFAULT_MODEL,
+        }
+
+    setMode('task')
+    setTopic(starter.topic)
+    setObjective(starter.objective)
+    setDeliverableSpec(starter.deliverableSpec)
+    setAudience(starter.audience)
+    setAgents(
+      starter.agents.map((agent, index) => ({
+        ...agent,
+        ...providerDefaults,
+        apiKey: '',
+        temperature: 0.7,
+        id: `starter-${starter.id}-${Date.now()}-${index}`,
+      }))
+    )
+    setError(
+      savedProvider
+        ? null
+        : 'Starter loaded. Add an API key for each agent, or save a provider first.'
+    )
+    setNewAgent((current) => ({ ...current, ...providerDefaults }))
+  }
+
   const createDebate = async () => {
     if (!topic.trim()) {
       setError('Please enter a topic for the debate')
@@ -147,7 +364,13 @@ export default function DebatePage() {
     // silently produce a debate whose every turn fails.
     const missingKey = agents.find((agent) => {
       const option = PROVIDER_TYPES.find((o) => o.value === agent.providerType)
-      return option?.requiresKey && !agent.apiKey.trim()
+      const alreadySaved = providers.some(
+        (provider) =>
+          provider.provider === agent.providerType &&
+          provider.apiUrl === agent.apiUrl &&
+          provider.model === agent.model
+      )
+      return option?.requiresKey && !agent.apiKey.trim() && !alreadySaved
     })
     if (missingKey) {
       setError(`${missingKey.name} needs an API key`)
@@ -315,6 +538,37 @@ export default function DebatePage() {
           lede="State what you need, then assemble agents with distinct jobs and the tools to check their own claims."
         />
 
+        <section className="mb-8" aria-labelledby="starter-heading">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 id="starter-heading" className="font-display text-xl text-text">
+                Start from a council
+              </h2>
+              <p className="mt-1 text-sm text-muted">
+                Loads a brief and roles you can edit. Use a saved provider or add a key.
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            {STARTER_COUNCILS.map((starter) => (
+              <button
+                key={starter.id}
+                type="button"
+                onClick={() => applyStarter(starter)}
+                className="group rounded-[4px] border border-line bg-surface p-4 text-left transition-colors hover:border-accent-line hover:bg-accent-soft"
+              >
+                <span className="eyebrow block">{starter.agents.length} roles</span>
+                <span className="mt-2 block font-display text-base text-text group-hover:text-accent">
+                  {starter.name}
+                </span>
+                <span className="mt-1 block text-sm leading-relaxed text-muted">
+                  {starter.blurb}
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Step 1: Brief */}
           <div className={`${cardClass} rounded-[4px] p-6`}>
@@ -352,7 +606,7 @@ export default function DebatePage() {
               <p className="mt-2 text-xs text-subtle">
                 {mode === 'task'
                   ? 'Agents work together on your objective. Synthesise a final deliverable when they are done.'
-                  : 'Agents stay stubbornly in character and argue. For entertainment, not for getting an answer.'}
+                  : 'Agents stay in character and argue. For exploration, not for a settled answer.'}
               </p>
             </div>
 
@@ -378,7 +632,7 @@ export default function DebatePage() {
                   <textarea
                     value={objective}
                     onChange={e => setObjective(e.target.value)}
-                    rows={2}
+                    rows={3}
                     placeholder="What exactly should they work out?"
                     className={`w-full rounded-[3px] px-4 py-3 focus:outline-none transition-colors resize-none ${inputClass}`}
                   />
@@ -601,7 +855,7 @@ export default function DebatePage() {
               disabled={isCreating || agents.length < 2}
               className="w-full cursor-pointer rounded-[3px] border border-accent bg-accent px-4 py-3.5 font-medium text-accent-ink transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-2 disabled:text-subtle" 
             >
-              {isCreating ? 'Creating...' : `Start Debate with ${agents.length} Agents`}
+              {isCreating ? 'Creating...' : `Convene council with ${agents.length} agents`}
             </button>
           </div>
         </div>
