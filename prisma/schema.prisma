@@ -128,6 +128,8 @@ model Chat {
   deliverableSpec String?
   audience        String?
   isAutoMode    Boolean         @default(false)
+  // Public share links are opt-in. The chat id is the public handle; keys are never selected.
+  isPublic      Boolean         @default(false)
   lastSpeakerId String?
   // Scheduler state for server-side turn execution. autoAdvanceAt is the next
   // time this chat is due for a turn; null means it is not scheduled. The worker

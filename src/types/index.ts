@@ -40,6 +40,7 @@ export interface Chat {
   deliverableSpec?: string | null
   audience?: string | null
   isAutoMode: boolean
+  isPublic?: boolean
   lastSpeakerId?: string | null
   /** Next scheduled turn; null when the chat is not running server-side. */
   autoAdvanceAt?: string | Date | null

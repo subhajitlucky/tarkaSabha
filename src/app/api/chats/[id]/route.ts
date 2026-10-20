@@ -27,6 +27,7 @@ export async function GET(
         deliverableSpec: true,
         audience: true,
         isAutoMode: true,
+        isPublic: true,
         creatorId: true,
         createdAt: true,
         updatedAt: true,
@@ -87,6 +88,7 @@ export async function PUT(
       deliverableSpec,
       audience,
       isAutoMode,
+      isPublic,
       turns,
       addParticipantIds,
       removeParticipantIds,
@@ -135,6 +137,9 @@ export async function PUT(
     if (isAutoMode !== undefined && typeof isAutoMode !== 'boolean') {
       return NextResponse.json({ error: 'isAutoMode must be a boolean' }, { status: 400 })
     }
+    if (isPublic !== undefined && typeof isPublic !== 'boolean') {
+      return NextResponse.json({ error: 'isPublic must be a boolean' }, { status: 400 })
+    }
     if (
       turns !== undefined &&
       turns !== null &&
@@ -169,6 +174,7 @@ export async function PUT(
     if (objective !== undefined) updateData.objective = objective?.trim() || null
     if (deliverableSpec !== undefined) updateData.deliverableSpec = deliverableSpec?.trim() || null
     if (audience !== undefined) updateData.audience = audience?.trim() || null
+    if (isPublic !== undefined) updateData.isPublic = isPublic
     if (isAutoMode !== undefined) {
       updateData.isAutoMode = isAutoMode
       if (isAutoMode) {

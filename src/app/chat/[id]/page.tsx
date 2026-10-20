@@ -56,6 +56,7 @@ export default function ChatPage() {
   const [usernameModalRequested, setUsernameModalRequested] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showWipeConfirm, setShowWipeConfirm] = useState(false)
+  const [shareNotice, setShareNotice] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
@@ -134,6 +135,39 @@ export default function ChatPage() {
       setChat(data.chat)
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Could not start the debate'))
+    }
+  }
+
+  const togglePublic = async () => {
+    setError(null)
+    const next = !chat?.isPublic
+    if (!next && !window.confirm('Make this run private? The public link will stop working.')) {
+      return
+    }
+    try {
+      const res = await fetch(`/api/chats/${chatId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isPublic: next }),
+      })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || 'Could not update sharing')
+      }
+      setChat(data.chat)
+      if (next) {
+        const url = `${window.location.origin}/share/${chatId}`
+        try {
+          await navigator.clipboard.writeText(url)
+          setShareNotice(`Public link copied: ${url}`)
+        } catch {
+          setShareNotice(url)
+        }
+      } else {
+        setShareNotice('This run is private again. The old public link no longer works.')
+      }
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Could not update sharing'))
     }
   }
 
@@ -715,6 +749,16 @@ export default function ChatPage() {
 
                 {isOwner && (
                   <button
+                    onClick={togglePublic}
+                    className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all cursor-pointer ${settingsBtn} ${'text-muted'}`}
+                    title={chat.isPublic ? 'This run has a public link. Click to make it private.' : 'Publish a read-only link to this run'}
+                  >
+                    {chat.isPublic ? 'Public' : 'Share'}
+                  </button>
+                )}
+
+                {isOwner && (
+                  <button
                     onClick={chat.isAutoMode ? stopDebate : toggleAutoMode}
                     className={`p-2 rounded-[3px] transition-all cursor-pointer ${toggleBtn}`}
                     title={chat.isAutoMode ? "Stop Debate" : "Start Debate"}
@@ -781,6 +825,28 @@ export default function ChatPage() {
           </div>
         )}
       </header>
+
+      {shareNotice && (
+        <div className="border-b border-line bg-accent-soft px-6 py-3" role="status">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-3">
+            <p className="min-w-0 truncate text-xs text-accent">
+              {shareNotice.startsWith('http') ? 'Public link: ' : ''}
+              {shareNotice.startsWith('http') ? (
+                <a href={shareNotice} className="underline underline-offset-4">{shareNotice}</a>
+              ) : (
+                shareNotice
+              )}
+            </p>
+            <button
+              onClick={() => setShareNotice(null)}
+              className="text-xs font-bold text-accent"
+              aria-label="Dismiss share notice"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Chat Messages */}
       <main className="flex-1 overflow-y-auto px-6 py-8 bg-inherit">
