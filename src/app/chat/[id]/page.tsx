@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Artifact, Chat, Message } from '@/types'
+import type { HeadToHeadResult } from '@/lib/head-to-head'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/components/AuthProvider'
 
@@ -50,6 +51,10 @@ export default function ChatPage() {
   const [showChatSettings, setShowChatSettings] = useState(false)
   const [artifacts, setArtifacts] = useState<Artifact[]>([])
   const [showDeliverable, setShowDeliverable] = useState(false)
+  const [showComparison, setShowComparison] = useState(false)
+  const [isComparing, setIsComparing] = useState(false)
+  const [comparison, setComparison] = useState<HeadToHeadResult | null>(null)
+  const [compareError, setCompareError] = useState<string | null>(null)
   const [isSynthesizing, setIsSynthesizing] = useState(false)
   const [showOtherCandidates, setShowOtherCandidates] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -135,6 +140,25 @@ export default function ChatPage() {
       setChat(data.chat)
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Could not start the debate'))
+    }
+  }
+
+  const compareRun = async () => {
+    setShowComparison(true)
+    setCompareError(null)
+    setIsComparing(true)
+    try {
+      const res = await fetch(`/api/chats/${chatId}/head-to-head`, { method: 'POST' })
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || 'Could not run the comparison')
+      }
+      setComparison(data)
+    } catch (err: unknown) {
+      setComparison(null)
+      setCompareError(getErrorMessage(err, 'Could not run the comparison'))
+    } finally {
+      setIsComparing(false)
     }
   }
 
@@ -645,6 +669,185 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Head-to-Head Modal */}
+      {showComparison && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="comparison-title"
+            className={`flex max-h-[90vh] w-full max-w-5xl flex-col rounded-[4px] border border-line bg-surface p-6 shadow-2xl`}
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <p className="eyebrow mb-1">Blind comparison</p>
+                <h2 id="comparison-title" className="text-xl font-bold text-text">
+                  Council vs one model
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted">
+                  Same brief. Same output budget. Same rubric. The judge is not told which answer came from the council.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowComparison(false)}
+                className={`h-8 w-8 rounded-[3px] text-muted hover:bg-surface-2 hover:text-text`}
+                aria-label="Close comparison"
+              >
+                ✕
+              </button>
+            </div>
+
+            {isComparing && (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 py-20">
+                <div className="h-8 w-8 animate-spin rounded-[3px] border-2 border-accent/30 border-t-accent" />
+                <p className="text-sm text-muted">Generating a single-model answer and blind-judging both.</p>
+              </div>
+            )}
+
+            {!isComparing && compareError && (
+              <div className="rounded-[3px] border border-danger/30 bg-danger-soft p-4 text-sm text-danger">
+                {compareError}
+              </div>
+            )}
+
+            {!isComparing && !compareError && comparison && (() => {
+              const council = comparison.council
+              const single = comparison.single
+              const councilScore = council?.score ?? null
+              const singleScore = single?.score ?? null
+              const winner =
+                councilScore == null || singleScore == null
+                  ? null
+                  : councilScore > singleScore
+                    ? 'council'
+                    : singleScore > councilScore
+                      ? 'single'
+                      : 'tie'
+              const keys = Array.from(
+                new Set([
+                  ...(council?.breakdown ?? []).map((entry) => entry.key),
+                  ...(single?.breakdown ?? []).map((entry) => entry.key),
+                ])
+              )
+              const rows = keys.map((key) => {
+                const left = council?.breakdown?.find((entry) => entry.key === key)
+                const right = single?.breakdown?.find((entry) => entry.key === key)
+                return {
+                  key,
+                  label: left?.label || right?.label || key,
+                  council: left?.score ?? null,
+                  single: right?.score ?? null,
+                }
+              })
+              const formatMs = (value: number | null | undefined) =>
+                value == null ? '—' : value < 1000 ? `${value} ms` : `${(value / 1000).toFixed(1)} s`
+              const formatTokens = (value: number | null | undefined) =>
+                value == null ? '—' : value.toLocaleString()
+
+              return (
+                <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className={`rounded-[4px] border p-4 ${winner === 'council' ? 'border-accent-line bg-accent-soft' : 'border-line bg-surface-2'}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="eyebrow">Council</span>
+                        {winner === 'council' && <span className="font-mono text-xs uppercase tracking-[0.1em] text-accent">Selected</span>}
+                      </div>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="font-display text-3xl text-text">{councilScore?.toFixed(1) ?? '—'}</span>
+                        <span className="text-xs text-subtle">/ 10</span>
+                      </div>
+                      <p className="mt-2 text-xs leading-relaxed text-muted">
+                        {council?.candidateCount ?? 0} candidate{(council?.candidateCount ?? 0) === 1 ? '' : 's'} on record
+                        {council?.model ? ` · ${council.model}` : ''}
+                      </p>
+                    </div>
+                    <div className={`rounded-[4px] border p-4 ${winner === 'single' ? 'border-accent-line bg-accent-soft' : 'border-line bg-surface-2'}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="eyebrow">Single model</span>
+                        {winner === 'single' && <span className="font-mono text-xs uppercase tracking-[0.1em] text-accent">Selected</span>}
+                      </div>
+                      <div className="mt-2 flex items-baseline gap-2">
+                        <span className="font-display text-3xl text-text">{singleScore?.toFixed(1) ?? '—'}</span>
+                        <span className="text-xs text-subtle">/ 10</span>
+                      </div>
+                      <p className="mt-2 text-xs leading-relaxed text-muted">
+                        {single?.model || 'Model'} · {formatMs(single?.latencyMs)} · {formatTokens(single?.usage?.totalTokens)} tokens
+                      </p>
+                    </div>
+                  </div>
+
+                  {rows.length > 0 && (
+                    <div className="rounded-[4px] border border-line p-4">
+                      <p className="eyebrow mb-3">Rubric</p>
+                      <div className="space-y-2">
+                        {rows.map((row) => (
+                          <div key={row.key} className="grid grid-cols-[minmax(0,1fr)_3rem_3rem] items-center gap-3">
+                            <span className="text-xs text-muted">{row.label}</span>
+                            <span className="text-right font-mono text-xs text-text">{row.council?.toFixed(1) ?? '—'}</span>
+                            <span className="text-right font-mono text-xs text-muted">{row.single?.toFixed(1) ?? '—'}</span>
+                          </div>
+                        ))}
+                        <div className="grid grid-cols-[minmax(0,1fr)_3rem_3rem] gap-3 border-t border-line pt-2">
+                          <span className="eyebrow">Weighted</span>
+                          <span className="text-right font-mono text-xs text-text">{councilScore?.toFixed(1) ?? '—'}</span>
+                          <span className="text-right font-mono text-xs text-muted">{singleScore?.toFixed(1) ?? '—'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid gap-3 lg:grid-cols-2">
+                    <div className="rounded-[4px] border border-line p-4">
+                      <p className="eyebrow mb-2">Council answer</p>
+                      <div className="max-h-64 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-text">
+                        {council?.content || 'No council answer.'}
+                      </div>
+                      {council?.critique && (
+                        <p className="mt-3 border-t border-line pt-3 text-xs leading-relaxed text-subtle">
+                          Judge: {council.critique}
+                        </p>
+                      )}
+                    </div>
+                    <div className="rounded-[4px] border border-line p-4">
+                      <p className="eyebrow mb-2">Single-model answer</p>
+                      <div className="max-h-64 overflow-y-auto whitespace-pre-wrap text-sm leading-relaxed text-text">
+                        {single?.content || 'No single-model answer.'}
+                      </div>
+                      {single?.critique && (
+                        <p className="mt-3 border-t border-line pt-3 text-xs leading-relaxed text-subtle">
+                          Judge: {single.critique}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <p className="text-xs leading-relaxed text-subtle">
+                    Scores were re-judged for this comparison with the same rubric. The council&apos;s original
+                    recorded score was {council?.recordedScore?.toFixed(1) ?? '—'}. Total comparison time:{' '}
+                    {formatMs(comparison.totalLatencyMs)}.
+                  </p>
+
+                  <div className="flex flex-wrap justify-end gap-2 border-t border-line pt-4">
+                    <button
+                      onClick={compareRun}
+                      className="rounded-[3px] border border-line bg-surface-2 px-4 py-2 text-sm font-bold text-text hover:border-line-strong"
+                    >
+                      Run again
+                    </button>
+                    <button
+                      onClick={() => setShowComparison(false)}
+                      className="rounded-[3px] bg-accent px-4 py-2 text-sm font-bold text-accent-ink"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* Wipe Confirmation Modal */}
       {showWipeConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -735,6 +938,16 @@ export default function ChatPage() {
                     title="The synthesised deliverable for this task"
                   >
                     Deliverable{artifacts.length > 0 ? ` (${artifacts.length})` : ''}
+                  </button>
+                )}
+
+                {isOwner && (
+                  <button
+                    onClick={compareRun}
+                    className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all cursor-pointer ${settingsBtn} ${'text-muted'}`}
+                    title="Compare this council's deliverable with a single-model answer, blind-judged on the same rubric"
+                  >
+                    Compare
                   </button>
                 )}
 
