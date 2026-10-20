@@ -209,6 +209,12 @@ model Message {
   // Tool calls made while producing this turn. Kept so a deliverable can be
   // checked against the sources its agents actually consulted.
   evidence    Json?
+  // Turn telemetry for the run inspector. Old messages legitimately have no
+  // values; the UI renders those as "not recorded" rather than guessing.
+  selectionReason String?
+  inputTokens  Int?
+  outputTokens Int?
+  latencyMs    Int?
   chatId      String
   createdAt   DateTime @default(now())
   chat        Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)

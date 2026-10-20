@@ -582,6 +582,15 @@ export async function orchestrateMessage(
     return { message: '', error: 'No speaker available' }
   }
 
+  const lastSpeakerName =
+    participants.find((participant) => participant.id === context.lastSpeakerId)?.name ?? null
+  const selectionReason =
+    context.mentionedPersonaId && speaker.id === context.mentionedPersonaId
+      ? 'Named directly by the participant.'
+      : !context.lastSpeakerId
+        ? 'Opening turn; first participant in the order.'
+        : `Round-robin after ${lastSpeakerName ?? 'the previous speaker'}.`
+
   // Get provider config
   const { persona, provider } = await getPersonaWithProvider(speaker, userId)
 
@@ -644,6 +653,7 @@ export async function orchestrateMessage(
   })
 
   let lastError: unknown = null;
+  const turnStarted = Date.now();
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
@@ -725,6 +735,10 @@ export async function orchestrateMessage(
             toolRun.invocations.length > 0
               ? (toolRun.invocations as unknown as Prisma.InputJsonValue)
               : undefined,
+          selectionReason,
+          inputTokens: toolRun.usage?.promptTokens,
+          outputTokens: toolRun.usage?.completionTokens,
+          latencyMs: Date.now() - turnStarted,
         },
       })
 

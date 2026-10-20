@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Artifact, Chat, Message } from '@/types'
 import type { HeadToHeadResult } from '@/lib/head-to-head'
 import type { EvidenceMap } from '@/lib/evidence-map'
+import type { RunInspection } from '@/lib/run-inspection'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuth } from '@/components/AuthProvider'
 
@@ -60,6 +61,10 @@ export default function ChatPage() {
   const [evidenceMap, setEvidenceMap] = useState<(EvidenceMap & { title: string; source: string }) | null>(null)
   const [evidenceLoading, setEvidenceLoading] = useState(false)
   const [evidenceError, setEvidenceError] = useState<string | null>(null)
+  const [showInspect, setShowInspect] = useState(false)
+  const [inspection, setInspection] = useState<RunInspection | null>(null)
+  const [inspectLoading, setInspectLoading] = useState(false)
+  const [inspectError, setInspectError] = useState<string | null>(null)
   const [isSynthesizing, setIsSynthesizing] = useState(false)
   const [showOtherCandidates, setShowOtherCandidates] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -145,6 +150,25 @@ export default function ChatPage() {
       setChat(data.chat)
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Could not start the debate'))
+    }
+  }
+
+  const openInspect = async () => {
+    setShowInspect(true)
+    setInspectLoading(true)
+    setInspectError(null)
+    try {
+      const res = await fetch(`/api/chats/${chatId}/inspect`)
+      const data = await res.json().catch(() => null)
+      if (!res.ok) {
+        throw new Error(data?.error || 'Could not inspect this run')
+      }
+      setInspection(data)
+    } catch (err: unknown) {
+      setInspection(null)
+      setInspectError(getErrorMessage(err, 'Could not inspect this run'))
+    } finally {
+      setInspectLoading(false)
     }
   }
 
@@ -693,6 +717,214 @@ export default function ChatPage() {
         </div>
       )}
 
+      {/* Run Inspector Modal */}
+      {showInspect && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="inspect-title"
+            className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-[4px] border border-line bg-surface p-6 shadow-2xl"
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <p className="eyebrow mb-1">Run inspector</p>
+                <h2 id="inspect-title" className="text-xl font-bold text-text">
+                  How the council got there
+                </h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted">
+                  Turn selection, latency, token use, tools, and every judged candidate.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowInspect(false)}
+                className="h-8 w-8 rounded-[3px] text-muted hover:bg-surface-2 hover:text-text"
+                aria-label="Close run inspector"
+              >
+                ✕
+              </button>
+            </div>
+
+            {inspectLoading && (
+              <div className="flex flex-1 flex-col items-center justify-center gap-3 py-20">
+                <div className="h-8 w-8 animate-spin rounded-[3px] border-2 border-accent/30 border-t-accent" />
+                <p className="text-sm text-muted">Reading the run record.</p>
+              </div>
+            )}
+
+            {!inspectLoading && inspectError && (
+              <div className="rounded-[3px] border border-danger/30 bg-danger-soft p-4 text-sm text-danger">
+                {inspectError}
+              </div>
+            )}
+
+            {!inspectLoading && !inspectError && inspection && (() => {
+              const formatMs = (value: number | null | undefined) =>
+                value == null || value === 0 ? '—' : value < 1000 ? `${value} ms` : `${(value / 1000).toFixed(1)} s`
+              const stats = [
+                { label: 'Turns', value: `${inspection.summary.measuredTurns}/${inspection.summary.turns} measured` },
+                { label: 'Tools', value: String(inspection.summary.toolCalls) },
+                { label: 'Token cost', value: `${inspection.summary.totalInputTokens.toLocaleString()} in · ${inspection.summary.totalOutputTokens.toLocaleString()} out` },
+                { label: 'Candidates', value: String(inspection.summary.candidates) },
+              ]
+
+              return (
+                <div className="flex-1 space-y-4 overflow-y-auto pr-1">
+                  <div className="grid gap-2 sm:grid-cols-4">
+                    {stats.map((stat) => (
+                      <div key={stat.label} className="rounded-[3px] border border-line bg-surface-2 p-3">
+                        <p className="eyebrow">{stat.label}</p>
+                        <p className="mt-1 text-sm font-bold text-text">{stat.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {inspection.chat.participants.map(({ persona }) => (
+                      <span
+                        key={persona.id}
+                        className="rounded-[3px] border border-line bg-surface px-2 py-1 text-xs text-muted"
+                        title={`${persona.role}${persona.model ? ` · ${persona.model}` : ''}${persona.tools.length ? ` · tools: ${persona.tools.join(', ')}` : ''}`}
+                      >
+                        <span className="text-text">{persona.name}</span>
+                        <span className="ml-1 font-mono text-[11px] uppercase tracking-[0.08em] text-subtle">
+                          {persona.role}
+                        </span>
+                      </span>
+                    ))}
+                    <span className="ml-auto font-mono text-xs text-subtle">
+                      {formatMs(inspection.summary.totalLatencyMs)} recorded
+                    </span>
+                  </div>
+
+                  <div>
+                    <p className="eyebrow mb-2">Timeline</p>
+                    {inspection.chat.messages.length === 0 ? (
+                      <p className="rounded-[3px] border border-dashed border-line p-5 text-sm text-muted">
+                        No turns recorded yet.
+                      </p>
+                    ) : (
+                      <ol className="space-y-2">
+                        {inspection.chat.messages.map((message) => {
+                          const isAgent = message.role === 'persona'
+                          const speaker =
+                            message.personaName ||
+                            (message.role === 'user' ? 'Participant' : message.role === 'system' ? 'System' : 'Council')
+                          return (
+                            <li key={message.id} className="rounded-[3px] border border-line p-3">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="font-display text-sm text-text">{speaker}</span>
+                                <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-subtle">
+                                  {new Date(message.createdAt).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                                {isAgent && (
+                                  <>
+                                    <span className="rounded-[3px] border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted">
+                                      {formatMs(message.latencyMs)}
+                                    </span>
+                                    <span className="rounded-[3px] border border-line bg-surface-2 px-1.5 py-0.5 font-mono text-[11px] text-muted">
+                                      {message.inputTokens != null || message.outputTokens != null
+                                        ? `${(message.inputTokens ?? 0).toLocaleString()} in / ${(message.outputTokens ?? 0).toLocaleString()} out`
+                                        : 'tokens —'}
+                                    </span>
+                                    {message.evidenceCount > 0 && (
+                                      <span className="rounded-[3px] border border-accent-line bg-accent-soft px-1.5 py-0.5 font-mono text-[11px] text-accent">
+                                        {message.evidenceCount} tool{message.evidenceCount === 1 ? '' : 's'}
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </div>
+                              {isAgent && (
+                                <p className="mt-1 text-xs leading-relaxed text-subtle">
+                                  {message.selectionReason || 'Selection reason not recorded for this turn.'}
+                                </p>
+                              )}
+                              <details className="mt-2">
+                                <summary className="cursor-pointer text-xs font-bold text-muted hover:text-text">
+                                  View turn text
+                                </summary>
+                                <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted">
+                                  {message.content}
+                                </p>
+                              </details>
+                            </li>
+                          )
+                        })}
+                      </ol>
+                    )}
+                  </div>
+
+                  <div>
+                    <p className="eyebrow mb-2">Candidates and judge reasons</p>
+                    {inspection.chat.artifacts.length === 0 ? (
+                      <p className="rounded-[3px] border border-dashed border-line p-5 text-sm text-muted">
+                        No candidates have been produced yet.
+                      </p>
+                    ) : (
+                      <div className="space-y-2">
+                        {inspection.chat.artifacts.map((artifact) => (
+                          <details key={artifact.id} className="rounded-[3px] border border-line p-3">
+                            <summary className="flex cursor-pointer flex-wrap items-center gap-2">
+                              <span className="font-mono text-sm text-text">
+                                {artifact.score != null ? artifact.score.toFixed(1) : '—'}
+                              </span>
+                              <span className="text-sm text-text">{artifact.angle || artifact.title}</span>
+                              {artifact.selected && (
+                                <span className="rounded-[3px] border border-accent-line bg-accent-soft px-1.5 py-0.5 font-mono text-[11px] uppercase tracking-[0.08em] text-accent">
+                                  selected
+                                </span>
+                              )}
+                              <span className="ml-auto font-mono text-xs text-subtle">
+                                round {artifact.round}
+                                {artifact.model ? ` · ${artifact.model}` : ''}
+                              </span>
+                            </summary>
+                            <p className="mt-1 text-xs text-muted">{artifact.title}</p>
+                            {artifact.breakdown && artifact.breakdown.length > 0 ? (
+                              <ul className="mt-3 space-y-2 border-t border-line pt-3">
+                                {artifact.breakdown.map((criterion) => (
+                                  <li key={criterion.key}>
+                                    <div className="flex items-baseline justify-between gap-3">
+                                      <span className="text-xs font-bold text-text">{criterion.label}</span>
+                                      <span className="font-mono text-xs text-muted">{criterion.score}</span>
+                                    </div>
+                                    <p className="mt-0.5 text-xs leading-relaxed text-subtle">{criterion.reason}</p>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="mt-2 text-xs text-subtle">No judge breakdown recorded.</p>
+                            )}
+                          </details>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-xs leading-relaxed text-subtle">
+                    Token and latency figures cover every provider call in a turn, including tool rounds.
+                    Older runs predate this instrumentation; provider billing is separate.
+                  </p>
+
+                  <div className="flex justify-end border-t border-line pt-4">
+                    <button
+                      onClick={() => setShowInspect(false)}
+                      className="rounded-[3px] bg-accent px-4 py-2 text-sm font-bold text-accent-ink"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              )
+            })()}
+          </div>
+        </div>
+      )}
+
       {/* Evidence Map Modal */}
       {showEvidence && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
@@ -1070,8 +1302,8 @@ export default function ChatPage() {
       {/* Header */}
       <header className={`sticky top-0 z-30 border-b transition-colors duration-300 ${headerBg} backdrop-blur-xl`}>
         <div className="max-w-5xl mx-auto px-6 py-4 text-inherit">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-4">
               <button
                 onClick={() => router.push('/history')}
                 className={`p-2.5 rounded-[3px] transition-all hover:scale-105 active:scale-95 ${sidebarBtn}`}
@@ -1104,7 +1336,7 @@ export default function ChatPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
               <button 
                 onClick={() => setUsernameModalRequested(true)}
                 className={`hidden sm:flex items-center gap-3 px-4 py-2 rounded-[3px] transition-all border group cursor-pointer ${identityBtn}`}
@@ -1114,44 +1346,70 @@ export default function ChatPage() {
               </button>
 
               <div className={`flex items-center p-1 rounded-[3px] border ${actionGroup}`}>
-                {isOwner && (
-                  <button
-                    onClick={() => setShowDeliverable(true)}
-                    className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all cursor-pointer ${settingsBtn} ${'text-muted'}`}
-                    title="The synthesised deliverable for this task"
+                <details className="group relative">
+                  <summary
+                    className={`flex cursor-pointer list-none items-center gap-1 rounded-[3px] px-3 py-2 text-xs font-bold transition-all ${'text-muted hover:bg-surface-2 hover:text-text'} [&::-webkit-details-marker]:hidden`}
+                    aria-label="Run tools"
                   >
-                    Deliverable{artifacts.length > 0 ? ` (${artifacts.length})` : ''}
-                  </button>
-                )}
-
-                {isOwner && (
-                  <button
-                    onClick={compareRun}
-                    className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all cursor-pointer ${settingsBtn} ${'text-muted'}`}
-                    title="Compare this council's deliverable with a single-model answer, blind-judged on the same rubric"
-                  >
-                    Compare
-                  </button>
-                )}
-
-                {isOwner && (
-                  <button
-                    onClick={openEvidence}
-                    className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all cursor-pointer ${settingsBtn} ${'text-muted'}`}
-                    title="Check the deliverable's claims against the tool calls recorded during this run"
-                  >
-                    Evidence
-                  </button>
-                )}
-
-                <a
-                  href={`/api/chats/${chat.id}/export`}
-                  download
-                  className={`px-3 py-2 rounded-[3px] text-xs font-bold transition-all ${'text-muted hover:text-text hover:bg-surface-3'}`}
-                  title="Download this run as Markdown — brief, verdict, rubric and rejected candidates"
-                >
-                  Export
-                </a>
+                    Run
+                    <span aria-hidden="true" className="text-[10px]">▾</span>
+                  </summary>
+                  <div className="absolute right-0 z-50 mt-1 w-44 rounded-[4px] border border-line bg-surface p-1 shadow-xl">
+                    {isOwner && (
+                      <button
+                        onClick={(event) => {
+                          event.currentTarget.closest('details')?.removeAttribute('open')
+                          setShowDeliverable(true)
+                        }}
+                        className="block w-full rounded-[3px] px-3 py-2 text-left text-sm text-text hover:bg-surface-2"
+                      >
+                        Deliverable{artifacts.length > 0 ? ` (${artifacts.length})` : ''}
+                      </button>
+                    )}
+                    {isOwner && (
+                      <button
+                        onClick={(event) => {
+                          event.currentTarget.closest('details')?.removeAttribute('open')
+                          compareRun()
+                        }}
+                        className="block w-full rounded-[3px] px-3 py-2 text-left text-sm text-text hover:bg-surface-2"
+                      >
+                        Compare with one model
+                      </button>
+                    )}
+                    {isOwner && (
+                      <button
+                        onClick={(event) => {
+                          event.currentTarget.closest('details')?.removeAttribute('open')
+                          openEvidence()
+                        }}
+                        className="block w-full rounded-[3px] px-3 py-2 text-left text-sm text-text hover:bg-surface-2"
+                      >
+                        Evidence map
+                      </button>
+                    )}
+                    {isOwner && (
+                      <button
+                        onClick={(event) => {
+                          event.currentTarget.closest('details')?.removeAttribute('open')
+                          openInspect()
+                        }}
+                        className="block w-full rounded-[3px] px-3 py-2 text-left text-sm text-text hover:bg-surface-2"
+                      >
+                        Inspect run
+                      </button>
+                    )}
+                    <a
+                      href={`/api/chats/${chat.id}/export`}
+                      download
+                      onClick={(event) => event.currentTarget.closest('details')?.removeAttribute('open')}
+                      className="block rounded-[3px] px-3 py-2 text-sm text-text hover:bg-surface-2"
+                      title="Download this run as Markdown — brief, verdict, rubric and rejected candidates"
+                    >
+                      Export record
+                    </a>
+                  </div>
+                </details>
 
                 {isOwner && (
                   <button

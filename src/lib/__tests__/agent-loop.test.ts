@@ -85,6 +85,35 @@ describe('runWithTools', () => {
     expect(secondCall.map((m) => m.role)).toEqual(['user', 'assistant', 'tool'])
   })
 
+  it('sums usage across every provider call in the turn', async () => {
+    const tool = makeTool('echo', async () => ({ ok: true, content: 'ok' }))
+    const complete = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ...toolCallResponse('echo', {}),
+        usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+      })
+      .mockResolvedValueOnce({
+        content: 'final answer',
+        usage: { promptTokens: 20, completionTokens: 5, totalTokens: 25 },
+      })
+
+    const result = await runWithTools({
+      apiKey: 'k',
+      provider: 'custom',
+      model: 'm',
+      messages: [{ role: 'user', content: 'hi' }],
+      tools: [tool],
+      complete,
+    })
+
+    expect(result.usage).toEqual({
+      promptTokens: 30,
+      completionTokens: 7,
+      totalTokens: 37,
+    })
+  })
+
   it('reports an unknown tool back to the model instead of throwing', async () => {
     const complete = vi
       .fn()

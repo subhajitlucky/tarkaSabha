@@ -25,6 +25,12 @@ export interface ToolLoopResult {
   invocations: ToolInvocation[]
   /** True when the loop stopped because it hit MAX_TOOL_ITERATIONS. */
   hitIterationLimit: boolean
+  /** Summed across every provider call in the turn, when the provider reports it. */
+  usage?: {
+    promptTokens: number
+    completionTokens: number
+    totalTokens: number
+  }
 }
 
 function preview(text: string): string {
@@ -88,10 +94,29 @@ export async function runWithTools(params: {
 
   let response = await complete(conversation)
   let rounds = 0
+  let promptTokens = 0
+  let completionTokens = 0
+  let totalTokens = 0
+  let sawUsage = false
+
+  const addUsage = (usage: LLMResponse['usage']) => {
+    if (!usage) return
+    sawUsage = true
+    promptTokens += usage.promptTokens
+    completionTokens += usage.completionTokens
+    totalTokens += usage.totalTokens
+  }
+
+  addUsage(response.usage)
 
   while (response.toolCalls && response.toolCalls.length > 0) {
     if (rounds >= maxRounds) {
-      return { response, invocations, hitIterationLimit: true }
+      return {
+        response,
+        invocations,
+        hitIterationLimit: true,
+        usage: sawUsage ? { promptTokens, completionTokens, totalTokens } : undefined,
+      }
     }
     rounds++
 
@@ -139,7 +164,13 @@ export async function runWithTools(params: {
     }
 
     response = await complete(conversation)
+    addUsage(response.usage)
   }
 
-  return { response, invocations, hitIterationLimit: false }
+  return {
+    response,
+    invocations,
+    hitIterationLimit: false,
+    usage: sawUsage ? { promptTokens, completionTokens, totalTokens } : undefined,
+  }
 }

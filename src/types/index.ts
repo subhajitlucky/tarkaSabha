@@ -68,6 +68,10 @@ export interface Message {
   personaId?: string | null
   personaName?: string | null
   evidence?: EvidenceEntry[] | null
+  selectionReason?: string | null
+  inputTokens?: number | null
+  outputTokens?: number | null
+  latencyMs?: number | null
   chatId: string
   createdAt: Date
 }
