@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useSyncExternalStore, ReactNode } from 'react'
 
 type Theme = 'dark' | 'light'
 
@@ -11,24 +11,36 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'dark'
-    const saved = localStorage.getItem('theme') as Theme | null
-    if (saved === 'light' || saved === 'dark') return saved
-    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
-  })
+const THEME_EVENT = 'tarka-theme-change'
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('light', theme === 'light')
-    localStorage.setItem('theme', theme)
-  }, [theme])
+function subscribe(onChange: () => void) {
+  window.addEventListener('storage', onChange)
+  window.addEventListener(THEME_EVENT, onChange)
+  return () => {
+    window.removeEventListener('storage', onChange)
+    window.removeEventListener(THEME_EVENT, onChange)
+  }
+}
+
+function getSnapshot(): Theme {
+  const saved = localStorage.getItem('theme')
+  if (saved === 'light' || saved === 'dark') return saved
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+}
+
+/** The server cannot know the saved theme; the inline script paints it first. */
+function getServerSnapshot(): Theme {
+  return 'dark'
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark'
-    setTheme(newTheme)
-    localStorage.setItem('theme', newTheme)
-    document.documentElement.classList.toggle('light', newTheme === 'light')
+    const next: Theme = theme === 'dark' ? 'light' : 'dark'
+    localStorage.setItem('theme', next)
+    document.documentElement.classList.toggle('light', next === 'light')
+    window.dispatchEvent(new Event(THEME_EVENT))
   }
 
   return (
