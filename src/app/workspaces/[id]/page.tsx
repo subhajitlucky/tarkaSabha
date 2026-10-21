@@ -10,7 +10,13 @@ import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { DecisionStatusBadge, ImpactBadge, RoleBadge } from '@/components/workspaces/badges'
 import { formatDate } from '@/components/workspaces/format'
-import { DECISION_IMPACTS, canEditDecisions } from '@/lib/workspace-roles'
+import { MemberRow, WorkspaceMember } from '@/components/workspaces/MemberRow'
+import {
+  DECISION_IMPACTS,
+  WORKSPACE_ROLES,
+  canEditDecisions,
+  canManageWorkspace,
+} from '@/lib/workspace-roles'
 import { DecisionSummary, WorkspaceDetail } from '@/types'
 
 export default function WorkspacePage() {
@@ -27,6 +33,11 @@ export default function WorkspacePage() {
   const [impact, setImpact] = useState('MEDIUM')
   const [creating, setCreating] = useState(false)
   const [formError, setFormError] = useState('')
+
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState('REVIEWER')
+  const [inviting, setInviting] = useState(false)
+  const [memberError, setMemberError] = useState('')
 
   const loading = authLoading || (isAuthenticated && !loaded)
 
@@ -70,6 +81,65 @@ export default function WorkspacePage() {
       cancelled = true
     }
   }, [authLoading, id, isAuthenticated])
+
+  const handleInviteMember = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!workspace) return
+
+    setInviting(true)
+    setMemberError('')
+
+    try {
+      const res = await fetch(`/api/workspaces/${workspace.id}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setMemberError(data?.error || 'Could not add the member.')
+        return
+      }
+
+      const created = data as WorkspaceMember
+      setWorkspace((current) =>
+        current
+          ? { ...current, memberships: [...current.memberships, created] }
+          : current
+      )
+      setInviteEmail('')
+    } catch (error) {
+      console.error('Failed to invite member', error)
+      setMemberError('Could not add the member.')
+    } finally {
+      setInviting(false)
+    }
+  }
+
+  const handleMemberUpdated = (member: WorkspaceMember) => {
+    setWorkspace((current) =>
+      current
+        ? {
+            ...current,
+            memberships: current.memberships.map((item) =>
+              item.id === member.id ? { ...item, role: member.role } : item
+            ),
+          }
+        : current
+    )
+  }
+
+  const handleMemberRemoved = (memberId: string) => {
+    setWorkspace((current) =>
+      current
+        ? {
+            ...current,
+            memberships: current.memberships.filter((item) => item.id !== memberId),
+          }
+        : current
+    )
+  }
 
   const handleCreateDecision = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -166,6 +236,12 @@ export default function WorkspacePage() {
   }
 
   const canEdit = canEditDecisions(workspace.role)
+  const canManage = canManageWorkspace(workspace.role)
+  const canManageOwners = workspace.role === 'OWNER'
+  const ownerCount = workspace.memberships.filter((member) => member.role === 'OWNER').length
+  const assignableRoles = canManageOwners
+    ? WORKSPACE_ROLES
+    : WORKSPACE_ROLES.filter((role) => role !== 'OWNER')
   const decisionCount = workspace.decisions.length
   const evidenceCount = workspace.decisions.reduce(
     (total, decision) => total + (decision._count?.evidence ?? 0),
@@ -256,7 +332,8 @@ export default function WorkspacePage() {
                     <p className="mt-auto pt-4 font-mono text-xs uppercase tracking-[0.1em] text-subtle">
                       {decision._count?.evidence ?? 0} evidence items
                       <span className="mx-1.5">·</span>
-                      {decision._count?.approvals ?? 0} approvals
+                      {decision._count?.approvals ?? 0}{' '}
+                      {(decision._count?.approvals ?? 0) === 1 ? 'approval' : 'approvals'}
                       <span className="mx-1.5">·</span>
                       Owner {decision.owner?.name || 'unassigned'}
                     </p>
@@ -332,23 +409,71 @@ export default function WorkspacePage() {
             </Card>
           )}
 
-          <Card className="space-y-3">
-            <p className="eyebrow">Members</p>
-            <ul className="space-y-3">
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <p className="eyebrow">Members</p>
+              <span className="font-mono text-xs text-subtle">{memberCount}</span>
+            </div>
+
+            {canManage && (
+              <form
+                onSubmit={handleInviteMember}
+                className="space-y-2 border-b border-line pb-4"
+              >
+                <Input
+                  type="email"
+                  aria-label="Member email"
+                  value={inviteEmail}
+                  onChange={(event) => setInviteEmail(event.target.value)}
+                  placeholder="reviewer@firm.com"
+                  maxLength={254}
+                  required
+                />
+                <div className="flex gap-2">
+                  <Select
+                    aria-label="Member role"
+                    value={inviteRole}
+                    onChange={(event) => setInviteRole(event.target.value)}
+                    className="min-w-0 flex-1"
+                  >
+                    {assignableRoles.map((role) => (
+                      <option key={role} value={role}>
+                        {role}
+                      </option>
+                    ))}
+                  </Select>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    variant="secondary"
+                    disabled={inviting || inviteEmail.trim().length === 0}
+                  >
+                    {inviting ? 'Adding…' : 'Invite'}
+                  </Button>
+                </div>
+                <p className="text-xs text-subtle">
+                  They need a Tarka account before you can add them.
+                </p>
+                {memberError && (
+                  <p role="alert" className="text-xs text-danger">
+                    {memberError}
+                  </p>
+                )}
+              </form>
+            )}
+
+            <ul className="space-y-4">
               {workspace.memberships.map((membership) => (
-                <li key={membership.id} className="flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm text-text">
-                      {membership.user.name || membership.user.email || 'Unnamed member'}
-                    </p>
-                    {membership.user.name && membership.user.email && (
-                      <p className="truncate font-mono text-xs text-subtle">
-                        {membership.user.email}
-                      </p>
-                    )}
-                  </div>
-                  <RoleBadge role={membership.role} />
-                </li>
+                <MemberRow
+                  key={membership.id}
+                  workspaceId={workspace.id}
+                  membership={membership}
+                  canManage={canManage}
+                  canManageOwners={canManageOwners}
+                  isLastOwner={membership.role === 'OWNER' && ownerCount <= 1}
+                  onUpdated={handleMemberUpdated}
+                  onRemoved={handleMemberRemoved}
+                />
               ))}
             </ul>
           </Card>

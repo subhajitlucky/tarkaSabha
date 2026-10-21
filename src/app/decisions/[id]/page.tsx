@@ -22,9 +22,10 @@ import {
   DECISION_STATUSES,
   EVIDENCE_KINDS,
   EVIDENCE_STATUSES,
+  MAX_APPROVAL_NOTE,
   canEditDecisions,
 } from '@/lib/workspace-roles'
-import { Chat, DecisionDetail, EvidenceRecord } from '@/types'
+import { ApprovalRecord, Chat, DecisionDetail, EvidenceRecord, ReportRecord } from '@/types'
 
 function ApprovalBadge({ status }: { status: string }) {
   const tone = status === 'APPROVED' ? 'success' : status === 'REJECTED' ? 'danger' : 'neutral'
@@ -48,6 +49,13 @@ export default function DecisionPage() {
   const [selectedRoom, setSelectedRoom] = useState('')
   const [attachingRoom, setAttachingRoom] = useState(false)
   const [roomError, setRoomError] = useState('')
+
+  const [approvalNote, setApprovalNote] = useState('')
+  const [recordingApproval, setRecordingApproval] = useState<string | null>(null)
+  const [approvalError, setApprovalError] = useState('')
+
+  const [generatingReport, setGeneratingReport] = useState(false)
+  const [reportError, setReportError] = useState('')
 
   const [kind, setKind] = useState('CODE')
   const [source, setSource] = useState('')
@@ -223,6 +231,65 @@ export default function DecisionPage() {
       setRoomError('Could not update the review room.')
     } finally {
       setAttachingRoom(false)
+    }
+  }
+
+  const recordApproval = async (status: 'APPROVED' | 'REJECTED') => {
+    if (!decision) return
+    setRecordingApproval(status)
+    setApprovalError('')
+
+    try {
+      const res = await fetch(`/api/decisions/${decision.id}/approvals`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, note: approvalNote }),
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setApprovalError(data?.error || 'Could not record the approval.')
+        return
+      }
+
+      const created = data as ApprovalRecord
+      setDecision((current) =>
+        current ? { ...current, approvals: [created, ...current.approvals] } : current
+      )
+      setApprovalNote('')
+    } catch (error) {
+      console.error('Failed to record approval', error)
+      setApprovalError('Could not record the approval.')
+    } finally {
+      setRecordingApproval(null)
+    }
+  }
+
+  const generateReport = async () => {
+    if (!decision) return
+    setGeneratingReport(true)
+    setReportError('')
+
+    try {
+      const res = await fetch(`/api/decisions/${decision.id}/reports`, {
+        method: 'POST',
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setReportError(data?.error || 'Could not generate the report.')
+        return
+      }
+
+      const created = data as ReportRecord
+      setDecision((current) =>
+        current ? { ...current, reports: [created, ...current.reports] } : current
+      )
+    } catch (error) {
+      console.error('Failed to generate report', error)
+      setReportError('Could not generate the report.')
+    } finally {
+      setGeneratingReport(false)
     }
   }
 
@@ -605,6 +672,48 @@ export default function DecisionPage() {
 
           <Card className="space-y-3">
             <p className="eyebrow">Approvals</p>
+
+            {canEdit && (
+              <div className="space-y-2 border-b border-line pb-3">
+                <Textarea
+                  aria-label="Approval note"
+                  value={approvalNote}
+                  onChange={(event) => setApprovalNote(event.target.value)}
+                  placeholder="Why are you approving or rejecting this decision?"
+                  rows={2}
+                  maxLength={MAX_APPROVAL_NOTE}
+                />
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="primary"
+                    onClick={() => recordApproval('APPROVED')}
+                    disabled={recordingApproval !== null}
+                  >
+                    {recordingApproval === 'APPROVED' ? 'Approving…' : 'Approve'}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="danger"
+                    onClick={() => recordApproval('REJECTED')}
+                    disabled={recordingApproval !== null}
+                  >
+                    {recordingApproval === 'REJECTED' ? 'Rejecting…' : 'Reject'}
+                  </Button>
+                </div>
+                <p className="text-xs text-subtle">
+                  Records your role and a SHA-256 hash of the decision and evidence snapshot.
+                </p>
+                {approvalError && (
+                  <p role="alert" className="text-xs text-danger">
+                    {approvalError}
+                  </p>
+                )}
+              </div>
+            )}
+
             {decision.approvals.length === 0 ? (
               <p className="text-sm leading-relaxed text-muted">No approvals recorded yet.</p>
             ) : (
@@ -620,10 +729,18 @@ export default function DecisionPage() {
                     <p className="font-mono text-xs uppercase tracking-[0.1em] text-subtle">
                       {approval.role}
                       <span className="mx-1.5">·</span>
-                      {formatDate(approval.createdAt)}
+                      {formatDate(approval.decidedAt || approval.createdAt)}
                     </p>
                     {approval.note && (
                       <p className="text-sm leading-relaxed text-muted">{approval.note}</p>
+                    )}
+                    {approval.contentHash && (
+                      <p
+                        className="break-all font-mono text-[0.65rem] text-subtle"
+                        title={approval.contentHash}
+                      >
+                        hash {approval.contentHash.slice(0, 16)}…
+                      </p>
                     )}
                   </li>
                 ))}
@@ -632,22 +749,67 @@ export default function DecisionPage() {
           </Card>
 
           <Card className="space-y-3">
-            <p className="eyebrow">Reports</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="eyebrow">Reports</p>
+              <span className="font-mono text-xs text-subtle">{decision.reports.length}</span>
+            </div>
+
+            {canEdit && (
+              <div className="space-y-2 border-b border-line pb-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  onClick={generateReport}
+                  disabled={generatingReport || decision.evidence.length === 0}
+                >
+                  {generatingReport ? 'Generating…' : 'Generate evidence report'}
+                </Button>
+                {decision.evidence.length === 0 && (
+                  <p className="text-xs text-subtle">
+                    Add at least one evidence item before generating a report.
+                  </p>
+                )}
+                {reportError && (
+                  <p role="alert" className="text-xs text-danger">
+                    {reportError}
+                  </p>
+                )}
+              </div>
+            )}
+
             {decision.reports.length === 0 ? (
               <p className="text-sm leading-relaxed text-muted">No report generated yet.</p>
             ) : (
-              <ul className="space-y-3">
+              <ul className="space-y-4">
                 {decision.reports.map((report) => (
-                  <li key={report.id} className="flex items-center justify-between gap-3">
-                    <div>
+                  <li key={report.id} className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
                       <p className="text-sm text-text">Version {report.version}</p>
-                      <p className="font-mono text-xs uppercase tracking-[0.1em] text-subtle">
-                        {formatDate(report.createdAt)}
-                      </p>
+                      <Badge tone={report.status === 'PUBLISHED' ? 'success' : 'neutral'}>
+                        {report.status}
+                      </Badge>
                     </div>
-                    <Badge tone={report.status === 'PUBLISHED' ? 'success' : 'neutral'}>
-                      {report.status}
-                    </Badge>
+                    <p className="font-mono text-xs text-subtle">
+                      {formatDate(report.createdAt)}
+                      {report.contentHash && ` · ${report.contentHash.slice(0, 12)}…`}
+                    </p>
+                    <a
+                      href={`/api/reports/${report.id}`}
+                      className="inline-block font-mono text-xs text-accent transition-colors hover:underline"
+                    >
+                      Download .md
+                    </a>
+                    {report.content && (
+                      <details>
+                        <summary className="cursor-pointer font-mono text-xs text-muted">
+                          Preview
+                        </summary>
+                        <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap rounded-[3px] border border-line bg-surface-2 p-3 font-mono text-xs leading-relaxed text-muted">
+                          {report.content}
+                        </pre>
+                      </details>
+                    )}
                   </li>
                 ))}
               </ul>

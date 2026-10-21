@@ -334,6 +334,8 @@ model Approval {
   /// PENDING | APPROVED | REJECTED
   status     String    @default("PENDING")
   note       String?
+  /// SHA-256 of the decision/evidence snapshot this approval covers.
+  contentHash String?
   createdAt  DateTime  @default(now())
   decidedAt  DateTime?
   decision   Decision  @relation(fields: [decisionId], references: [id], onDelete: Cascade)
@@ -350,9 +352,11 @@ model Report {
   /// DRAFT | PUBLISHED
   status      String    @default("DRAFT")
   content     String?
+  /// SHA-256 of the generated report content.
+  contentHash String?
   createdAt   DateTime  @default(now())
   publishedAt DateTime?
   decision    Decision  @relation(fields: [decisionId], references: [id], onDelete: Cascade)
 
-  @@index([decisionId, version])
+  @@unique([decisionId, version])
 }

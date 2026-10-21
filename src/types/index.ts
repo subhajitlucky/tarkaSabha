@@ -193,6 +193,7 @@ export interface ApprovalRecord {
   role: string
   status: string
   note?: string | null
+  contentHash?: string | null
   createdAt: string
   decidedAt?: string | null
   actor?: { name: string | null; email: string | null } | null
@@ -202,6 +203,8 @@ export interface ReportRecord {
   id: string
   version: number
   status: string
+  content?: string | null
+  contentHash?: string | null
   createdAt: string
   publishedAt?: string | null
 }

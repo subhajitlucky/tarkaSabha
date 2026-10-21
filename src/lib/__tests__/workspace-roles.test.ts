@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import {
+  approvalRoleForWorkspaceRole,
   canEditDecisions,
   canManageWorkspace,
   cleanText,
+  isApprovalStatus,
   isConfidence,
   isDecisionImpact,
   isDecisionStatus,
+  isEmail,
   isEvidenceKind,
   isEvidenceStatus,
   isWorkspaceRole,
@@ -65,6 +68,26 @@ describe('decision and evidence validators', () => {
     expect(isConfidence('HIGH')).toBe(true)
     expect(isConfidence('LOW')).toBe(true)
     expect(isConfidence('CERTAIN')).toBe(false)
+  })
+
+  it('validates approval states and maps workspace roles onto approval roles', () => {
+    expect(isApprovalStatus('PENDING')).toBe(true)
+    expect(isApprovalStatus('APPROVED')).toBe(true)
+    expect(isApprovalStatus('REJECTED')).toBe(true)
+    expect(isApprovalStatus('SIGNED')).toBe(false)
+
+    expect(approvalRoleForWorkspaceRole('OWNER')).toBe('OWNER')
+    expect(approvalRoleForWorkspaceRole('ADMIN')).toBe('APPROVER')
+    expect(approvalRoleForWorkspaceRole('REVIEWER')).toBe('REVIEWER')
+    expect(approvalRoleForWorkspaceRole('VIEWER')).toBe('REVIEWER')
+  })
+
+  it('validates invite email addresses', () => {
+    expect(isEmail('reviewer@firm.com')).toBe(true)
+    expect(isEmail('  reviewer@firm.com  ')).toBe(true)
+    expect(isEmail('not-an-email')).toBe(false)
+    expect(isEmail('a@b')).toBe(false)
+    expect(isEmail(null)).toBe(false)
   })
 })
 
