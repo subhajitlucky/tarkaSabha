@@ -89,6 +89,22 @@ function unresolved(evidence: DossierEvidence[]): DossierEvidence[] {
   )
 }
 
+/** Hide source coordinates while keeping the argument and quote. */
+export function redactDossierContent(content: string): string {
+  return content
+    .split('\n')
+    .map((line) => {
+      if (/^\s+- (Source|Commit|SHA-256|Code scope):/.test(line)) {
+        return line.replace(/`[^`]*`/, '`[redacted]`')
+      }
+      if (/^- \*\*[^*]+\*\* @ .* — /.test(line)) {
+        return line.replace(/^- \*\*[^*]+\*\* @ .* — /, '- **[redacted source]** — ')
+      }
+      return line
+    })
+    .join('\n')
+}
+
 export function buildWorkspaceDossier({
   workspace,
   decisions,

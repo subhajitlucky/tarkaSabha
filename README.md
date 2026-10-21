@@ -74,7 +74,7 @@ A workspace can generate a versioned, deal-level dossier that includes:
 - an evidence appendix and source inventory
 - method/limitations and integrity metadata
 
-Each dossier is stored with a SHA-256 content hash and can be viewed in the app or downloaded as Markdown.
+Each dossier is stored with a SHA-256 content hash and can be viewed in the app or downloaded as Markdown. Dossiers can also be shared with an expiring, revocable link, optionally with source paths, commits, hashes, and code scopes redacted.
 
 - Live: https://tarkasabha.vercel.app
 - Sample council: https://tarkasabha.vercel.app/demo
@@ -95,6 +95,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Testable decision pins with separating tests and supersession triggers.
 - Evidence linked to immutable source snapshots with locked path, commit, and hash.
 - Versioned deal-level Decision Diligence Dossiers with evidence appendices.
+- Expiring, revocable dossier share links with optional source redaction.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

@@ -9,7 +9,9 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { MarkdownDocument } from '@/components/reports/MarkdownDocument'
+import { DossierShareControl } from '@/components/workspaces/DossierShareControl'
 import { formatDate } from '@/components/workspaces/format'
+import { canEditDecisions } from '@/lib/workspace-roles'
 import { WorkspaceDossierDetail } from '@/types'
 
 export default function DossierPage() {
@@ -114,6 +116,8 @@ export default function DossierPage() {
     )
   }
 
+  const canEdit = canEditDecisions(dossier.role)
+
   return (
     <div className="mx-auto max-w-5xl px-5 py-14">
       <div className="mb-6">
@@ -146,6 +150,12 @@ export default function DossierPage() {
         </Badge>
         <Badge tone="outline">SHA-256 {dossier.contentHash.slice(0, 16)}…</Badge>
       </div>
+
+      {canEdit && (
+        <Card className="mb-6 p-4">
+          <DossierShareControl dossierId={dossier.id} />
+        </Card>
+      )}
 
       <Card className="p-6 sm:p-9">
         <MarkdownDocument content={dossier.content} />

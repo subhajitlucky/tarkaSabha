@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildWorkspaceDossier } from '../workspace-dossier'
+import { buildWorkspaceDossier, redactDossierContent } from '../workspace-dossier'
 
 const workspace = {
   name: 'Project Kestrel',
@@ -127,6 +127,24 @@ describe('buildWorkspaceDossier', () => {
     }
 
     expect(buildWorkspaceDossier(input)).toBe(buildWorkspaceDossier(input))
+  })
+
+  it('redacts source coordinates while keeping quotes', () => {
+    const dossier = buildWorkspaceDossier({
+      workspace,
+      decisions,
+      sources,
+      generatedAt: new Date('2026-10-22T09:00:00.000Z'),
+    })
+    const redacted = redactDossierContent(dossier)
+
+    expect(redacted).toContain('Source: `[redacted]`')
+    expect(redacted).toContain('Commit: `[redacted]`')
+    expect(redacted).toContain('SHA-256: `[redacted]`')
+    expect(redacted).toContain('- **[redacted source]** — 3 files')
+    expect(redacted).toContain('Sessions are validated on every request.')
+    expect(redacted).not.toContain('src/middleware.ts')
+    expect(redacted).not.toContain('acme/kestrel')
   })
 
   it('handles an empty workspace without throwing', () => {

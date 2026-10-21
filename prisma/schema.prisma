@@ -58,6 +58,7 @@ model User {
   decisionCandidates DecisionCandidate[]
   decisionPins    DecisionPin[]
   dossiers        WorkspaceDossier[]
+  dossierShares   DossierShare[]
 }
 
 model Feedback {
@@ -286,9 +287,30 @@ model WorkspaceDossier {
   publishedAt DateTime?
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdBy   User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  shares      DossierShare[]
 
   @@unique([workspaceId, version])
   @@index([workspaceId, createdAt])
+}
+
+/// A hashed, expiring public link to a dossier version. Only the token hash is
+/// stored; the raw link is returned once at creation.
+model DossierShare {
+  id            String    @id @default(cuid())
+  dossierId     String
+  createdById   String
+  tokenHash     String    @unique
+  expiresAt     DateTime
+  redactSources Boolean   @default(false)
+  viewCount     Int       @default(0)
+  lastViewedAt  DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  dossier       WorkspaceDossier @relation(fields: [dossierId], references: [id], onDelete: Cascade)
+  createdBy     User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([dossierId])
+  @@index([expiresAt])
 }
 
 /// A one-time, expiring invitation to join a workspace. Only the token hash is
