@@ -1,8 +1,29 @@
 # Tarka Sabha
 
-Tarka Sabha is a multi-agent AI debate platform. Users create personas, configure model providers, start topic-based conversations, and let autonomous agents respond through an inspectable debate workflow.
+Tarka Sabha is a decision evidence workspace for technical diligence. Teams frame a decision, attach source-backed evidence, record approvals, generate an evidence report, and share an expiring, redacted link with a buyer or reviewer.
 
-The project focuses on orchestration rather than a single chatbot prompt: provider configuration, encrypted credentials, persona state, conversation history, rate limiting, and speaker selection are modeled as separate parts of the system.
+The original multi-agent council is still here as an optional **review room** inside the record. The primary product object is the decision, not the chat.
+
+## Decision Workspace
+
+- **Workspaces** scope decisions, evidence, members, sources, and reports.
+- **Roles** are `OWNER`, `ADMIN`, `REVIEWER`, and `VIEWER`; owners and admins manage members and invite links.
+- **Decisions** carry a state, impact, owner, evidence, approvals, and a generated report.
+- **Evidence** records a source path, commit, quote, hash, status, and confidence.
+- **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
+- **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
+- **Sources** ingest a public GitHub repository and snapshot files, commits, pull requests, and issues with hashes.
+
+## GitHub Ingestion
+
+A workspace reviewer can ingest a public GitHub repository from the workspace Sources section. The server stores a `WorkspaceSource` run plus immutable `SourceSnapshot` rows for:
+
+- selected text files (README/docs, source, config), capped by count and size
+- recent commits
+- recent pull requests
+- recent issues
+
+Each file snapshot stores its path, content, Git blob SHA, SHA-256 content hash, size, and retrieval time. Set `GITHUB_TOKEN` to raise the GitHub API rate limit; public unauthenticated ingestion also works within GitHub's limit.
 
 - Live: https://tarkasabha.vercel.app
 - Sample council: https://tarkasabha.vercel.app/demo
@@ -15,6 +36,9 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 
 ## Core Features
 
+- Decision workspaces with roles, membership, and one-time invite links.
+- Decisions, evidence records, approvals, generated reports, and expiring/revocable share links.
+- Public GitHub repository ingestion with source snapshots and hashes.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.
@@ -44,7 +68,11 @@ Orchestrator
   Selects the next speaker, handles mentions, and builds persona-aware context
 
 Persistence
-  PostgreSQL + Prisma models for users, providers, personas, chats, messages, and rate limits
+  PostgreSQL + Prisma models for users, workspaces, decisions, evidence, approvals,
+  reports, source snapshots, providers, personas, chats, messages, and rate limits
+
+Ingestion
+  GitHub repo/tree/raw-content API -> immutable source snapshots with hashes
 
 Protection layer
   Timeouts, response length limits, content sanitization, loop detection, and circuit state
@@ -54,7 +82,16 @@ Protection layer
 
 Key Prisma models:
 
-- `User`: owns sessions, chats, providers, personas, and feedback.
+- `Workspace`: scopes decisions, members, source runs, invites, and reports.
+- `Membership`: workspace role (`OWNER`, `ADMIN`, `REVIEWER`, `VIEWER`).
+- `Decision`: title, context, state, impact, owner, and optional review room.
+- `Evidence`: source path, commit, quote, hash, status, and confidence.
+- `Approval`: approval event with role, note, status, and snapshot hash.
+- `Report`: versioned Markdown evidence report and content hash.
+- `ReportShare`: hashed, expiring, revocable public report link.
+- `WorkspaceSource`: a GitHub ingestion run for a workspace.
+- `SourceSnapshot`: immutable file/commit/PR/issue snapshot with hash and metadata.
+- `User`: owns sessions, workspaces, chats, providers, personas, and feedback.
 - `Provider`: stores provider type, API URL, encrypted API key, model, and temperature.
 - `Persona`: stores debate identity and optional provider/model overrides.
 - `Chat`: stores title, topic, auto-mode state, last speaker, and participants.
@@ -238,6 +275,9 @@ CRON_SECRET="generate_a_strong_random_secret"
 # Optional: reliable web search for agents. Add one of these.
 # TAVILY_API_KEY="tvly-..."
 # BRAVE_API_KEY="..."
+
+# Optional: raise the GitHub API rate limit for repository ingestion.
+# GITHUB_TOKEN="github_pat_..."
 ```
 
 Generate a strong encryption key:

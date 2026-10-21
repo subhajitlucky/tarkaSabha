@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
@@ -17,7 +18,7 @@ import {
   canEditDecisions,
   canManageWorkspace,
 } from '@/lib/workspace-roles'
-import { DecisionSummary, WorkspaceDetail } from '@/types'
+import { DecisionSummary, WorkspaceDetail, WorkspaceSourceSummary } from '@/types'
 
 export default function WorkspacePage() {
   const { id } = useParams<{ id: string }>()
@@ -42,6 +43,11 @@ export default function WorkspacePage() {
   const [creatingInviteLink, setCreatingInviteLink] = useState(false)
   const [inviteLinkError, setInviteLinkError] = useState('')
   const [copiedInviteLink, setCopiedInviteLink] = useState(false)
+
+  const [sourceUrl, setSourceUrl] = useState('')
+  const [sourceRef, setSourceRef] = useState('')
+  const [ingestingSource, setIngestingSource] = useState(false)
+  const [sourceError, setSourceError] = useState('')
 
   const loading = authLoading || (isAuthenticated && !loaded)
 
@@ -184,6 +190,41 @@ export default function WorkspacePage() {
     )
   }
 
+  const ingestSource = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!workspace) return
+
+    setIngestingSource(true)
+    setSourceError('')
+
+    try {
+      const res = await fetch(`/api/workspaces/${workspace.id}/sources`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: sourceUrl, ref: sourceRef }),
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setSourceError(data?.error || 'Could not ingest the repository.')
+        return
+      }
+
+      setWorkspace((current) =>
+        current
+          ? { ...current, sources: [data as WorkspaceSourceSummary, ...current.sources] }
+          : current
+      )
+      setSourceUrl('')
+      setSourceRef('')
+    } catch (error) {
+      console.error('Failed to ingest source', error)
+      setSourceError('Could not ingest the repository.')
+    } finally {
+      setIngestingSource(false)
+    }
+  }
+
   const handleCreateDecision = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!workspace) return
@@ -291,6 +332,7 @@ export default function WorkspacePage() {
     0
   )
   const memberCount = workspace.memberships.length
+  const sourceCount = workspace.sources.length
 
   return (
     <div className="mx-auto max-w-6xl px-5 py-14">
@@ -310,10 +352,11 @@ export default function WorkspacePage() {
         actions={<RoleBadge role={workspace.role} />}
       />
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-3">
+      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { label: 'Decisions', value: decisionCount },
           { label: 'Evidence items', value: evidenceCount },
+          { label: 'Sources', value: sourceCount },
           { label: 'Members', value: memberCount },
         ].map((stat) => (
           <Card key={stat.label} className="py-4">
@@ -324,6 +367,111 @@ export default function WorkspacePage() {
           </Card>
         ))}
       </div>
+
+      <section aria-labelledby="sources-heading" className="mb-8">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2
+            id="sources-heading"
+            className="font-mono text-xs uppercase tracking-[0.14em] text-subtle"
+          >
+            Sources
+          </h2>
+          <span className="font-mono text-xs text-subtle">{sourceCount}</span>
+        </div>
+
+        {canEdit && (
+          <form
+            onSubmit={ingestSource}
+            className="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
+          >
+            <Input
+              aria-label="GitHub repository URL"
+              value={sourceUrl}
+              onChange={(event) => setSourceUrl(event.target.value)}
+              placeholder="https://github.com/owner/repo"
+              required
+            />
+            <Input
+              aria-label="Branch or ref"
+              value={sourceRef}
+              onChange={(event) => setSourceRef(event.target.value)}
+              placeholder="Default branch"
+              maxLength={200}
+            />
+            <Button
+              type="submit"
+              size="sm"
+              variant="secondary"
+              disabled={ingestingSource || sourceUrl.trim().length === 0}
+            >
+              {ingestingSource ? 'Ingesting…' : 'Ingest repo'}
+            </Button>
+          </form>
+        )}
+
+        {sourceError && (
+          <p role="alert" className="mb-3 text-xs text-danger">
+            {sourceError}
+          </p>
+        )}
+
+        {workspace.sources.length === 0 ? (
+          <EmptyState
+            title="No sources ingested"
+            description={
+              canEdit
+                ? 'Ingest a public GitHub repository to snapshot its files, commits, pull requests, and issues.'
+                : 'A reviewer or owner will ingest the repository sources.'
+            }
+          />
+        ) : (
+          <ul className="space-y-2">
+            {workspace.sources.map((source) => (
+              <li key={source.id}>
+                <Link
+                  href={`/workspaces/${workspace.id}/sources/${source.id}`}
+                  className="group block rounded-[4px] border border-line bg-surface p-4 transition-colors hover:border-accent-line"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-display text-base text-text transition-colors group-hover:text-accent">
+                      {source.owner}/{source.name}
+                    </p>
+                    <Badge
+                      tone={
+                        source.status === 'READY'
+                          ? 'success'
+                          : source.status === 'FAILED'
+                            ? 'danger'
+                            : 'neutral'
+                      }
+                    >
+                      {source.status}
+                    </Badge>
+                    <span className="ml-auto font-mono text-xs text-subtle">
+                      {formatDate(source.updatedAt)}
+                    </span>
+                  </div>
+                  <p className="mt-1 font-mono text-xs text-subtle">
+                    {source.ref}
+                    {source.commitSha ? ` @ ${source.commitSha.slice(0, 7)}` : ''}
+                    <span className="mx-1.5">·</span>
+                    {source.fileCount} files
+                    <span className="mx-1.5">·</span>
+                    {source.commitCount} commits
+                    <span className="mx-1.5">·</span>
+                    {source.pullRequestCount}{' '}
+                    {source.pullRequestCount === 1 ? 'PR' : 'PRs'}
+                    <span className="mx-1.5">·</span>
+                    {source.issueCount}{' '}
+                    {source.issueCount === 1 ? 'issue' : 'issues'}
+                  </p>
+                  {source.error && <p className="mt-1 text-xs text-danger">{source.error}</p>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <section aria-labelledby="decision-list-heading">

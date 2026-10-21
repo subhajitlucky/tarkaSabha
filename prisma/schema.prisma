@@ -54,6 +54,7 @@ model User {
   reportShares  ReportShare[]
   invitesCreated  WorkspaceInvite[] @relation("InvitesCreated")
   invitesAccepted WorkspaceInvite[] @relation("InvitesAccepted")
+  sources         WorkspaceSource[]
 }
 
 model Feedback {
@@ -258,6 +259,7 @@ model Workspace {
   memberships Membership[]
   decisions   Decision[]
   invites     WorkspaceInvite[]
+  sources     WorkspaceSource[]
 
   @@index([creatorId])
   @@index([updatedAt])
@@ -408,4 +410,52 @@ model ReportShare {
 
   @@index([reportId])
   @@index([expiresAt])
+}
+
+/// A repository ingestion run. Snapshots are immutable; a fresh run creates a
+/// new source record so the evidence can be tied to a point in time.
+model WorkspaceSource {
+  id               String           @id @default(cuid())
+  workspaceId      String
+  createdById      String
+  provider         String           @default("github")
+  repoUrl          String
+  owner            String
+  name             String
+  ref              String
+  commitSha        String?
+  status           String           @default("READY")
+  error            String?
+  fileCount        Int              @default(0)
+  commitCount      Int              @default(0)
+  pullRequestCount Int              @default(0)
+  issueCount       Int              @default(0)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy        User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  snapshots        SourceSnapshot[]
+
+  @@index([workspaceId, updatedAt])
+}
+
+model SourceSnapshot {
+  id          String         @id @default(cuid())
+  sourceId    String
+  /// FILE | COMMIT | PULL_REQUEST | ISSUE
+  kind        String
+  path        String
+  title       String?
+  content     String?
+  url         String
+  sha         String?
+  sha256      String?
+  size        Int?
+  metadata    Json?
+  retrievedAt DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+  source      WorkspaceSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId, kind])
+  @@index([sourceId, path])
 }

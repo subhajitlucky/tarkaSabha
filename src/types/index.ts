@@ -163,6 +163,23 @@ export interface DecisionSummary {
   }
 }
 
+export interface WorkspaceSourceSummary {
+  id: string
+  provider: string
+  repoUrl: string
+  owner: string
+  name: string
+  ref: string
+  commitSha?: string | null
+  status: string
+  error?: string | null
+  fileCount: number
+  commitCount: number
+  pullRequestCount: number
+  issueCount: number
+  updatedAt: string
+}
+
 export interface WorkspaceDetail extends Omit<WorkspaceSummary, '_count'> {
   role: WorkspaceRole
   decisions: DecisionSummary[]
@@ -171,9 +188,30 @@ export interface WorkspaceDetail extends Omit<WorkspaceSummary, '_count'> {
     role: WorkspaceRole | string
     user: { name: string | null; email: string | null }
   }>
+  sources: WorkspaceSourceSummary[]
   _count?: {
     decisions: number
   }
+}
+
+export interface SourceSnapshotRecord {
+  id: string
+  kind: string
+  path: string
+  title?: string | null
+  content?: string | null
+  url: string
+  sha?: string | null
+  sha256?: string | null
+  size?: number | null
+  metadata?: unknown
+  retrievedAt: string
+}
+
+export interface WorkspaceSourceDetail extends WorkspaceSourceSummary {
+  commitSha?: string | null
+  createdAt: string
+  snapshots: SourceSnapshotRecord[]
 }
 
 export interface EvidenceRecord {

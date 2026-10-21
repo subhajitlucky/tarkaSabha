@@ -42,6 +42,25 @@ export async function GET(
             user: { select: { name: true, email: true } },
           },
         },
+        sources: {
+          orderBy: { updatedAt: 'desc' },
+          select: {
+            id: true,
+            provider: true,
+            repoUrl: true,
+            owner: true,
+            name: true,
+            ref: true,
+            commitSha: true,
+            status: true,
+            error: true,
+            fileCount: true,
+            commitCount: true,
+            pullRequestCount: true,
+            issueCount: true,
+            updatedAt: true,
+          },
+        },
         decisions: {
           orderBy: { updatedAt: 'desc' },
           select: {
