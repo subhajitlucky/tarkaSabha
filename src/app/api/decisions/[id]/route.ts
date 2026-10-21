@@ -89,6 +89,25 @@ export async function GET(
             publishedAt: true,
           },
         },
+        pins: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            ownerId: true,
+            decisionPoint: true,
+            chosenValue: true,
+            separatingTest: true,
+            expectedResult: true,
+            codeScope: true,
+            status: true,
+            lastRunAt: true,
+            lastRunResult: true,
+            supersessionTrigger: true,
+            createdAt: true,
+            updatedAt: true,
+            owner: { select: { name: true, email: true } },
+          },
+        },
       },
     })
 

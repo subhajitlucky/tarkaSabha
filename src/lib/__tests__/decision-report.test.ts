@@ -39,12 +39,25 @@ const approvals = [
   },
 ]
 
+const pins = [
+  {
+    decisionPoint: 'Session validation point',
+    chosenValue: 'Sessions are validated on every request.',
+    separatingTest: 'Request a protected route without a cookie; expect 401.',
+    expectedResult: '401 Unauthorized',
+    codeScope: 'src/middleware.ts',
+    status: 'ACTIVE',
+    owner: { name: 'Asha Rao', email: 'asha@example.com' },
+  },
+]
+
 describe('buildDecisionReport', () => {
   it('renders decision context, evidence, approvals, and integrity metadata', () => {
     const report = buildDecisionReport({
       decision,
       evidence,
       approvals,
+      pins,
       generatedAt: new Date('2026-10-04T12:00:00.000Z'),
     })
 
@@ -55,6 +68,9 @@ describe('buildDecisionReport', () => {
     expect(report).toContain('Only one evidence item (+25); No approval recorded (+20)')
     expect(report).toContain('src/auth/session.ts:42')
     expect(report).toContain('> Sessions are validated on every request.')
+    expect(report).toContain('## Decision pins')
+    expect(report).toContain('### 1. Session validation point')
+    expect(report).toContain('Request a protected route without a cookie; expect 401.')
     expect(report).toContain('**APPROVED** by Vikram Shah (APPROVER)')
     expect(report).toContain('Snapshot hash:')
     expect(report).toContain('- **Evidence items:** 1')
@@ -82,6 +98,7 @@ describe('buildDecisionReport', () => {
     })
 
     expect(report).toContain('_No evidence recorded._')
+    expect(report).toContain('_No decision pins recorded._')
     expect(report).toContain('_No approvals recorded._')
   })
 })

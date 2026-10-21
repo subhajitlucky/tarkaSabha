@@ -56,6 +56,7 @@ model User {
   invitesAccepted WorkspaceInvite[] @relation("InvitesAccepted")
   sources         WorkspaceSource[]
   decisionCandidates DecisionCandidate[]
+  decisionPins    DecisionPin[]
 }
 
 model Feedback {
@@ -333,11 +334,37 @@ model Decision {
   approvals   Approval[]
   reports     Report[]
   candidate   DecisionCandidate?
+  pins        DecisionPin[]
 
   @@index([workspaceId, updatedAt])
   @@index([createdById])
   @@index([ownerId])
   @@index([reviewRoomId])
+}
+
+/// A testable decision point. The separating test distinguishes the chosen
+/// behavior from the alternative so the decision can be checked, not just read.
+model DecisionPin {
+  id                  String    @id @default(cuid())
+  decisionId          String
+  ownerId             String?
+  decisionPoint       String
+  chosenValue         String
+  separatingTest      String
+  expectedResult      String?
+  codeScope           String?
+  /// ACTIVE | SUPERSEDED
+  status              String    @default("ACTIVE")
+  lastRunAt           DateTime?
+  lastRunResult       String?
+  supersessionTrigger String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  decision            Decision  @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  owner               User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
+  @@index([decisionId, status])
+  @@index([ownerId])
 }
 
 /// A source-backed claim. The quote and source path are the minimum; a hash is

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
+import { DecisionPins } from '@/components/decisions/DecisionPins'
 import { ReportShareControl } from '@/components/reports/ReportShareControl'
 import {
   ConfidenceBadge,
@@ -861,6 +862,14 @@ export default function DecisionPage() {
             )}
           </Card>
         </aside>
+      </div>
+
+      <div className="mt-10">
+        <DecisionPins
+          decisionId={decision.id}
+          initialPins={decision.pins}
+          canEdit={canEdit}
+        />
       </div>
     </div>
   )

@@ -24,6 +24,19 @@ export interface ReportEvidence {
   confidence: string
 }
 
+export interface ReportPin {
+  decisionPoint: string
+  chosenValue: string
+  separatingTest: string
+  expectedResult?: string | null
+  codeScope?: string | null
+  status: string
+  lastRunAt?: Date | string | null
+  lastRunResult?: string | null
+  supersessionTrigger?: string | null
+  owner?: { name: string | null; email: string | null } | null
+}
+
 export interface ReportApproval {
   role: string
   status: string
@@ -38,6 +51,7 @@ export interface BuildReportInput {
   decision: ReportDecision
   evidence: ReportEvidence[]
   approvals: ReportApproval[]
+  pins?: ReportPin[]
   generatedAt?: Date
 }
 
@@ -64,6 +78,7 @@ export function buildDecisionReport({
   decision,
   evidence,
   approvals,
+  pins = [],
   generatedAt = new Date(),
 }: BuildReportInput): string {
   const lines: string[] = []
@@ -106,6 +121,27 @@ export function buildDecisionReport({
           .split(/\r?\n/)
           .map((line) => `> ${line}`)
       )
+      lines.push('')
+    })
+  }
+
+  lines.push('## Decision pins', '')
+  if (pins.length === 0) {
+    lines.push('_No decision pins recorded._', '')
+  } else {
+    pins.forEach((pin, index) => {
+      lines.push(`### ${index + 1}. ${pin.decisionPoint}`, '')
+      lines.push(`- **Status:** ${pin.status}`)
+      lines.push(`- **Chosen value:** ${pin.chosenValue}`)
+      lines.push(`- **Separating test:** ${pin.separatingTest}`)
+      if (pin.expectedResult) lines.push(`- **Expected result:** ${pin.expectedResult}`)
+      if (pin.codeScope) lines.push(`- **Code scope:** ${pin.codeScope}`)
+      if (pin.owner) lines.push(`- **Owner:** ${ownerName(pin.owner)}`)
+      if (pin.lastRunAt) lines.push(`- **Last run:** ${iso(pin.lastRunAt)}`)
+      if (pin.lastRunResult) lines.push(`- **Last result:** ${pin.lastRunResult}`)
+      if (pin.supersessionTrigger) {
+        lines.push(`- **Supersession trigger:** ${pin.supersessionTrigger}`)
+      }
       lines.push('')
     })
   }

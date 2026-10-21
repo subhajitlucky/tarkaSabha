@@ -68,6 +68,21 @@ export async function POST(
             actor: { select: { name: true, email: true } },
           },
         },
+        pins: {
+          orderBy: { createdAt: 'asc' },
+          select: {
+            decisionPoint: true,
+            chosenValue: true,
+            separatingTest: true,
+            expectedResult: true,
+            codeScope: true,
+            status: true,
+            lastRunAt: true,
+            lastRunResult: true,
+            supersessionTrigger: true,
+            owner: { select: { name: true, email: true } },
+          },
+        },
       },
     })
 
@@ -98,6 +113,7 @@ export async function POST(
       },
       evidence: decision.evidence,
       approvals: decision.approvals,
+      pins: decision.pins,
     })
 
     const latest = await prisma.report.aggregate({

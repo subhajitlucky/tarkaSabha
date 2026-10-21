@@ -12,6 +12,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Evidence** records a source path, commit, quote, hash, status, and confidence.
 - **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
 - **Decision debt** is an explainable 0–100 score based on evidence coverage and status, unresolved evidence, approvals, decision state, and deal impact.
+- **Decision pins** capture a testable decision point: chosen value, separating test, expected result, code scope, owner, and supersession trigger.
 - **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
 - **Sources** ingest a public GitHub repository and snapshot files, commits, pull requests, and issues with hashes.
 - **Candidate decisions** are proposed by the model from source snapshots; a human confirms or rejects each one before it enters the decision log.
@@ -47,6 +48,19 @@ Every decision stores a 0–100 debt score and a rationale. The score is recompu
 
 The score appears on workspace decision cards, the decision page, and generated evidence reports.
 
+## Decision Pins
+
+A decision pin makes the decision testable instead of only narrative:
+
+- **Decision point** — the behavior being pinned.
+- **Chosen value** — what the system actually does.
+- **Separating test** — the input or test that distinguishes it from the alternative.
+- **Expected result** — what a correct run returns.
+- **Code scope** — where the behavior lives.
+- **Supersession trigger** — when the pin should be revisited.
+
+Pins can be superseded and can record a last run result/time. They are included in generated evidence reports.
+
 - Live: https://tarkasabha.vercel.app
 - Sample council: https://tarkasabha.vercel.app/demo
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
@@ -63,6 +77,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Public GitHub repository ingestion with source snapshots and hashes.
 - Model-proposed candidate decisions with human confirmation into decisions and evidence.
 - Explainable decision-debt scoring from evidence, approvals, state, and deal impact.
+- Testable decision pins with separating tests and supersession triggers.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

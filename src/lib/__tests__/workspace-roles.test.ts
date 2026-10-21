@@ -11,6 +11,7 @@ import {
   isEmail,
   isEvidenceKind,
   isEvidenceStatus,
+  isPinStatus,
   isWorkspaceRole,
   optionalText,
 } from '../workspace-roles'
@@ -80,6 +81,12 @@ describe('decision and evidence validators', () => {
     expect(approvalRoleForWorkspaceRole('ADMIN')).toBe('APPROVER')
     expect(approvalRoleForWorkspaceRole('REVIEWER')).toBe('REVIEWER')
     expect(approvalRoleForWorkspaceRole('VIEWER')).toBe('REVIEWER')
+  })
+
+  it('validates decision pin statuses', () => {
+    expect(isPinStatus('ACTIVE')).toBe(true)
+    expect(isPinStatus('SUPERSEDED')).toBe(true)
+    expect(isPinStatus('DRAFT')).toBe(false)
   })
 
   it('validates invite email addresses', () => {

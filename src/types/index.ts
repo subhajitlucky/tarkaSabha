@@ -255,6 +255,23 @@ export interface EvidenceRecord {
   createdAt: string
 }
 
+export interface DecisionPinRecord {
+  id: string
+  ownerId?: string | null
+  decisionPoint: string
+  chosenValue: string
+  separatingTest: string
+  expectedResult?: string | null
+  codeScope?: string | null
+  status: string
+  lastRunAt?: string | null
+  lastRunResult?: string | null
+  supersessionTrigger?: string | null
+  createdAt: string
+  updatedAt: string
+  owner?: { name: string | null; email: string | null } | null
+}
+
 export interface ApprovalRecord {
   id: string
   role: string
@@ -296,4 +313,5 @@ export interface DecisionDetail {
   evidence: EvidenceRecord[]
   approvals: ApprovalRecord[]
   reports: ReportRecord[]
+  pins: DecisionPinRecord[]
 }
