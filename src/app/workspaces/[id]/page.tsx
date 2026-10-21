@@ -38,6 +38,10 @@ export default function WorkspacePage() {
   const [inviteRole, setInviteRole] = useState('REVIEWER')
   const [inviting, setInviting] = useState(false)
   const [memberError, setMemberError] = useState('')
+  const [inviteLink, setInviteLink] = useState('')
+  const [creatingInviteLink, setCreatingInviteLink] = useState(false)
+  const [inviteLinkError, setInviteLinkError] = useState('')
+  const [copiedInviteLink, setCopiedInviteLink] = useState(false)
 
   const loading = authLoading || (isAuthenticated && !loaded)
 
@@ -88,6 +92,7 @@ export default function WorkspacePage() {
 
     setInviting(true)
     setMemberError('')
+    setInviteLinkError('')
 
     try {
       const res = await fetch(`/api/workspaces/${workspace.id}/members`, {
@@ -109,11 +114,49 @@ export default function WorkspacePage() {
           : current
       )
       setInviteEmail('')
+      setInviteLink('')
     } catch (error) {
       console.error('Failed to invite member', error)
       setMemberError('Could not add the member.')
     } finally {
       setInviting(false)
+    }
+  }
+
+  const createInviteLink = async () => {
+    if (!workspace) return
+    setCreatingInviteLink(true)
+    setInviteLinkError('')
+    setCopiedInviteLink(false)
+
+    try {
+      const res = await fetch(`/api/workspaces/${workspace.id}/invites`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setInviteLinkError(data?.error || 'Could not create the invite link.')
+        return
+      }
+
+      setInviteLink(`${window.location.origin}${data.path}`)
+    } catch (error) {
+      console.error('Failed to create invite link', error)
+      setInviteLinkError('Could not create the invite link.')
+    } finally {
+      setCreatingInviteLink(false)
+    }
+  }
+
+  const copyInviteLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink)
+      setCopiedInviteLink(true)
+    } catch {
+      setInviteLinkError('Could not copy automatically. Select the link and copy it manually.')
     }
   }
 
@@ -424,40 +467,85 @@ export default function WorkspacePage() {
                   type="email"
                   aria-label="Member email"
                   value={inviteEmail}
-                  onChange={(event) => setInviteEmail(event.target.value)}
+                  onChange={(event) => {
+                    setInviteEmail(event.target.value)
+                    setInviteLink('')
+                  }}
                   placeholder="reviewer@firm.com"
                   maxLength={254}
                   required
                 />
-                <div className="flex gap-2">
-                  <Select
-                    aria-label="Member role"
-                    value={inviteRole}
-                    onChange={(event) => setInviteRole(event.target.value)}
-                    className="min-w-0 flex-1"
-                  >
-                    {assignableRoles.map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </Select>
+                <Select
+                  aria-label="Member role"
+                  value={inviteRole}
+                  onChange={(event) => {
+                    setInviteRole(event.target.value)
+                    setInviteLink('')
+                  }}
+                  className="w-full"
+                >
+                  {assignableRoles.map((role) => (
+                    <option key={role} value={role}>
+                      {role}
+                    </option>
+                  ))}
+                </Select>
+                <div className="grid grid-cols-2 gap-2">
                   <Button
                     type="submit"
                     size="sm"
                     variant="secondary"
                     disabled={inviting || inviteEmail.trim().length === 0}
                   >
-                    {inviting ? 'Adding…' : 'Invite'}
+                    {inviting ? 'Adding…' : 'Add account'}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    onClick={createInviteLink}
+                    disabled={creatingInviteLink || inviteEmail.trim().length === 0}
+                  >
+                    {creatingInviteLink ? 'Creating…' : 'Create link'}
                   </Button>
                 </div>
                 <p className="text-xs text-subtle">
-                  They need a Tarka account before you can add them.
+                  Add an existing Tarka account instantly, or create a one-time link for someone
+                  new.
                 </p>
                 {memberError && (
                   <p role="alert" className="text-xs text-danger">
                     {memberError}
                   </p>
+                )}
+                {inviteLinkError && (
+                  <p role="alert" className="text-xs text-danger">
+                    {inviteLinkError}
+                  </p>
+                )}
+                {inviteLink && (
+                  <div className="space-y-1.5 rounded-[3px] border border-line bg-surface-2 p-2">
+                    <div className="flex gap-2">
+                      <Input
+                        readOnly
+                        aria-label="Invite link"
+                        value={inviteLink}
+                        className="min-w-0 flex-1 font-mono text-xs"
+                        onFocus={(event) => event.target.select()}
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="primary"
+                        onClick={copyInviteLink}
+                      >
+                        {copiedInviteLink ? 'Copied' : 'Copy'}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-subtle">
+                      Send this link. It expires in 7 days and works once.
+                    </p>
+                  </div>
                 )}
               </form>
             )}

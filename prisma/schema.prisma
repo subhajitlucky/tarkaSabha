@@ -52,6 +52,8 @@ model User {
   decisionsOwned   Decision[] @relation("DecisionOwner")
   approvals     Approval[]
   reportShares  ReportShare[]
+  invitesCreated  WorkspaceInvite[] @relation("InvitesCreated")
+  invitesAccepted WorkspaceInvite[] @relation("InvitesAccepted")
 }
 
 model Feedback {
@@ -255,9 +257,33 @@ model Workspace {
   creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   memberships Membership[]
   decisions   Decision[]
+  invites     WorkspaceInvite[]
 
   @@index([creatorId])
   @@index([updatedAt])
+}
+
+/// A one-time, expiring invitation to join a workspace. Only the token hash is
+/// stored; the raw link is shown to the inviter once.
+model WorkspaceInvite {
+  id           String    @id @default(cuid())
+  workspaceId  String
+  email        String
+  /// REVIEWER | VIEWER | ADMIN | OWNER
+  role         String    @default("REVIEWER")
+  tokenHash    String    @unique
+  createdById  String
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  acceptedById String?
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  workspace    Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy    User      @relation("InvitesCreated", fields: [createdById], references: [id], onDelete: Cascade)
+  acceptedBy   User?     @relation("InvitesAccepted", fields: [acceptedById], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, email])
+  @@index([expiresAt])
 }
 
 model Membership {
