@@ -46,6 +46,11 @@ model User {
   personas      Persona[]
   providers     Provider[]
   sessions      Session[]
+  workspaces    Workspace[]
+  memberships   Membership[]
+  decisionsCreated Decision[] @relation("DecisionCreatedBy")
+  decisionsOwned   Decision[] @relation("DecisionOwner")
+  approvals     Approval[]
 }
 
 model Feedback {
@@ -149,6 +154,7 @@ model Chat {
   messages      Message[]
   participants  PersonaOnChat[]
   artifacts     Artifact[]
+  decisions     Decision[]
 
   @@index([creatorId])
   @@index([isAutoMode, autoAdvanceAt])
@@ -234,4 +240,119 @@ model RateLimit {
   resetAt   DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// A private diligence workspace. Decisions, evidence, approvals, and reports
+/// are scoped to a workspace; membership is the authorization boundary.
+model Workspace {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  creatorId   String
+  creator     User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  memberships Membership[]
+  decisions   Decision[]
+
+  @@index([creatorId])
+  @@index([updatedAt])
+}
+
+model Membership {
+  id          String    @id @default(cuid())
+  workspaceId String
+  userId      String
+  /// OWNER | ADMIN | REVIEWER | VIEWER
+  role        String    @default("VIEWER")
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+/// A decision under review. This is the product object; a review room is an
+/// optional conversation attached to it, not the other way around.
+model Decision {
+  id          String     @id @default(cuid())
+  workspaceId String
+  title       String
+  summary     String?
+  /// DRAFT | IN_REVIEW | APPROVED | ARCHIVED
+  status      String     @default("DRAFT")
+  /// LOW | MEDIUM | HIGH | CRITICAL
+  impact      String     @default("MEDIUM")
+  createdById String
+  ownerId     String?
+  /// Optional link to the review room (chat) where this decision was tested.
+  reviewRoomId String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy   User       @relation("DecisionCreatedBy", fields: [createdById], references: [id])
+  owner       User?      @relation("DecisionOwner", fields: [ownerId], references: [id])
+  reviewRoom  Chat?      @relation(fields: [reviewRoomId], references: [id], onDelete: SetNull)
+  evidence    Evidence[]
+  approvals   Approval[]
+  reports     Report[]
+
+  @@index([workspaceId, updatedAt])
+  @@index([createdById])
+  @@index([ownerId])
+  @@index([reviewRoomId])
+}
+
+/// A source-backed claim. The quote and source path are the minimum; a hash is
+/// required before an evidence pack can be called verified in a real sprint.
+model Evidence {
+  id         String   @id @default(cuid())
+  decisionId String
+  /// CODE | COMMIT | DOC | TEST | CONFIG | OTHER
+  kind       String   @default("CODE")
+  source     String
+  commit     String?
+  quote      String
+  sha256     String?
+  /// VERIFIED | DISPUTED | UNSUPPORTED | INFERRED | OPEN
+  status     String   @default("VERIFIED")
+  /// HIGH | MEDIUM | LOW
+  confidence String   @default("MEDIUM")
+  createdAt  DateTime @default(now())
+  decision   Decision @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+
+  @@index([decisionId, createdAt])
+}
+
+model Approval {
+  id         String    @id @default(cuid())
+  decisionId String
+  actorId    String
+  /// REVIEWER | APPROVER | OWNER
+  role       String    @default("REVIEWER")
+  /// PENDING | APPROVED | REJECTED
+  status     String    @default("PENDING")
+  note       String?
+  createdAt  DateTime  @default(now())
+  decidedAt  DateTime?
+  decision   Decision  @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  actor      User      @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([decisionId])
+  @@index([actorId])
+}
+
+model Report {
+  id          String    @id @default(cuid())
+  decisionId  String
+  version     Int       @default(1)
+  /// DRAFT | PUBLISHED
+  status      String    @default("DRAFT")
+  content     String?
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  decision    Decision  @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+
+  @@index([decisionId, version])
 }

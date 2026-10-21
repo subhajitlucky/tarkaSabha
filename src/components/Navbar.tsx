@@ -9,10 +9,10 @@ import { Button } from './ui/Button'
 import { cx } from './ui/cx'
 
 const PRIMARY_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/demo', label: 'Sample council' },
-  { href: '/debate', label: 'New council' },
-  { href: '/history', label: 'Archive' },
+  { href: '/workspaces', label: 'Workspaces' },
+  { href: '/history', label: 'Review rooms' },
+  { href: '/demo', label: 'Sample' },
+  { href: '/debate', label: 'New review' },
 ]
 
 const MENU_LINKS = [

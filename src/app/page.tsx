@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Persona, Chat, Provider } from '@/types'
+import { Persona, Chat, Provider, WorkspaceSummary } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
 import { Button } from '@/components/ui/Button'
 import { Card, Rule } from '@/components/ui/Card'
@@ -12,42 +12,42 @@ import { Badge } from '@/components/ui/Badge'
 const STAGES = [
   {
     n: '01',
-    title: 'State the outcome',
-    body: 'Give the council an objective, the shape of the deliverable you want, and who it is for.',
+    title: 'Frame the decision',
+    body: 'Name what is under review, who owns it, and how much it matters to the deal.',
   },
   {
     n: '02',
-    title: 'Assign roles',
-    body: 'A researcher brings evidence, a critic attacks the weakest reasoning, a synthesizer pulls the threads together.',
+    title: 'Attach the evidence',
+    body: 'Record the code path, commit, document, or test — with the exact quote and a hash where possible.',
   },
   {
     n: '03',
-    title: 'Let them work',
-    body: 'Agents run server-side with real tools — web search, page reading, exact arithmetic — so claims get checked, not recalled.',
+    title: 'Convene a review room',
+    body: 'When the record needs pressure, agents with distinct jobs test the reasoning and surface the gaps.',
   },
   {
     n: '04',
-    title: 'Read the verdict',
-    body: 'Several drafts are scored against a rubric. You get the winner, its score, and the candidates that lost.',
+    title: 'Move the decision',
+    body: 'Track the decision through draft, review, and approval with the evidence still attached.',
   },
 ]
 
 const CAPABILITIES = [
   {
-    label: 'Server-side turns',
-    body: 'Debates keep advancing after you close the tab. The browser renders; it does not drive.',
+    label: 'Decision record',
+    body: 'A decision is the product object: title, context, owner, state, impact, and evidence.',
   },
   {
-    label: 'Real tools',
-    body: 'Web search, page reading and a parser-based calculator. Tool output is untrusted and never reaches the system prompt.',
+    label: 'Source-backed evidence',
+    body: 'Path, commit, quote, hash, confidence, and status. A claim without a source stays visible as unsupported.',
   },
   {
-    label: 'Role-shaped agents',
-    body: 'Not just personalities. Each participant has a job that changes what it is told to do.',
+    label: 'Role-scoped rooms',
+    body: 'Owners, admins, reviewers, and viewers. Reviewers can edit decisions; viewers can only read.',
   },
   {
-    label: 'Rubric scoring',
-    body: 'Grounding, coverage, decisiveness, honesty, fit. Weighted, so decisiveness cannot buy off invented facts.',
+    label: 'Review rooms',
+    body: 'The agent council is a room inside a decision, not a separate chat product.',
   },
   {
     label: 'Auditable runs',
@@ -63,6 +63,7 @@ export default function Home() {
   const [personas, setPersonas] = useState<Persona[]>([])
   const [providers, setProviders] = useState<Provider[]>([])
   const [chats, setChats] = useState<Chat[]>([])
+  const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([])
   const [dataLoaded, setDataLoaded] = useState(false)
   const { isAuthenticated } = useAuth()
   // Derived rather than set inside an effect: authenticated, first pass not landed yet.
@@ -86,13 +87,20 @@ export default function Home() {
     setChats(data)
   }, [])
 
+  const fetchWorkspaces = useCallback(async () => {
+    const res = await fetch('/api/workspaces')
+    if (!res.ok) return
+    const data = await res.json()
+    setWorkspaces(Array.isArray(data) ? data : [])
+  }, [])
+
   const fetchData = useCallback(async () => {
     try {
-      await Promise.all([fetchPersonas(), fetchProviders(), fetchChats()])
+      await Promise.all([fetchPersonas(), fetchProviders(), fetchChats(), fetchWorkspaces()])
     } finally {
       setDataLoaded(true)
     }
-  }, [fetchPersonas, fetchProviders, fetchChats])
+  }, [fetchPersonas, fetchProviders, fetchChats, fetchWorkspaces])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -101,7 +109,8 @@ export default function Home() {
   }, [isAuthenticated, fetchData])
 
   const stats = [
-    { value: chats.length, label: 'Councils' },
+    { value: workspaces.length, label: 'Workspaces' },
+    { value: chats.length, label: 'Review rooms' },
     { value: personas.length, label: 'Agents' },
     { value: providers.length, label: 'Providers' },
   ]
@@ -112,36 +121,36 @@ export default function Home() {
       <section className="grid gap-12 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-24">
         <div className="rise">
           <Badge tone="accent" className="mb-6">
-            Brahmodya Protocol
+            Decision evidence workspace
           </Badge>
 
           <h1 className="text-[2.75rem] leading-[1.05] tracking-[-0.03em] text-text sm:text-6xl">
-            A council of
+            A decision
             <br />
-            <span className="text-accent">reasoning</span> agents.
+            <span className="text-accent">you can defend.</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
-            Describe an outcome. Assemble agents with distinct jobs and the tools to
-            check their own claims. They deliberate, and you read the deliverable they
-            argue their way to — scored, and with the runners-up kept.
+            Tarka Sabha turns a deal decision into a source-backed record: the claims, the
+            code and documents behind them, the open questions, and the approval trail. The
+            agent council is now a review room inside that record.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link href="/debate">
+            <Link href="/workspaces">
               <Button variant="primary" size="lg">
-                Convene a council
+                Open workspaces
               </Button>
             </Link>
             <Link href={isAuthenticated ? '/history' : '/demo'}>
               <Button variant="secondary" size="lg">
-                {isAuthenticated ? 'Open your archive' : 'See a sample council'}
+                {isAuthenticated ? 'See your review rooms' : 'See a sample review'}
               </Button>
             </Link>
           </div>
 
           {isAuthenticated && (
-            <dl className="mt-12 grid max-w-md grid-cols-3 border-t border-line pt-6">
+            <dl className="mt-12 grid max-w-xl grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-6 sm:grid-cols-4">
               {stats.map((stat) => (
                 <div key={stat.label}>
                   <dt className="eyebrow">{stat.label}</dt>
@@ -198,17 +207,18 @@ export default function Home() {
         <div className="grid items-end gap-8 md:grid-cols-[1fr_auto]">
           <div>
             <h2 className="max-w-lg text-3xl leading-tight text-text sm:text-4xl">
-              Stop asking one model for an answer.
-              <span className="text-accent"> Convene a council.</span>
+              Stop shipping decisions without a record.
+              <span className="text-accent"> Build the evidence pack.</span>
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted">
-              Bring your own API key from any of twelve providers. Keys are encrypted
-              before they are stored and never leave the server.
+              Open a workspace for the next decision. Bring your own API key from any of
+              twelve providers; keys are encrypted before they are stored and never leave
+              the server.
             </p>
           </div>
-          <Link href="/debate">
+          <Link href="/workspaces">
             <Button variant="primary" size="lg">
-              Start now
+              Open a workspace
             </Button>
           </Link>
         </div>

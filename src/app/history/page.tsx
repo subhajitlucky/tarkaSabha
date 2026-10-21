@@ -48,12 +48,12 @@ export default function HistoryPage() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-14">
       <PageHeader
-        eyebrow="Archive"
-        title="Past proceedings"
-        lede="Every council you have convened, with the agents who sat on it."
+        eyebrow="Review rooms"
+        title="Past review rooms"
+        lede="Every review room you have convened, with the agents who sat on it."
         actions={
           <Link href="/debate">
-            <Button variant="primary">New council</Button>
+            <Button variant="primary">New review</Button>
           </Link>
         }
       />
@@ -64,26 +64,26 @@ export default function HistoryPage() {
         </p>
       ) : !isAuthenticated ? (
         <EmptyState
-          title="Sign in to see your archive"
-          description="Your councils are private to your account. Sign in to open the record, or look at the public sample first."
+          title="Sign in to see your review rooms"
+          description="Your review rooms are private to your account. Sign in to open the record, or look at the public sample first."
           action={
             <div className="flex flex-wrap items-center justify-center gap-2">
               <Link href="/login?callbackUrl=/history">
                 <Button variant="primary">Sign in</Button>
               </Link>
               <Link href="/demo">
-                <Button variant="secondary">See a sample council</Button>
+                <Button variant="secondary">See a sample review</Button>
               </Link>
             </div>
           }
         />
       ) : chats.length === 0 ? (
         <EmptyState
-          title="Nothing on the record yet"
-          description="Convene a council, give the agents an objective, and the transcript will be filed here."
+          title="No review rooms yet"
+          description="Open a review room, give the agents an objective, and the transcript will be filed here."
           action={
             <Link href="/debate">
-              <Button variant="primary">Convene the first one</Button>
+              <Button variant="primary">Open the first one</Button>
             </Link>
           }
         />

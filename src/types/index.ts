@@ -127,3 +127,100 @@ export interface RateLimit {
   limit: number
   resetAt: Date
 }
+
+/* --------------------------------------------------------- decision workspace */
+
+export type WorkspaceRole = 'OWNER' | 'ADMIN' | 'REVIEWER' | 'VIEWER'
+export type DecisionStatus = 'DRAFT' | 'IN_REVIEW' | 'APPROVED' | 'ARCHIVED'
+export type DecisionImpact = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+export type EvidenceKind = 'CODE' | 'COMMIT' | 'DOC' | 'TEST' | 'CONFIG' | 'OTHER'
+export type EvidenceStatus = 'VERIFIED' | 'DISPUTED' | 'UNSUPPORTED' | 'INFERRED' | 'OPEN'
+export type Confidence = 'HIGH' | 'MEDIUM' | 'LOW'
+
+export interface WorkspaceSummary {
+  id: string
+  name: string
+  description?: string | null
+  createdAt: string
+  updatedAt: string
+  _count?: {
+    decisions: number
+    memberships: number
+  }
+}
+
+export interface DecisionSummary {
+  id: string
+  title: string
+  summary?: string | null
+  status: DecisionStatus | string
+  impact: DecisionImpact | string
+  updatedAt: string
+  owner?: { name: string | null } | null
+  _count?: {
+    evidence: number
+    approvals: number
+  }
+}
+
+export interface WorkspaceDetail extends Omit<WorkspaceSummary, '_count'> {
+  role: WorkspaceRole
+  decisions: DecisionSummary[]
+  memberships: Array<{
+    id: string
+    role: WorkspaceRole | string
+    user: { name: string | null; email: string | null }
+  }>
+  _count?: {
+    decisions: number
+  }
+}
+
+export interface EvidenceRecord {
+  id: string
+  kind: EvidenceKind | string
+  source: string
+  commit?: string | null
+  quote: string
+  sha256?: string | null
+  status: EvidenceStatus | string
+  confidence: Confidence | string
+  createdAt: string
+}
+
+export interface ApprovalRecord {
+  id: string
+  role: string
+  status: string
+  note?: string | null
+  createdAt: string
+  decidedAt?: string | null
+  actor?: { name: string | null; email: string | null } | null
+}
+
+export interface ReportRecord {
+  id: string
+  version: number
+  status: string
+  createdAt: string
+  publishedAt?: string | null
+}
+
+export interface DecisionDetail {
+  id: string
+  workspaceId: string
+  title: string
+  summary?: string | null
+  status: DecisionStatus | string
+  impact: DecisionImpact | string
+  createdAt: string
+  updatedAt: string
+  role: WorkspaceRole
+  workspace: { id: string; name: string }
+  reviewRoom?: { id: string; title: string } | null
+  owner?: { name: string | null; email: string | null } | null
+  createdBy?: { name: string | null; email: string | null } | null
+  evidence: EvidenceRecord[]
+  approvals: ApprovalRecord[]
+  reports: ReportRecord[]
+}

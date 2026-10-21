@@ -29,9 +29,9 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tarka Sabha — A council of reasoning agents",
+  title: "Tarka Sabha — Decision evidence workspace",
   description:
-    "Describe an outcome, assemble agents with distinct roles, and let them work the problem with real tools. They deliberate, you get a deliverable scored against a rubric.",
+    "Turn a deal decision into a source-backed record: claims, code and document evidence, open questions, and review. The agent council is a review room inside the record.",
 };
 
 // Script to apply theme before React loads
@@ -89,21 +89,21 @@ export default function RootLayout({
                     <span className="font-display text-lg text-text">Tarka Sabha</span>
                   </div>
                   <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-                    A council of reasoning agents. Describe an outcome, give each agent a
-                    role and the tools to check its work, and read the deliverable they
-                    argue their way to.
+                    A decision evidence workspace. Frame the decision, attach source-backed
+                    evidence, and keep the review trail together — with an agent council
+                    available as a review room inside the record.
                   </p>
                 </div>
 
                 <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
                   {[
-                    ['/debate', 'New council'],
-                    ['/demo', 'Sample council'],
-                    ['/history', 'Archive'],
+                    ['/workspaces', 'Workspaces'],
+                    ['/history', 'Review rooms'],
+                    ['/demo', 'Sample'],
+                    ['/debate', 'New review'],
                     ['/personas', 'Agents'],
                     ['/providers', 'Providers'],
                     ['/dashboard', 'Dashboard'],
-                    ['/about', 'About'],
                     ['/feedback', 'Feedback'],
                   ].map(([href, label]) => (
                     <a
@@ -120,7 +120,7 @@ export default function RootLayout({
               <div className="border-t border-line">
                 <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-subtle sm:flex-row sm:items-center sm:justify-between">
                   <p>© {new Date().getFullYear()} Tarka Sabha</p>
-                  <p>A council of reasoning agents.</p>
+                  <p>Decision evidence, on the record.</p>
                 </div>
               </div>
             </footer>
