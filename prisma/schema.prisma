@@ -51,6 +51,7 @@ model User {
   decisionsCreated Decision[] @relation("DecisionCreatedBy")
   decisionsOwned   Decision[] @relation("DecisionOwner")
   approvals     Approval[]
+  reportShares  ReportShare[]
 }
 
 model Feedback {
@@ -357,6 +358,28 @@ model Report {
   createdAt   DateTime  @default(now())
   publishedAt DateTime?
   decision    Decision  @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  shares      ReportShare[]
 
   @@unique([decisionId, version])
+}
+
+/// An expiring, revocable public link to a report snapshot. Only the SHA-256
+/// hash of the bearer token is stored; the raw token is shown once at creation.
+model ReportShare {
+  id            String    @id @default(cuid())
+  reportId      String
+  createdById   String
+  tokenHash     String    @unique
+  expiresAt     DateTime
+  /// Hide source paths, commits, and evidence hashes in the shared view.
+  redactSources Boolean   @default(false)
+  viewCount     Int       @default(0)
+  lastViewedAt  DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  report        Report    @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  createdBy     User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+  @@index([expiresAt])
 }

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
+import { ReportShareControl } from '@/components/reports/ReportShareControl'
 import {
   ConfidenceBadge,
   DecisionStatusBadge,
@@ -800,6 +801,7 @@ export default function DecisionPage() {
                     >
                       Download .md
                     </a>
+                    {canEdit && <ReportShareControl reportId={report.id} />}
                     {report.content && (
                       <details>
                         <summary className="cursor-pointer font-mono text-xs text-muted">
