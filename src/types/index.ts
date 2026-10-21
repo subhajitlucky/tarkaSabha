@@ -181,6 +181,23 @@ export interface WorkspaceSourceSummary {
   updatedAt: string
 }
 
+export interface WorkspaceDossierSummary {
+  id: string
+  version: number
+  status: string
+  contentHash: string
+  createdAt: string
+}
+
+export interface WorkspaceDossierDetail extends WorkspaceDossierSummary {
+  workspaceId: string
+  workspaceName: string
+  content: string
+  publishedAt?: string | null
+  generatedBy?: { name: string | null; email: string | null } | null
+  role: WorkspaceRole
+}
+
 export interface WorkspaceDetail extends Omit<WorkspaceSummary, '_count'> {
   role: WorkspaceRole
   decisions: DecisionSummary[]
@@ -190,6 +207,7 @@ export interface WorkspaceDetail extends Omit<WorkspaceSummary, '_count'> {
     user: { name: string | null; email: string | null }
   }>
   sources: WorkspaceSourceSummary[]
+  dossiers: WorkspaceDossierSummary[]
   _count?: {
     decisions: number
   }

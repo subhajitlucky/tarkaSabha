@@ -8,6 +8,8 @@ const content = [
   '',
   '### 1. CODE — VERIFIED (HIGH confidence)',
   '',
+  '#### Evidence detail',
+  '',
   '- **Source:** `src/lib/workspaces.ts`',
   '- **Commit:** `abc123`',
   '',
@@ -29,6 +31,11 @@ describe('parseReportMarkdown', () => {
       text: 'Decision Evidence Report — Kestrel',
     })
     expect(blocks.some((block) => block.type === 'heading' && block.level === 3)).toBe(true)
+    expect(blocks).toContainEqual({
+      type: 'heading',
+      level: 4,
+      text: 'Evidence detail',
+    })
     expect(blocks).toContainEqual({
       type: 'quote',
       lines: ['Membership is the authorization boundary.'],

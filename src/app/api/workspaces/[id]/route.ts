@@ -42,6 +42,16 @@ export async function GET(
             user: { select: { name: true, email: true } },
           },
         },
+        dossiers: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            version: true,
+            status: true,
+            contentHash: true,
+            createdAt: true,
+          },
+        },
         sources: {
           orderBy: { updatedAt: 'desc' },
           select: {

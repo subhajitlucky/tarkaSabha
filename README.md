@@ -13,6 +13,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
 - **Decision debt** is an explainable 0–100 score based on evidence coverage and status, unresolved evidence, approvals, decision state, and deal impact.
 - **Decision pins** capture a testable decision point: chosen value, separating test, expected result, code scope, owner, and supersession trigger.
+- **Decision dossiers** aggregate the whole workspace into a versioned deal-level document with an executive summary, decision records, open questions, and an evidence appendix.
 - **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
 - **Sources** ingest a public GitHub repository and snapshot files, commits, pull requests, and issues with hashes.
 - **Candidate decisions** are proposed by the model from source snapshots; a human confirms or rejects each one before it enters the decision log.
@@ -61,6 +62,20 @@ A decision pin makes the decision testable instead of only narrative:
 
 Pins can be superseded and can record a last run result/time. They are included in generated evidence reports.
 
+## Decision Diligence Dossier
+
+A workspace can generate a versioned, deal-level dossier that includes:
+
+- deal context and an executive summary
+- highest-debt decisions and a decision inventory
+- per-decision records with evidence, pins, debt, and approvals
+- contradictions and unsupported claims
+- open questions
+- an evidence appendix and source inventory
+- method/limitations and integrity metadata
+
+Each dossier is stored with a SHA-256 content hash and can be viewed in the app or downloaded as Markdown.
+
 - Live: https://tarkasabha.vercel.app
 - Sample council: https://tarkasabha.vercel.app/demo
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
@@ -79,6 +94,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Explainable decision-debt scoring from evidence, approvals, state, and deal impact.
 - Testable decision pins with separating tests and supersession triggers.
 - Evidence linked to immutable source snapshots with locked path, commit, and hash.
+- Versioned deal-level Decision Diligence Dossiers with evidence appendices.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

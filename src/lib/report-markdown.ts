@@ -4,7 +4,7 @@ export interface ReportListItem {
 }
 
 export type ReportBlock =
-  | { type: 'heading'; level: 1 | 2 | 3; text: string }
+  | { type: 'heading'; level: 1 | 2 | 3 | 4 | 5 | 6; text: string }
   | { type: 'paragraph'; text: string }
   | { type: 'list'; items: ReportListItem[] }
   | { type: 'quote'; lines: string[] }
@@ -51,12 +51,12 @@ export function parseReportMarkdown(content: string): ReportBlock[] {
       continue
     }
 
-    const heading = /^(#{1,3})\s+(.*)$/.exec(line)
+    const heading = /^(#{1,6})\s+(.*)$/.exec(line)
     if (heading) {
       flushAll()
       blocks.push({
         type: 'heading',
-        level: heading[1].length as 1 | 2 | 3,
+        level: heading[1].length as 1 | 2 | 3 | 4 | 5 | 6,
         text: heading[2].trim(),
       })
       continue

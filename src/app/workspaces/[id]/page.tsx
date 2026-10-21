@@ -17,6 +17,7 @@ import {
 } from '@/components/workspaces/badges'
 import { formatDate } from '@/components/workspaces/format'
 import { MemberRow, WorkspaceMember } from '@/components/workspaces/MemberRow'
+import { WorkspaceDossierPanel } from '@/components/workspaces/WorkspaceDossierPanel'
 import {
   DECISION_IMPACTS,
   WORKSPACE_ROLES,
@@ -527,7 +528,10 @@ export default function WorkspacePage() {
                     )}
 
                     <p className="mt-auto pt-4 font-mono text-xs uppercase tracking-[0.1em] text-subtle">
-                      {decision._count?.evidence ?? 0} evidence items
+                      {decision._count?.evidence ?? 0}{' '}
+                      {(decision._count?.evidence ?? 0) === 1
+                        ? 'evidence item'
+                        : 'evidence items'}
                       <span className="mx-1.5">·</span>
                       {decision._count?.approvals ?? 0}{' '}
                       {(decision._count?.approvals ?? 0) === 1 ? 'approval' : 'approvals'}
@@ -720,6 +724,14 @@ export default function WorkspacePage() {
             </ul>
           </Card>
         </aside>
+      </div>
+
+      <div className="mt-10">
+        <WorkspaceDossierPanel
+          workspaceId={workspace.id}
+          initialDossiers={workspace.dossiers}
+          canEdit={canEdit}
+        />
       </div>
     </div>
   )

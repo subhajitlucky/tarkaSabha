@@ -61,10 +61,17 @@ export function MarkdownDocument({ content }: { content: string }) {
               </h2>
             )
           }
+          if (block.level === 3) {
+            return (
+              <h3 key={key} className="pt-2 font-display text-base text-text">
+                {renderInline(block.text, key)}
+              </h3>
+            )
+          }
           return (
-            <h3 key={key} className="pt-2 font-display text-base text-text">
+            <h4 key={key} className="pt-1 font-display text-sm text-text">
               {renderInline(block.text, key)}
-            </h3>
+            </h4>
           )
         }
 

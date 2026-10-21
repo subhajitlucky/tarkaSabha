@@ -57,6 +57,7 @@ model User {
   sources         WorkspaceSource[]
   decisionCandidates DecisionCandidate[]
   decisionPins    DecisionPin[]
+  dossiers        WorkspaceDossier[]
 }
 
 model Feedback {
@@ -263,9 +264,31 @@ model Workspace {
   invites     WorkspaceInvite[]
   sources     WorkspaceSource[]
   candidates  DecisionCandidate[]
+  dossiers    WorkspaceDossier[]
 
   @@index([creatorId])
   @@index([updatedAt])
+}
+
+/// A versioned, deal-level Decision Diligence Dossier generated from the whole
+/// workspace: executive summary, decision records, unresolved evidence, and
+/// the evidence appendix.
+model WorkspaceDossier {
+  id          String    @id @default(cuid())
+  workspaceId String
+  createdById String
+  version     Int       @default(1)
+  /// DRAFT | PUBLISHED
+  status      String    @default("DRAFT")
+  content     String
+  contentHash String
+  createdAt   DateTime  @default(now())
+  publishedAt DateTime?
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, version])
+  @@index([workspaceId, createdAt])
 }
 
 /// A one-time, expiring invitation to join a workspace. Only the token hash is
