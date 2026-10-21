@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: {
-    decision: { findUnique: vi.fn() },
+    decision: { findUnique: vi.fn(), update: vi.fn() },
     approval: { create: vi.fn() },
     report: { aggregate: vi.fn(), create: vi.fn() },
   },
@@ -68,6 +68,7 @@ describe('POST /api/decisions/[id]/approvals', () => {
     vi.clearAllMocks()
     authMock.mockResolvedValue({ user: { id: 'u1' } })
     prismaMock.decision.findUnique.mockResolvedValue(baseDecision)
+    prismaMock.decision.update.mockResolvedValue({ id: 'd1' })
     prismaMock.approval.create.mockResolvedValue({
       id: 'a1',
       role: 'REVIEWER',

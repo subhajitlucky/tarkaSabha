@@ -69,6 +69,7 @@ export async function GET(
             summary: true,
             status: true,
             impact: true,
+            debtScore: true,
             updatedAt: true,
             owner: { select: { name: true } },
             _count: { select: { evidence: true, approvals: true } },

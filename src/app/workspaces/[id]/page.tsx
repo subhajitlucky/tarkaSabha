@@ -9,7 +9,12 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
-import { DecisionStatusBadge, ImpactBadge, RoleBadge } from '@/components/workspaces/badges'
+import {
+  DebtBadge,
+  DecisionStatusBadge,
+  ImpactBadge,
+  RoleBadge,
+} from '@/components/workspaces/badges'
 import { formatDate } from '@/components/workspaces/format'
 import { MemberRow, WorkspaceMember } from '@/components/workspaces/MemberRow'
 import {
@@ -505,6 +510,7 @@ export default function WorkspacePage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <DecisionStatusBadge status={decision.status} />
                       <ImpactBadge impact={decision.impact} />
+                      <DebtBadge score={decision.debtScore ?? 0} />
                       <span className="ml-auto font-mono text-xs text-subtle">
                         {formatDate(decision.updatedAt)}
                       </span>

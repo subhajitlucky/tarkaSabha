@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recalculateDecisionDebt } from '@/lib/decision-debt-server'
 import {
   DECISION_IMPACTS,
   DECISION_STATUSES,
@@ -40,6 +41,9 @@ export async function GET(
         summary: true,
         status: true,
         impact: true,
+        debtScore: true,
+        debtRationale: true,
+        scoredAt: true,
         createdAt: true,
         updatedAt: true,
         workspace: { select: { id: true, name: true } },
@@ -250,12 +254,25 @@ export async function PUT(
         impact: true,
         createdAt: true,
         updatedAt: true,
+        debtScore: true,
+        debtRationale: true,
+        scoredAt: true,
         owner: { select: { name: true, email: true } },
         reviewRoom: { select: { id: true, title: true } },
       },
     })
 
-    return NextResponse.json(decision)
+    const debt =
+      data.status !== undefined || data.impact !== undefined
+        ? await recalculateDecisionDebt(id)
+        : null
+
+    return NextResponse.json({
+      ...decision,
+      debtScore: debt?.score ?? decision.debtScore,
+      debtRationale: debt?.rationale ?? decision.debtRationale,
+      scoredAt: debt ? new Date() : decision.scoredAt,
+    })
   } catch (error) {
     console.error('Error updating decision:', error)
     return NextResponse.json({ error: 'Failed to update decision' }, { status: 500 })

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { scoreDecisionDebt } from '@/lib/decision-debt'
 import {
   DECISION_IMPACTS,
   DECISION_STATUSES,
@@ -129,6 +130,13 @@ export async function POST(
       }
     }
 
+    const debt = scoreDecisionDebt({
+      status,
+      impact,
+      evidence: [],
+      approvals: [],
+    })
+
     const decision = await prisma.decision.create({
       data: {
         workspaceId: id,
@@ -138,6 +146,9 @@ export async function POST(
         status,
         createdById: session.user.id,
         ownerId,
+        debtScore: debt.score,
+        debtRationale: debt.rationale,
+        scoredAt: new Date(),
       },
       select: {
         id: true,
@@ -145,6 +156,9 @@ export async function POST(
         summary: true,
         status: true,
         impact: true,
+        debtScore: true,
+        debtRationale: true,
+        scoredAt: true,
         createdAt: true,
         updatedAt: true,
         owner: { select: { name: true } },

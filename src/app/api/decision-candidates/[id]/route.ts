@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { scoreDecisionDebt } from '@/lib/decision-debt'
 import {
   MAX_DECISION_SUMMARY,
   MAX_DECISION_TITLE,
@@ -182,6 +183,22 @@ export async function PATCH(
       throw error
     }
 
+    const debt = scoreDecisionDebt({
+      status: 'DRAFT',
+      impact: 'MEDIUM',
+      evidence: evidenceRows.map((entry) => ({ status: entry.status })),
+      approvals: [],
+    })
+
+    await prisma.decision.update({
+      where: { id: decision.id },
+      data: {
+        debtScore: debt.score,
+        debtRationale: debt.rationale,
+        scoredAt: new Date(),
+      },
+    })
+
     const updated = await prisma.decisionCandidate.update({
       where: { id },
       data: {
@@ -197,7 +214,12 @@ export async function PATCH(
 
     return NextResponse.json({
       candidate: updated,
-      decision,
+      decision: {
+        ...decision,
+        debtScore: debt.score,
+        debtRationale: debt.rationale,
+        scoredAt: new Date(),
+      },
       evidenceCount: evidenceRows.length,
     })
   } catch (error) {

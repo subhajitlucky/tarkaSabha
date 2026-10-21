@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recalculateDecisionDebt } from '@/lib/decision-debt-server'
 import {
   CONFIDENCES,
   EVIDENCE_KINDS,
@@ -126,7 +127,16 @@ export async function POST(
       },
     })
 
-    return NextResponse.json(evidence, { status: 201 })
+    const debt = await recalculateDecisionDebt(id)
+
+    return NextResponse.json(
+      {
+        ...evidence,
+        debtScore: debt?.score ?? null,
+        debtRationale: debt?.rationale ?? null,
+      },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Error adding evidence:', error)
     return NextResponse.json({ error: 'Failed to add evidence' }, { status: 500 })

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/Badge'
+import { debtLevel } from '@/lib/decision-debt'
 
 type Tone = 'neutral' | 'accent' | 'danger' | 'success' | 'outline'
 
@@ -52,4 +53,22 @@ export function ConfidenceBadge({ confidence }: { confidence: string }) {
 
 export function RoleBadge({ role }: { role: string }) {
   return <Badge tone={role === 'VIEWER' ? 'outline' : 'accent'}>{role}</Badge>
+}
+
+export function DebtBadge({ score }: { score: number }) {
+  const level = debtLevel(score)
+  const tone =
+    level === 'LOW'
+      ? 'success'
+      : level === 'MEDIUM'
+        ? 'neutral'
+        : level === 'HIGH'
+          ? 'accent'
+          : 'danger'
+
+  return (
+    <Badge tone={tone} title={`Decision debt ${score}/100 (${level})`}>
+      Debt {score}
+    </Badge>
+  )
 }

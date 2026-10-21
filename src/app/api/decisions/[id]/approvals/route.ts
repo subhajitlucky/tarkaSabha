@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import { sha256 } from '@/lib/decision-report'
+import { recalculateDecisionDebt } from '@/lib/decision-debt-server'
 import {
   APPROVAL_STATUSES,
   MAX_APPROVAL_NOTE,
@@ -164,7 +165,16 @@ export async function POST(
       },
     })
 
-    return NextResponse.json(approval, { status: 201 })
+    const debt = await recalculateDecisionDebt(id)
+
+    return NextResponse.json(
+      {
+        ...approval,
+        debtScore: debt?.score ?? null,
+        debtRationale: debt?.rationale ?? null,
+      },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Error recording approval:', error)
     return NextResponse.json({ error: 'Failed to record approval' }, { status: 500 })

@@ -6,6 +6,8 @@ export interface ReportDecision {
   summary?: string | null
   status: string
   impact: string
+  debtScore?: number | null
+  debtRationale?: string | null
   createdAt: Date | string
   updatedAt: Date | string
   owner?: { name: string | null; email: string | null } | null
@@ -78,6 +80,11 @@ export function buildDecisionReport({
   lines.push(`- **Status:** ${decision.status.replaceAll('_', ' ')}`)
   lines.push(`- **Impact:** ${decision.impact}`)
   lines.push(`- **Owner:** ${ownerName(decision.owner)}`)
+  lines.push(
+    `- **Decision debt:** ${decision.debtScore ?? 0}/100${
+      decision.debtRationale ? ` — ${decision.debtRationale.replace(/\n/g, '; ')}` : ''
+    }`
+  )
   lines.push(`- **Created:** ${iso(decision.createdAt)}`)
   lines.push(`- **Updated:** ${iso(decision.updatedAt)}`, '')
 

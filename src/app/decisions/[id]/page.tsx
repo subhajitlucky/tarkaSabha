@@ -12,12 +12,14 @@ import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { ReportShareControl } from '@/components/reports/ReportShareControl'
 import {
   ConfidenceBadge,
+  DebtBadge,
   DecisionStatusBadge,
   EvidenceStatusBadge,
   ImpactBadge,
   RoleBadge,
 } from '@/components/workspaces/badges'
 import { formatDate } from '@/components/workspaces/format'
+import { scoreDecisionDebt } from '@/lib/decision-debt'
 import {
   CONFIDENCES,
   DECISION_STATUSES,
@@ -31,6 +33,26 @@ import { ApprovalRecord, Chat, DecisionDetail, EvidenceRecord, ReportRecord } fr
 function ApprovalBadge({ status }: { status: string }) {
   const tone = status === 'APPROVED' ? 'success' : status === 'REJECTED' ? 'danger' : 'neutral'
   return <Badge tone={tone}>{status}</Badge>
+}
+
+function withDebt(
+  decision: DecisionDetail,
+  patch: Partial<DecisionDetail>
+): DecisionDetail {
+  const next = { ...decision, ...patch }
+  const debt = scoreDecisionDebt({
+    status: next.status,
+    impact: next.impact,
+    evidence: next.evidence,
+    approvals: next.approvals,
+  })
+
+  return {
+    ...next,
+    debtScore: debt.score,
+    debtRationale: debt.rationale,
+    scoredAt: new Date().toISOString(),
+  }
 }
 
 export default function DecisionPage() {
@@ -142,7 +164,7 @@ export default function DecisionPage() {
 
       setDecision((current) =>
         current
-          ? { ...current, status: data.status, updatedAt: data.updatedAt }
+          ? withDebt(current, { status: data.status, updatedAt: data.updatedAt })
           : current
       )
     } catch (error) {
@@ -183,7 +205,9 @@ export default function DecisionPage() {
 
       const created = data as EvidenceRecord
       setDecision((current) =>
-        current ? { ...current, evidence: [created, ...current.evidence] } : current
+        current
+          ? withDebt(current, { evidence: [created, ...current.evidence] })
+          : current
       )
       setSource('')
       setCommit('')
@@ -255,7 +279,9 @@ export default function DecisionPage() {
 
       const created = data as ApprovalRecord
       setDecision((current) =>
-        current ? { ...current, approvals: [created, ...current.approvals] } : current
+        current
+          ? withDebt(current, { approvals: [created, ...current.approvals] })
+          : current
       )
       setApprovalNote('')
     } catch (error) {
@@ -370,7 +396,7 @@ export default function DecisionPage() {
         actions={<RoleBadge role={decision.role} />}
       />
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <Card className="py-4">
             <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">State</p>
             <div className="mt-2">
@@ -381,6 +407,12 @@ export default function DecisionPage() {
             <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">Impact</p>
             <div className="mt-2">
               <ImpactBadge impact={decision.impact} />
+            </div>
+          </Card>
+          <Card className="py-4">
+            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">Debt</p>
+            <div className="mt-2">
+              <DebtBadge score={decision.debtScore} />
             </div>
           </Card>
           <Card className="py-4">
@@ -450,6 +482,17 @@ export default function DecisionPage() {
         </section>
 
         <aside className="space-y-4">
+          <Card className="space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <p className="eyebrow">Decision debt</p>
+              <DebtBadge score={decision.debtScore} />
+            </div>
+            <p className="font-display text-2xl text-text">{decision.debtScore}/100</p>
+            <p className="whitespace-pre-line text-xs leading-relaxed text-muted">
+              {decision.debtRationale || 'No debt rationale recorded yet.'}
+            </p>
+          </Card>
+
           {canEdit ? (
             <Card className="space-y-4">
               <div>

@@ -11,6 +11,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Decisions** carry a state, impact, owner, evidence, approvals, and a generated report.
 - **Evidence** records a source path, commit, quote, hash, status, and confidence.
 - **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
+- **Decision debt** is an explainable 0–100 score based on evidence coverage and status, unresolved evidence, approvals, decision state, and deal impact.
 - **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
 - **Sources** ingest a public GitHub repository and snapshot files, commits, pull requests, and issues with hashes.
 - **Candidate decisions** are proposed by the model from source snapshots; a human confirms or rejects each one before it enters the decision log.
@@ -35,6 +36,17 @@ On a source snapshot page, a reviewer can extract candidate decisions. The serve
 - Pending candidates must be reviewed before another extraction can run.
 - Configure a default provider under `/providers` before extracting.
 
+## Decision Debt
+
+Every decision stores a 0–100 debt score and a rationale. The score is recomputed after evidence, approval, state, or impact changes:
+
+- missing evidence and unresolved evidence statuses add debt
+- a rejection adds debt; an approval reduces it
+- draft/in-review states add debt; approved decisions reduce it
+- critical/high deal impact increases the consequence weight
+
+The score appears on workspace decision cards, the decision page, and generated evidence reports.
+
 - Live: https://tarkasabha.vercel.app
 - Sample council: https://tarkasabha.vercel.app/demo
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
@@ -50,6 +62,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Decisions, evidence records, approvals, generated reports, and expiring/revocable share links.
 - Public GitHub repository ingestion with source snapshots and hashes.
 - Model-proposed candidate decisions with human confirmation into decisions and evidence.
+- Explainable decision-debt scoring from evidence, approvals, state, and deal impact.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

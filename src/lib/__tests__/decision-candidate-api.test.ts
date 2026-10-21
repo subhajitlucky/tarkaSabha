@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: {
     decisionCandidate: { findUnique: vi.fn(), update: vi.fn() },
-    decision: { create: vi.fn(), delete: vi.fn() },
+    decision: { create: vi.fn(), update: vi.fn(), delete: vi.fn() },
     evidence: { createMany: vi.fn() },
   },
   authMock: vi.fn(),
@@ -60,6 +60,7 @@ describe('PATCH /api/decision-candidates/[id]', () => {
       id: 'd1',
       title: candidate.title,
     })
+    prismaMock.decision.update.mockResolvedValue({ id: 'd1' })
     prismaMock.evidence.createMany.mockResolvedValue({ count: 1 })
     prismaMock.decisionCandidate.update.mockImplementation(({ data }) => ({
       id: 'c1',

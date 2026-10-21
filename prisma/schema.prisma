@@ -319,6 +319,10 @@ model Decision {
   ownerId     String?
   /// Optional link to the review room (chat) where this decision was tested.
   reviewRoomId String?
+  /// 0-100: higher means more unresolved decision debt.
+  debtScore   Int        @default(0)
+  debtRationale String?
+  scoredAt    DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
