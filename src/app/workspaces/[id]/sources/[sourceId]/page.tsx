@@ -2,14 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
+import { ConfidenceBadge } from '@/components/workspaces/badges'
 import { formatDate } from '@/components/workspaces/format'
-import { SourceSnapshotRecord, WorkspaceSourceDetail } from '@/types'
+import { canEditDecisions } from '@/lib/workspace-roles'
+import {
+  DecisionCandidateRecord,
+  SourceSnapshotRecord,
+  WorkspaceSourceDetail,
+} from '@/types'
 
 function metadataValue(metadata: unknown, key: string): string | null {
   if (!metadata || typeof metadata !== 'object') return null
@@ -58,11 +64,16 @@ function SnapshotMeta({ snapshot }: { snapshot: SourceSnapshotRecord }) {
 
 export default function SourcePage() {
   const { id, sourceId } = useParams<{ id: string; sourceId: string }>()
+  const router = useRouter()
   const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [source, setSource] = useState<WorkspaceSourceDetail | null>(null)
   const [loaded, setLoaded] = useState(false)
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
+  const [extracting, setExtracting] = useState(false)
+  const [candidateError, setCandidateError] = useState('')
+  const [candidateNotice, setCandidateNotice] = useState('')
+  const [reviewingCandidate, setReviewingCandidate] = useState<string | null>(null)
 
   const loading = authLoading || (isAuthenticated && !loaded)
 
@@ -109,6 +120,84 @@ export default function SourcePage() {
     }
   }, [authLoading, id, isAuthenticated, sourceId])
 
+  const extractCandidates = async () => {
+    if (!source) return
+    setExtracting(true)
+    setCandidateError('')
+    setCandidateNotice('')
+
+    try {
+      const res = await fetch(
+        `/api/workspaces/${id}/sources/${sourceId}/extract`,
+        { method: 'POST' }
+      )
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setCandidateError(data?.error || 'Could not extract candidate decisions.')
+        return
+      }
+
+      const created = Array.isArray(data?.candidates)
+        ? (data.candidates as DecisionCandidateRecord[])
+        : []
+      if (created.length === 0) {
+        setCandidateNotice('No clear candidate decisions were found in this source.')
+      }
+      setSource((current) =>
+        current
+          ? { ...current, candidates: [...created, ...current.candidates] }
+          : current
+      )
+    } catch (err) {
+      console.error('Failed to extract candidates', err)
+      setCandidateError('Could not extract candidate decisions.')
+    } finally {
+      setExtracting(false)
+    }
+  }
+
+  const reviewCandidate = async (candidateId: string, status: 'CONFIRMED' | 'REJECTED') => {
+    setReviewingCandidate(candidateId)
+    setCandidateError('')
+
+    try {
+      const res = await fetch(`/api/decision-candidates/${candidateId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setCandidateError(data?.error || 'Could not review the candidate.')
+        return
+      }
+
+      setSource((current) =>
+        current
+          ? {
+              ...current,
+              candidates: current.candidates.map((candidate) =>
+                candidate.id === candidateId
+                  ? {
+                      ...candidate,
+                      status: data.candidate?.status ?? status,
+                      decisionId: data.candidate?.decisionId ?? candidate.decisionId,
+                    }
+                  : candidate
+              ),
+            }
+          : current
+      )
+    } catch (err) {
+      console.error('Failed to review candidate', err)
+      setCandidateError('Could not review the candidate.')
+    } finally {
+      setReviewingCandidate(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-5 py-14">
@@ -151,6 +240,10 @@ export default function SourcePage() {
     )
   }
 
+  const canEdit = canEditDecisions(source.role)
+  const pendingCandidates = source.candidates.filter(
+    (candidate) => candidate.status === 'PENDING'
+  )
   const files = source.snapshots.filter((snapshot) => snapshot.kind === 'FILE')
   const commits = source.snapshots.filter((snapshot) => snapshot.kind === 'COMMIT')
   const pullRequests = source.snapshots.filter(
@@ -197,6 +290,169 @@ export default function SourcePage() {
           </Card>
         ))}
       </div>
+
+      <section aria-labelledby="candidates-heading" className="mb-8">
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <h2
+            id="candidates-heading"
+            className="font-mono text-xs uppercase tracking-[0.14em] text-subtle"
+          >
+            Candidate decisions
+          </h2>
+          <span className="font-mono text-xs text-subtle">
+            {pendingCandidates.length} pending · {source.candidates.length} total
+          </span>
+        </div>
+
+        {canEdit && (
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              onClick={extractCandidates}
+              disabled={extracting || pendingCandidates.length > 0}
+            >
+              {extracting
+                ? 'Extracting…'
+                : pendingCandidates.length > 0
+                  ? 'Review pending first'
+                  : 'Extract candidate decisions'}
+            </Button>
+            <p className="text-xs leading-relaxed text-subtle">
+              Uses your default provider. The model proposes; you confirm before anything
+              becomes a decision.
+            </p>
+          </div>
+        )}
+
+        {candidateError && (
+          <p role="alert" className="mb-3 text-xs text-danger">
+            {candidateError}
+          </p>
+        )}
+        {candidateNotice && <p className="mb-3 text-xs text-muted">{candidateNotice}</p>}
+
+        {source.candidates.length === 0 ? (
+          <EmptyState
+            title="No candidate decisions yet"
+            description={
+              canEdit
+                ? 'Extract candidates from this source. Nothing enters the decision log until you confirm it.'
+                : 'A reviewer or owner can extract candidate decisions from this source.'
+            }
+          />
+        ) : (
+          <ul className="space-y-3">
+            {source.candidates.map((candidate) => (
+              <li key={candidate.id}>
+                <Card className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="font-display text-base leading-snug text-text">
+                      {candidate.title}
+                    </h3>
+                    <ConfidenceBadge confidence={candidate.confidence} />
+                    <Badge
+                      tone={
+                        candidate.status === 'CONFIRMED'
+                          ? 'success'
+                          : candidate.status === 'REJECTED'
+                            ? 'danger'
+                            : 'accent'
+                      }
+                    >
+                      {candidate.status}
+                    </Badge>
+                    <span className="ml-auto font-mono text-xs text-subtle">
+                      {formatDate(candidate.createdAt)}
+                    </span>
+                  </div>
+
+                  {candidate.context && (
+                    <div>
+                      <p className="eyebrow">Context</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted">
+                        {candidate.context}
+                      </p>
+                    </div>
+                  )}
+                  {candidate.proposal && (
+                    <div>
+                      <p className="eyebrow">Proposed decision</p>
+                      <p className="mt-1 text-sm leading-relaxed text-text">
+                        {candidate.proposal}
+                      </p>
+                    </div>
+                  )}
+                  {candidate.rationale && (
+                    <div>
+                      <p className="eyebrow">Why</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted">
+                        {candidate.rationale}
+                      </p>
+                    </div>
+                  )}
+
+                  {candidate.evidence.length > 0 && (
+                    <div className="space-y-2 border-t border-line pt-3">
+                      <p className="eyebrow">Evidence</p>
+                      {candidate.evidence.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="rounded-[3px] border border-line bg-surface-2 p-2"
+                        >
+                          <p className="break-all font-mono text-xs text-muted">
+                            {entry.snapshot.path}
+                          </p>
+                          {entry.quote && (
+                            <blockquote className="mt-1 border-l-2 border-accent-line pl-2 text-xs leading-relaxed text-muted">
+                              {entry.quote}
+                            </blockquote>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {candidate.status === 'PENDING' && canEdit && (
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="primary"
+                        onClick={() => reviewCandidate(candidate.id, 'CONFIRMED')}
+                        disabled={reviewingCandidate !== null}
+                      >
+                        {reviewingCandidate === candidate.id ? 'Reviewing…' : 'Confirm as decision'}
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="danger"
+                        onClick={() => reviewCandidate(candidate.id, 'REJECTED')}
+                        disabled={reviewingCandidate !== null}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+
+                  {candidate.status === 'CONFIRMED' && candidate.decisionId && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => router.push(`/decisions/${candidate.decisionId}`)}
+                    >
+                      Open decision
+                    </Button>
+                  )}
+                </Card>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       <section aria-labelledby="files-heading" className="mb-8">
         <div className="mb-3 flex items-center justify-between gap-3">

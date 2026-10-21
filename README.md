@@ -13,6 +13,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
 - **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
 - **Sources** ingest a public GitHub repository and snapshot files, commits, pull requests, and issues with hashes.
+- **Candidate decisions** are proposed by the model from source snapshots; a human confirms or rejects each one before it enters the decision log.
 
 ## GitHub Ingestion
 
@@ -24,6 +25,15 @@ A workspace reviewer can ingest a public GitHub repository from the workspace So
 - recent issues
 
 Each file snapshot stores its path, content, Git blob SHA, SHA-256 content hash, size, and retrieval time. Set `GITHUB_TOKEN` to raise the GitHub API rate limit; public unauthenticated ingestion also works within GitHub's limit.
+
+## Decision Extraction
+
+On a source snapshot page, a reviewer can extract candidate decisions. The server sends a bounded set of snapshots to the reviewer's default provider and stores the returned candidates as `PENDING` with cited snapshot IDs and quotes.
+
+- **Confirm** creates a real `Decision` and one `Evidence` row per cited snapshot, then links the candidate to the decision.
+- **Reject** keeps the candidate as a terminal audit record.
+- Pending candidates must be reviewed before another extraction can run.
+- Configure a default provider under `/providers` before extracting.
 
 - Live: https://tarkasabha.vercel.app
 - Sample council: https://tarkasabha.vercel.app/demo
@@ -39,6 +49,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Decision workspaces with roles, membership, and one-time invite links.
 - Decisions, evidence records, approvals, generated reports, and expiring/revocable share links.
 - Public GitHub repository ingestion with source snapshots and hashes.
+- Model-proposed candidate decisions with human confirmation into decisions and evidence.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

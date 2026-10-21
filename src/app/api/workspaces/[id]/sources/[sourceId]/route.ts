@@ -53,6 +53,36 @@ export async function GET(
             retrievedAt: true,
           },
         },
+        candidates: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            title: true,
+            context: true,
+            proposal: true,
+            rationale: true,
+            confidence: true,
+            status: true,
+            decisionId: true,
+            createdAt: true,
+            evidence: {
+              select: {
+                id: true,
+                quote: true,
+                snapshot: {
+                  select: {
+                    id: true,
+                    kind: true,
+                    path: true,
+                    title: true,
+                    sha: true,
+                    sha256: true,
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     })
 
@@ -60,7 +90,7 @@ export async function GET(
       return NextResponse.json({ error: 'Source not found' }, { status: 404 })
     }
 
-    return NextResponse.json(source)
+    return NextResponse.json({ ...source, role: membership.role })
   } catch (error) {
     console.error('Error fetching source:', error)
     return NextResponse.json({ error: 'Failed to fetch source' }, { status: 500 })

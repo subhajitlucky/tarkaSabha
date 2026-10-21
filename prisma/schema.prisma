@@ -55,6 +55,7 @@ model User {
   invitesCreated  WorkspaceInvite[] @relation("InvitesCreated")
   invitesAccepted WorkspaceInvite[] @relation("InvitesAccepted")
   sources         WorkspaceSource[]
+  decisionCandidates DecisionCandidate[]
 }
 
 model Feedback {
@@ -260,6 +261,7 @@ model Workspace {
   decisions   Decision[]
   invites     WorkspaceInvite[]
   sources     WorkspaceSource[]
+  candidates  DecisionCandidate[]
 
   @@index([creatorId])
   @@index([updatedAt])
@@ -326,6 +328,7 @@ model Decision {
   evidence    Evidence[]
   approvals   Approval[]
   reports     Report[]
+  candidate   DecisionCandidate?
 
   @@index([workspaceId, updatedAt])
   @@index([createdById])
@@ -435,6 +438,7 @@ model WorkspaceSource {
   workspace        Workspace        @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   createdBy        User             @relation(fields: [createdById], references: [id], onDelete: Cascade)
   snapshots        SourceSnapshot[]
+  candidates       DecisionCandidate[]
 
   @@index([workspaceId, updatedAt])
 }
@@ -455,7 +459,49 @@ model SourceSnapshot {
   retrievedAt DateTime       @default(now())
   createdAt   DateTime       @default(now())
   source      WorkspaceSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  candidateEvidence CandidateEvidence[]
 
   @@index([sourceId, kind])
   @@index([sourceId, path])
+}
+
+/// An LLM-proposed decision. A human must confirm it before it becomes a real
+/// Decision; rejection is terminal and kept for the audit trail.
+model DecisionCandidate {
+  id          String    @id @default(cuid())
+  workspaceId String
+  sourceId    String
+  createdById String
+  title       String
+  context     String?
+  proposal    String?
+  rationale   String?
+  /// HIGH | MEDIUM | LOW
+  confidence  String    @default("MEDIUM")
+  /// PENDING | CONFIRMED | REJECTED
+  status      String    @default("PENDING")
+  decisionId  String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  source      WorkspaceSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  decision    Decision? @relation(fields: [decisionId], references: [id], onDelete: SetNull)
+  evidence    CandidateEvidence[]
+
+  @@index([workspaceId, status])
+  @@index([sourceId, status])
+}
+
+model CandidateEvidence {
+  id          String            @id @default(cuid())
+  candidateId String
+  snapshotId  String
+  quote       String?
+  createdAt   DateTime          @default(now())
+  candidate   DecisionCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  snapshot    SourceSnapshot    @relation(fields: [snapshotId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, snapshotId])
+  @@index([snapshotId])
 }

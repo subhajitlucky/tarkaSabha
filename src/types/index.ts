@@ -208,10 +208,38 @@ export interface SourceSnapshotRecord {
   retrievedAt: string
 }
 
+export interface CandidateEvidenceRecord {
+  id: string
+  quote?: string | null
+  snapshot: {
+    id: string
+    kind: string
+    path: string
+    title?: string | null
+    sha?: string | null
+    sha256?: string | null
+  }
+}
+
+export interface DecisionCandidateRecord {
+  id: string
+  title: string
+  context?: string | null
+  proposal?: string | null
+  rationale?: string | null
+  confidence: string
+  status: string
+  decisionId?: string | null
+  createdAt: string
+  evidence: CandidateEvidenceRecord[]
+}
+
 export interface WorkspaceSourceDetail extends WorkspaceSourceSummary {
   commitSha?: string | null
   createdAt: string
+  role: WorkspaceRole
   snapshots: SourceSnapshotRecord[]
+  candidates: DecisionCandidateRecord[]
 }
 
 export interface EvidenceRecord {
