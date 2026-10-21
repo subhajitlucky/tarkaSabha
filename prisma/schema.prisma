@@ -372,6 +372,7 @@ model DecisionPin {
 model Evidence {
   id         String   @id @default(cuid())
   decisionId String
+  snapshotId String?
   /// CODE | COMMIT | DOC | TEST | CONFIG | OTHER
   kind       String   @default("CODE")
   source     String
@@ -384,8 +385,10 @@ model Evidence {
   confidence String   @default("MEDIUM")
   createdAt  DateTime @default(now())
   decision   Decision @relation(fields: [decisionId], references: [id], onDelete: Cascade)
+  snapshot   SourceSnapshot? @relation(fields: [snapshotId], references: [id], onDelete: SetNull)
 
   @@index([decisionId, createdAt])
+  @@index([snapshotId])
 }
 
 model Approval {
@@ -491,6 +494,7 @@ model SourceSnapshot {
   createdAt   DateTime       @default(now())
   source      WorkspaceSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
   candidateEvidence CandidateEvidence[]
+  evidence    Evidence[]
 
   @@index([sourceId, kind])
   @@index([sourceId, path])

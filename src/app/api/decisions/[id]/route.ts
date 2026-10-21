@@ -54,6 +54,7 @@ export async function GET(
           orderBy: { createdAt: 'desc' },
           select: {
             id: true,
+            snapshotId: true,
             kind: true,
             source: true,
             commit: true,
@@ -62,6 +63,9 @@ export async function GET(
             status: true,
             confidence: true,
             createdAt: true,
+            snapshot: {
+              select: { id: true, kind: true, path: true, sha: true, sha256: true, url: true },
+            },
           },
         },
         approvals: {

@@ -9,7 +9,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Workspaces** scope decisions, evidence, members, sources, and reports.
 - **Roles** are `OWNER`, `ADMIN`, `REVIEWER`, and `VIEWER`; owners and admins manage members and invite links.
 - **Decisions** carry a state, impact, owner, evidence, approvals, and a generated report.
-- **Evidence** records a source path, commit, quote, hash, status, and confidence.
+- **Evidence** records a source path, commit, quote, hash, status, and confidence; it can be linked to an ingested source snapshot so the path, commit, and hash are locked.
 - **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
 - **Decision debt** is an explainable 0–100 score based on evidence coverage and status, unresolved evidence, approvals, decision state, and deal impact.
 - **Decision pins** capture a testable decision point: chosen value, separating test, expected result, code scope, owner, and supersession trigger.
@@ -32,7 +32,7 @@ Each file snapshot stores its path, content, Git blob SHA, SHA-256 content hash,
 
 On a source snapshot page, a reviewer can extract candidate decisions. The server sends a bounded set of snapshots to the reviewer's default provider and stores the returned candidates as `PENDING` with cited snapshot IDs and quotes.
 
-- **Confirm** creates a real `Decision` and one `Evidence` row per cited snapshot, then links the candidate to the decision.
+- **Confirm** creates a real `Decision` and one `Evidence` row per cited snapshot, links each evidence row to its source snapshot, then links the candidate to the decision.
 - **Reject** keeps the candidate as a terminal audit record.
 - Pending candidates must be reviewed before another extraction can run.
 - Configure a default provider under `/providers` before extracting.
@@ -78,6 +78,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Model-proposed candidate decisions with human confirmation into decisions and evidence.
 - Explainable decision-debt scoring from evidence, approvals, state, and deal impact.
 - Testable decision pins with separating tests and supersession triggers.
+- Evidence linked to immutable source snapshots with locked path, commit, and hash.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

@@ -245,6 +245,7 @@ export interface WorkspaceSourceDetail extends WorkspaceSourceSummary {
 
 export interface EvidenceRecord {
   id: string
+  snapshotId?: string | null
   kind: EvidenceKind | string
   source: string
   commit?: string | null
@@ -253,6 +254,32 @@ export interface EvidenceRecord {
   status: EvidenceStatus | string
   confidence: Confidence | string
   createdAt: string
+  snapshot?: {
+    id: string
+    kind: string
+    path: string
+    sha?: string | null
+    sha256?: string | null
+    url?: string | null
+  } | null
+}
+
+export interface WorkspaceSnapshotOption {
+  id: string
+  kind: string
+  path: string
+  title?: string | null
+  sha?: string | null
+  sha256?: string | null
+  url: string
+  size?: number | null
+  source: {
+    id: string
+    owner: string
+    name: string
+    ref: string
+    commitSha?: string | null
+  }
 }
 
 export interface DecisionPinRecord {

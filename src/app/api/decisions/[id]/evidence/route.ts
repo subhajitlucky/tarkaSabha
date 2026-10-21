@@ -55,7 +55,7 @@ export async function POST(
       )
     }
 
-    const source = cleanText(body.source, MAX_EVIDENCE_SOURCE)
+    let source = cleanText(body.source, MAX_EVIDENCE_SOURCE)
     if (!source) {
       return NextResponse.json(
         { error: `Evidence source is required (max ${MAX_EVIDENCE_SOURCE} characters)` },
@@ -71,7 +71,7 @@ export async function POST(
       )
     }
 
-    const commit = optionalText(body.commit, MAX_EVIDENCE_COMMIT)
+    let commit = optionalText(body.commit, MAX_EVIDENCE_COMMIT)
     if (body.commit !== undefined && commit === undefined) {
       return NextResponse.json(
         { error: `Commit must be a string (max ${MAX_EVIDENCE_COMMIT} characters)` },
@@ -79,7 +79,7 @@ export async function POST(
       )
     }
 
-    const sha256 = optionalText(body.sha256, MAX_EVIDENCE_HASH)
+    let sha256 = optionalText(body.sha256, MAX_EVIDENCE_HASH)
     if (body.sha256 !== undefined && sha256 === undefined) {
       return NextResponse.json(
         { error: `Hash must be a string (max ${MAX_EVIDENCE_HASH} characters)` },
@@ -103,9 +103,44 @@ export async function POST(
       )
     }
 
+    let snapshotId: string | null = null
+    if (body.snapshotId !== undefined && body.snapshotId !== null) {
+      if (typeof body.snapshotId !== 'string') {
+        return NextResponse.json({ error: 'Snapshot ID must be a string or null' }, { status: 400 })
+      }
+
+      const snapshot = await prisma.sourceSnapshot.findFirst({
+        where: {
+          id: body.snapshotId,
+          source: { workspaceId: membership.workspaceId },
+        },
+        select: {
+          id: true,
+          kind: true,
+          path: true,
+          sha: true,
+          sha256: true,
+          source: { select: { commitSha: true } },
+        },
+      })
+
+      if (!snapshot) {
+        return NextResponse.json(
+          { error: 'Source snapshot not found in this workspace' },
+          { status: 400 }
+        )
+      }
+
+      snapshotId = snapshot.id
+      source = snapshot.path
+      commit = snapshot.kind === 'COMMIT' ? snapshot.sha : snapshot.source.commitSha
+      sha256 = snapshot.sha256
+    }
+
     const evidence = await prisma.evidence.create({
       data: {
         decisionId: id,
+        snapshotId,
         kind,
         source,
         quote,
@@ -116,6 +151,7 @@ export async function POST(
       },
       select: {
         id: true,
+        snapshotId: true,
         kind: true,
         source: true,
         commit: true,
@@ -124,6 +160,9 @@ export async function POST(
         status: true,
         confidence: true,
         createdAt: true,
+        snapshot: {
+          select: { id: true, kind: true, path: true, sha: true, sha256: true, url: true },
+        },
       },
     })
 

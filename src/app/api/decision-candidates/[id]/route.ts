@@ -47,6 +47,7 @@ export async function PATCH(
             quote: true,
             snapshot: {
               select: {
+                id: true,
                 kind: true,
                 path: true,
                 title: true,
@@ -163,6 +164,7 @@ export async function PATCH(
 
       return {
         decisionId: decision.id,
+        snapshotId: snapshot.id,
         kind,
         source: snapshot.path,
         commit:

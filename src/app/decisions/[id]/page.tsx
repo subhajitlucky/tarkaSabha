@@ -29,7 +29,14 @@ import {
   MAX_APPROVAL_NOTE,
   canEditDecisions,
 } from '@/lib/workspace-roles'
-import { ApprovalRecord, Chat, DecisionDetail, EvidenceRecord, ReportRecord } from '@/types'
+import {
+  ApprovalRecord,
+  Chat,
+  DecisionDetail,
+  EvidenceRecord,
+  ReportRecord,
+  WorkspaceSnapshotOption,
+} from '@/types'
 
 function ApprovalBadge({ status }: { status: string }) {
   const tone = status === 'APPROVED' ? 'success' : status === 'REJECTED' ? 'danger' : 'neutral'
@@ -81,6 +88,8 @@ export default function DecisionPage() {
   const [generatingReport, setGeneratingReport] = useState(false)
   const [reportError, setReportError] = useState('')
 
+  const [snapshots, setSnapshots] = useState<WorkspaceSnapshotOption[]>([])
+  const [selectedSnapshotId, setSelectedSnapshotId] = useState('')
   const [kind, setKind] = useState('CODE')
   const [source, setSource] = useState('')
   const [commit, setCommit] = useState('')
@@ -131,6 +140,17 @@ export default function DecisionPage() {
         const loadedDecision = data as DecisionDetail
         setDecision(loadedDecision)
         setStatusDraft(loadedDecision.status)
+
+        if (loadedDecision.role !== 'VIEWER') {
+          const snapshotsRes = await fetch(
+            `/api/workspaces/${loadedDecision.workspaceId}/snapshots`,
+            { cache: 'no-store' }
+          )
+          if (snapshotsRes.ok) {
+            const list = await snapshotsRes.json().catch(() => null)
+            if (!cancelled) setSnapshots(Array.isArray(list) ? list : [])
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch decision', error)
         if (!cancelled) setLoadError('Could not load this decision.')
@@ -176,6 +196,28 @@ export default function DecisionPage() {
     }
   }
 
+  const selectSnapshot = (snapshotId: string) => {
+    setSelectedSnapshotId(snapshotId)
+    const snapshot = snapshots.find((item) => item.id === snapshotId)
+    if (!snapshot) return
+
+    setSource(snapshot.path)
+    setCommit(
+      snapshot.kind === 'COMMIT'
+        ? snapshot.sha ?? ''
+        : snapshot.source.commitSha ?? ''
+    )
+    setSha256(snapshot.sha256 ?? '')
+
+    if (snapshot.kind === 'COMMIT') {
+      setKind('COMMIT')
+    } else if (snapshot.kind === 'PULL_REQUEST' || snapshot.kind === 'ISSUE') {
+      setKind('OTHER')
+    } else {
+      setKind(/\.(md|mdx|rst|txt|adoc)$/i.test(snapshot.path) ? 'DOC' : 'CODE')
+    }
+  }
+
   const handleAddEvidence = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     if (!decision) return
@@ -195,6 +237,7 @@ export default function DecisionPage() {
           sha256,
           status: evidenceStatus,
           confidence,
+          snapshotId: selectedSnapshotId || null,
         }),
       })
       const data = await res.json().catch(() => null)
@@ -216,6 +259,7 @@ export default function DecisionPage() {
       setSha256('')
       setEvidenceStatus('VERIFIED')
       setConfidence('MEDIUM')
+      setSelectedSnapshotId('')
     } catch (error) {
       console.error('Failed to add evidence', error)
       setEvidenceError('Could not add the evidence.')
@@ -465,6 +509,17 @@ export default function DecisionPage() {
 
                     <p className="break-words font-mono text-xs text-muted">{item.source}</p>
 
+                    {item.snapshot && (
+                      <a
+                        href={item.snapshot.url || item.snapshot.path}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-block font-mono text-xs text-accent transition-colors hover:underline"
+                      >
+                        Linked snapshot · {item.snapshot.path}
+                      </a>
+                    )}
+
                     <blockquote className="border-l-2 border-accent-line pl-3 text-sm leading-relaxed text-text whitespace-pre-wrap">
                       {item.quote}
                     </blockquote>
@@ -548,6 +603,29 @@ export default function DecisionPage() {
               </div>
 
               <form onSubmit={handleAddEvidence} className="space-y-4">
+                <Field
+                  label="Source snapshot"
+                  hint={
+                    snapshots.length === 0
+                      ? 'No snapshots ingested yet. Add a source from the workspace first.'
+                      : 'Optional. Locks the source path, commit, and hash to an ingested snapshot.'
+                  }
+                >
+                  <Select
+                    aria-label="Source snapshot"
+                    value={selectedSnapshotId}
+                    onChange={(event) => selectSnapshot(event.target.value)}
+                  >
+                    <option value="">Manual source</option>
+                    {snapshots.map((snapshot) => (
+                      <option key={snapshot.id} value={snapshot.id}>
+                        {snapshot.source.owner}/{snapshot.source.name} · {snapshot.kind} ·{' '}
+                        {snapshot.path}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+
                 <Field label="Kind">
                   <Select value={kind} onChange={(event) => setKind(event.target.value)}>
                     {EVIDENCE_KINDS.map((value) => (
@@ -561,7 +639,10 @@ export default function DecisionPage() {
                 <Field label="Source" hint="Path, document, or URL.">
                   <Input
                     value={source}
-                    onChange={(event) => setSource(event.target.value)}
+                    onChange={(event) => {
+                      setSource(event.target.value)
+                      setSelectedSnapshotId('')
+                    }}
                     placeholder="src/auth/session.ts:42"
                     maxLength={500}
                     required
