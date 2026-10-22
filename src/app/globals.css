@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Tarka Sabha — "The Manuscript Ledger"
+   Tarka Sabha — "The Research Desk"
 
-   A debating hall rendered as a printed journal of proceedings: warm ink and
-   parchment rather than cold blue-slate, hairline rules rather than drop
-   shadows, and a single saffron accent used sparingly.
+   A diligence record rendered as a printed research note: warm ivory paper,
+   ink text, oxblood correction marks, hairline evidence rules, and almost no
+   decorative chrome. The council is a room inside the record; the record is
+   the product.
 
    Everything below is semantic. Components say `bg-surface` or `text-muted`,
    never `isLight ? 'bg-white' : 'bg-slate-900'`, so the theme flips in one

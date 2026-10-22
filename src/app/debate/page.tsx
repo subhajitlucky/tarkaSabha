@@ -583,16 +583,16 @@ export default function DebatePage() {
     <div className={`min-h-screen py-12 ${'bg-bg'}`}>
       <div className="max-w-6xl mx-auto px-6">
         <PageHeader
-          eyebrow="New council"
-          title="Convene a council"
-          lede="State what you need, then assemble agents with distinct jobs and the tools to check their own claims."
+          eyebrow="New review room"
+          title="Open a review room"
+          lede="State what the decision needs tested, then assemble agents with distinct jobs and the tools to check their own claims."
         />
 
         <section className="mb-8" aria-labelledby="starter-heading">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
             <div>
               <h2 id="starter-heading" className="font-display text-xl text-text">
-                Start from a council
+                Start from a template
               </h2>
               <p className="mt-1 text-sm text-muted">
                 Loads a brief and roles you can edit. Use a saved provider or add a key.

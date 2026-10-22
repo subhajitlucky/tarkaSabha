@@ -69,9 +69,9 @@ export default function DemoPage() {
   return (
     <div className="mx-auto max-w-6xl px-5 py-14">
       <PageHeader
-        eyebrow="Sample council"
-        title="A council, on the record"
-        lede="A public, read-only example of the shape of a run: roles, disagreement, a scored deliverable, and the candidates that lost."
+        eyebrow="Sample review room"
+        title="A review room, on the record"
+        lede="A public, read-only example of a review run: roles, disagreement, a scored deliverable, and the candidates that lost."
         actions={
           <Link href="/debate">
             <Button variant="primary">Convene your own</Button>

@@ -216,8 +216,8 @@ export default function ProvidersPage() {
     <div className="mx-auto max-w-4xl px-5 py-14">
       <PageHeader
         eyebrow="Providers"
-        title="Where the thinking happens"
-        lede="Bring your own key from any of twelve providers. Keys are encrypted with AES-256-GCM before they are stored and are never sent to the browser."
+        title="Model providers"
+        lede="Bring your own key from any of twelve providers. Keys are encrypted with AES-256-GCM before storage and are never sent to the browser."
         actions={
           <Button variant="primary" onClick={openCreate}>
             New provider
@@ -240,8 +240,8 @@ export default function ProvidersPage() {
         </p>
       ) : providers.length === 0 ? (
         <EmptyState
-          title="No providers yet"
-          description="Agents cannot answer without one. Add a key from OpenAI, Anthropic, Google or any of the others."
+          title="No providers configured"
+          description="Agents cannot answer without one. Add a key from OpenAI, Anthropic, Google, or any of the others."
           action={
             <Button variant="primary" onClick={openCreate}>
               Add a provider

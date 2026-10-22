@@ -88,53 +88,35 @@ export default function HistoryPage() {
           }
         />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+        <div className="border-y border-line">
           {chats.map((chat) => {
             const participants = chat.participants ?? []
             return (
-              <li key={chat.id}>
-                <Link
-                  href={`/chat/${chat.id}`}
-                  className="group flex h-full flex-col rounded-[4px] border border-line bg-surface p-4 transition-colors hover:border-accent-line"
-                >
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div className="flex -space-x-1.5">
-                      {participants.slice(0, 3).map((participant, index) => (
-                        <span
-                          key={participant.id ?? index}
-                          className="flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2 font-mono text-xs text-muted"
-                        >
-                          {(participant.persona?.name || '?')
-                            .split(/\s+/)
-                            .filter(Boolean)
-                            .slice(0, 2)
-                            .map((word) => word[0]?.toUpperCase() || '')
-                            .join('')}
-                        </span>
-                      ))}
-                      {participants.length > 3 && (
-                        <span className="flex h-7 w-7 items-center justify-center rounded-full border border-line bg-surface-2 font-mono text-xs text-subtle">
-                          +{participants.length - 3}
-                        </span>
-                      )}
-                    </div>
-                    {chat.isAutoMode && <Badge tone="success">Running</Badge>}
-                  </div>
-
-                  <h2 className="font-display text-[0.9375rem] leading-snug text-text transition-colors group-hover:text-accent">
+              <Link
+                key={chat.id}
+                href={`/chat/${chat.id}`}
+                className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-line px-1 py-4 transition-colors last:border-b-0 hover:bg-surface-2"
+              >
+                <div className="min-w-0">
+                  <h2 className="truncate font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
                     {chat.topic || chat.title}
                   </h2>
-
-                  <p className="mt-auto pt-3 font-mono text-xs uppercase tracking-[0.1em] text-subtle">
+                  <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-subtle">
                     {participants.length} agent{participants.length === 1 ? '' : 's'}
                     <span className="mx-1.5">·</span>
                     {new Date(chat.createdAt).toLocaleDateString()}
                   </p>
-                </Link>
-              </li>
+                </div>
+                <div className="flex items-center gap-3">
+                  {chat.isAutoMode && <Badge tone="success">Running</Badge>}
+                  <span className="font-mono text-sm text-accent opacity-0 transition-opacity group-hover:opacity-100">
+                    →
+                  </span>
+                </div>
+              </Link>
             )
           })}
-        </ul>
+        </div>
       )}
     </div>
   )

@@ -183,8 +183,8 @@ export default function PersonasPage() {
     <div className="mx-auto max-w-5xl px-5 py-14">
       <PageHeader
         eyebrow="Agents"
-        title="Your council members"
-        lede="Each agent has a job and, optionally, tools to check its own claims. Define them once and reuse them in any council."
+        title="Review-room agents"
+        lede="Each agent has a job and, optionally, tools to check its own claims. Define them once and reuse them inside a decision review room."
         actions={
           <Button variant="primary" onClick={openCreate}>
             New agent
@@ -219,7 +219,7 @@ export default function PersonasPage() {
         </p>
       ) : personas.length === 0 ? (
         <EmptyState
-          title="No agents yet"
+          title="No agents configured"
           description="A researcher gathers evidence, a critic attacks the weakest reasoning, a synthesizer pulls the threads together."
           action={
             <Button variant="primary" onClick={openCreate}>
