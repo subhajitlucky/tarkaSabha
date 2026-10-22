@@ -72,11 +72,11 @@ export default function RootLayout({
           <AuthProvider>
             <Navbar />
 
-            <main id="main" className="pt-[61px]">
+            <main id="main" className="pt-[61px] print:pt-0">
               {children}
             </main>
 
-            <footer className="mt-24 border-t border-line">
+            <footer className="mt-24 border-t border-line print:hidden">
               <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[1.4fr_1fr]">
                 <div>
                   <div className="flex items-center gap-3">

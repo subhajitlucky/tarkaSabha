@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { MarkdownDocument } from '@/components/reports/MarkdownDocument'
+import { PrintButton } from '@/components/reports/PrintButton'
 import { DossierShareControl } from '@/components/workspaces/DossierShareControl'
 import { formatDate } from '@/components/workspaces/format'
 import { canEditDecisions } from '@/lib/workspace-roles'
@@ -120,7 +121,7 @@ export default function DossierPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-5 py-14">
-      <div className="mb-6">
+      <div className="mb-6 print:hidden">
         <Link
           href={`/workspaces/${id}`}
           className="font-mono text-xs uppercase tracking-[0.12em] text-subtle transition-colors hover:text-accent"
@@ -136,11 +137,19 @@ export default function DossierPage() {
           dossier.createdAt
         )}${dossier.generatedBy?.name ? ` by ${dossier.generatedBy.name}` : ''}`}
         actions={
-          <a href={`/api/dossiers/${dossier.id}?download=1`}>
-            <Button variant="secondary" size="sm">
-              Download .md
-            </Button>
-          </a>
+          <div className="flex flex-wrap items-center gap-2 print:hidden">
+            <a href={`/api/dossiers/${dossier.id}?download=1`}>
+              <Button variant="secondary" size="sm">
+                Download .md
+              </Button>
+            </a>
+            <a href={`/api/dossiers/${dossier.id}/export`}>
+              <Button variant="secondary" size="sm">
+                Signed JSON
+              </Button>
+            </a>
+            <PrintButton />
+          </div>
         }
       />
 
@@ -152,7 +161,7 @@ export default function DossierPage() {
       </div>
 
       {canEdit && (
-        <Card className="mb-6 p-4">
+        <Card className="mb-6 p-4 print:hidden">
           <DossierShareControl dossierId={dossier.id} />
         </Card>
       )}

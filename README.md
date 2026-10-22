@@ -87,6 +87,8 @@ A workspace can generate a versioned, deal-level dossier that includes:
 
 Each dossier is stored with a SHA-256 content hash and can be viewed in the app or downloaded as Markdown. Dossiers can also be shared with an expiring, revocable link, optionally with source paths, commits, hashes, and code scopes redacted.
 
+When `EXPORT_SIGNING_KEY` is set, a dossier can be exported as a signed JSON bundle containing the dossier metadata, content, and an HMAC-SHA256 signature over a canonical field list. The dossier viewer also has a print/save-as-PDF action with print-specific styles.
+
 - Live: https://tarkasabha.vercel.app
 - Sample council: https://tarkasabha.vercel.app/demo
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
@@ -108,6 +110,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Versioned deal-level Decision Diligence Dossiers with evidence appendices.
 - Decision outcomes and scheduled revisit dates with overdue-revisit flags.
 - Expiring, revocable dossier share links with optional source redaction.
+- HMAC-signed dossier exports and print/save-as-PDF output.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.
@@ -347,6 +350,9 @@ CRON_SECRET="generate_a_strong_random_secret"
 
 # Optional: raise the GitHub API rate limit for repository ingestion.
 # GITHUB_TOKEN="github_pat_..."
+
+# Optional: enables HMAC-SHA256 signed dossier exports.
+# EXPORT_SIGNING_KEY="use_a_strong_random_secret"
 ```
 
 Generate a strong encryption key:
