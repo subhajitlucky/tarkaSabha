@@ -28,24 +28,20 @@ const SECTIONS = [
 export default function AboutPage() {
   return (
     <div>
-      <section className="relative overflow-hidden bg-[#080d0b] text-white">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(58rem_34rem_at_12%_0%,rgba(15,91,67,0.5),transparent_64%),radial-gradient(42rem_30rem_at_92%_30%,rgba(95,191,145,0.1),transparent_60%)]"
-        />
+      <section className="home-hero relative overflow-hidden border-b border-line">
         <div className="relative mx-auto max-w-[88rem] px-5 py-16 sm:px-8 lg:px-10 lg:py-24">
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-[#89e6bb]">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-accent">
             About Tarka Sabha
           </p>
-          <h1 className="mt-5 max-w-5xl text-5xl leading-[0.96] tracking-[-0.045em] text-white sm:text-6xl lg:text-7xl">
-            Evidence, <span className="text-[#89e6bb]">on the record.</span>
+          <h1 className="mt-5 max-w-5xl text-5xl leading-[0.96] tracking-[-0.045em] text-text sm:text-6xl lg:text-7xl">
+            Evidence, <span className="text-accent">on the record.</span>
           </h1>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-[#bdcfc4]">
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
             Tarka Sabha is a decision evidence workspace for technical diligence. Frame the
             decision, attach the source, test the claim, and leave an approval trail that someone
             else can read.
           </p>
-          <div className="mt-12 flex flex-col gap-2 border-t border-white/10 pt-5 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-[#7f9a8c] sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
+          <div className="mt-12 flex flex-col gap-2 border-t border-line pt-5 font-mono text-[0.62rem] uppercase tracking-[0.16em] text-subtle sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
             <span>Private by default</span>
             <span aria-hidden="true" className="hidden sm:inline">·</span>
             <span>Source-backed</span>

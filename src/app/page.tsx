@@ -19,7 +19,7 @@ const EVIDENCE = [
 
 function ProductPreview() {
   return (
-    <div className="relative border border-[#dce5e0] bg-white text-[#101714] shadow-[0_32px_90px_-38px_rgba(0,0,0,0.75)]">
+    <div className="relative border border-[#dce5e0] bg-white text-[#101714] shadow-[0_30px_90px_-44px_rgba(20,35,28,0.38)]">
       <div className="flex items-center justify-between gap-3 border-b border-[#e3eae6] px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center bg-[#0f5b43] font-display text-xs text-white">
@@ -131,22 +131,18 @@ function ProductPreview() {
 export default function Home() {
   return (
     <div>
-      <section className="relative overflow-hidden bg-[#080d0b] text-white">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_34rem_at_15%_0%,rgba(15,91,67,0.55),transparent_62%),radial-gradient(40rem_30rem_at_90%_25%,rgba(95,191,145,0.12),transparent_60%)]"
-        />
-        <div className="relative mx-auto grid max-w-[88rem] gap-12 px-5 sm:px-8 lg:px-10 py-16 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-14 lg:py-24">
+      <section className="home-hero relative overflow-hidden border-b border-line">
+        <div className="relative mx-auto grid max-w-[88rem] gap-12 px-5 py-16 sm:px-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-14 lg:px-10 lg:py-24">
           <div className="rise">
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-[#89e6bb]">
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-accent">
               Technical due diligence for private equity
             </p>
-            <h1 className="mt-5 max-w-xl text-[3.4rem] leading-[0.94] tracking-[-0.045em] sm:text-7xl">
+            <h1 className="mt-5 max-w-xl text-[3.4rem] leading-[0.94] tracking-[-0.045em] text-text sm:text-7xl">
               Less opinion.
               <br />
-              <span className="text-[#89e6bb]">More evidence.</span>
+              <span className="text-accent">More evidence.</span>
             </h1>
-            <p className="mt-6 max-w-lg text-base leading-relaxed text-[#bdcfc4]">
+            <p className="mt-6 max-w-lg text-base leading-relaxed text-muted">
               Tarka Sabha turns technical decisions into source-backed evidence and a diligence
               dossier — built for private-equity teams evaluating software acquisitions.
             </p>
@@ -157,25 +153,21 @@ export default function Home() {
                 </Button>
               </Link>
               <Link href="/diligence">
-                <Button
-                  variant="secondary"
-                  size="lg"
-                  className="border-white/20 bg-transparent text-white hover:border-white/40 hover:bg-white/5"
-                >
+                <Button variant="secondary" size="lg">
                   View sample dossier
                 </Button>
               </Link>
             </div>
 
-            <div className="mt-12 grid max-w-lg grid-cols-1 gap-3 border-t border-white/10 pt-5 sm:grid-cols-3 sm:gap-4">
+            <div className="mt-12 grid max-w-lg grid-cols-1 gap-3 border-t border-line pt-5 sm:grid-cols-3 sm:gap-4">
               {[
                 ['Source-backed', 'Every claim has a source'],
                 ['Decision records', 'Trade-offs and ownership'],
                 ['Dossier-ready', 'Shareable and printable'],
               ].map(([title, body]) => (
                 <div key={title}>
-                  <p className="text-xs font-semibold text-white">{title}</p>
-                  <p className="mt-1 text-[0.65rem] leading-relaxed text-[#8fa89b]">{body}</p>
+                  <p className="text-xs font-semibold text-text">{title}</p>
+                  <p className="mt-1 text-[0.65rem] leading-relaxed text-subtle">{body}</p>
                 </div>
               ))}
             </div>
