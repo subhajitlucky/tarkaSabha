@@ -27,6 +27,8 @@ import {
   EVIDENCE_KINDS,
   EVIDENCE_STATUSES,
   MAX_APPROVAL_NOTE,
+  MAX_OUTCOME_SUMMARY,
+  OUTCOME_STATUSES,
   canEditDecisions,
 } from '@/lib/workspace-roles'
 import {
@@ -88,6 +90,12 @@ export default function DecisionPage() {
   const [generatingReport, setGeneratingReport] = useState(false)
   const [reportError, setReportError] = useState('')
 
+  const [outcomeDraft, setOutcomeDraft] = useState('')
+  const [outcomeSummaryDraft, setOutcomeSummaryDraft] = useState('')
+  const [revisitAtDraft, setRevisitAtDraft] = useState('')
+  const [savingOutcome, setSavingOutcome] = useState(false)
+  const [outcomeError, setOutcomeError] = useState('')
+
   const [snapshots, setSnapshots] = useState<WorkspaceSnapshotOption[]>([])
   const [selectedSnapshotId, setSelectedSnapshotId] = useState('')
   const [kind, setKind] = useState('CODE')
@@ -140,6 +148,9 @@ export default function DecisionPage() {
         const loadedDecision = data as DecisionDetail
         setDecision(loadedDecision)
         setStatusDraft(loadedDecision.status)
+        setOutcomeDraft(loadedDecision.outcome || '')
+        setOutcomeSummaryDraft(loadedDecision.outcomeSummary || '')
+        setRevisitAtDraft(loadedDecision.revisitAt?.slice(0, 10) || '')
 
         if (loadedDecision.role !== 'VIEWER') {
           const snapshotsRes = await fetch(
@@ -365,6 +376,48 @@ export default function DecisionPage() {
     }
   }
 
+  const saveOutcome = async () => {
+    if (!decision) return
+    setSavingOutcome(true)
+    setOutcomeError('')
+
+    try {
+      const res = await fetch(`/api/decisions/${decision.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          outcome: outcomeDraft || null,
+          outcomeSummary: outcomeSummaryDraft,
+          revisitAt: revisitAtDraft || null,
+        }),
+      })
+      const data = await res.json().catch(() => null)
+
+      if (!res.ok) {
+        setOutcomeError(data?.error || 'Could not save the outcome.')
+        return
+      }
+
+      setDecision((current) =>
+        current
+          ? {
+              ...current,
+              outcome: data.outcome,
+              outcomeSummary: data.outcomeSummary,
+              outcomeAt: data.outcomeAt,
+              revisitAt: data.revisitAt,
+              updatedAt: data.updatedAt,
+            }
+          : current
+      )
+    } catch (err) {
+      console.error('Failed to save outcome', err)
+      setOutcomeError('Could not save the outcome.')
+    } finally {
+      setSavingOutcome(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="mx-auto max-w-6xl px-5 py-14">
@@ -547,6 +600,82 @@ export default function DecisionPage() {
             <p className="whitespace-pre-line text-xs leading-relaxed text-muted">
               {decision.debtRationale || 'No debt rationale recorded yet.'}
             </p>
+          </Card>
+
+          <Card className="space-y-4">
+            <div className="flex items-center justify-between gap-2">
+              <p className="eyebrow">Outcome & revisit</p>
+              {decision.outcome && (
+                <Badge
+                  tone={
+                    decision.outcome === 'VALIDATED'
+                      ? 'success'
+                      : decision.outcome === 'INVALIDATED'
+                        ? 'danger'
+                        : 'neutral'
+                  }
+                >
+                  {decision.outcome}
+                </Badge>
+              )}
+            </div>
+
+            {canEdit ? (
+              <>
+                <Field label="Outcome">
+                  <Select
+                    value={outcomeDraft}
+                    onChange={(event) => setOutcomeDraft(event.target.value)}
+                  >
+                    <option value="">Not recorded</option>
+                    {OUTCOME_STATUSES.map((outcome) => (
+                      <option key={outcome} value={outcome}>
+                        {outcome}
+                      </option>
+                    ))}
+                  </Select>
+                </Field>
+                <Field label="Revisit date">
+                  <Input
+                    type="date"
+                    value={revisitAtDraft}
+                    onChange={(event) => setRevisitAtDraft(event.target.value)}
+                  />
+                </Field>
+                <Field label="Outcome summary">
+                  <Textarea
+                    value={outcomeSummaryDraft}
+                    onChange={(event) => setOutcomeSummaryDraft(event.target.value)}
+                    placeholder="What happened when the decision was tested in practice?"
+                    rows={3}
+                    maxLength={MAX_OUTCOME_SUMMARY}
+                  />
+                </Field>
+                {outcomeError && (
+                  <p role="alert" className="text-xs text-danger">
+                    {outcomeError}
+                  </p>
+                )}
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  onClick={saveOutcome}
+                  disabled={savingOutcome}
+                >
+                  {savingOutcome ? 'Saving…' : 'Save outcome'}
+                </Button>
+              </>
+            ) : (
+              <div className="space-y-2 text-sm leading-relaxed text-muted">
+                <p>Outcome: {decision.outcome || 'Not recorded'}</p>
+                <p>
+                  Revisit:{' '}
+                  {decision.revisitAt ? formatDate(decision.revisitAt) : 'Not scheduled'}
+                </p>
+                {decision.outcomeSummary && <p>{decision.outcomeSummary}</p>}
+              </div>
+            )}
           </Card>
 
           {canEdit ? (

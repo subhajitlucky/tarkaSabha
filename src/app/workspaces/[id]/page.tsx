@@ -512,6 +512,19 @@ export default function WorkspacePage() {
                       <DecisionStatusBadge status={decision.status} />
                       <ImpactBadge impact={decision.impact} />
                       <DebtBadge score={decision.debtScore ?? 0} />
+                      {decision.outcome && (
+                        <Badge
+                          tone={
+                            decision.outcome === 'VALIDATED'
+                              ? 'success'
+                              : decision.outcome === 'INVALIDATED'
+                                ? 'danger'
+                                : 'neutral'
+                          }
+                        >
+                          {decision.outcome}
+                        </Badge>
+                      )}
                       <span className="ml-auto font-mono text-xs text-subtle">
                         {formatDate(decision.updatedAt)}
                       </span>
@@ -537,6 +550,12 @@ export default function WorkspacePage() {
                       {(decision._count?.approvals ?? 0) === 1 ? 'approval' : 'approvals'}
                       <span className="mx-1.5">·</span>
                       Owner {decision.owner?.name || 'unassigned'}
+                      {decision.revisitAt && (
+                        <>
+                          <span className="mx-1.5">·</span>
+                          Revisit {formatDate(decision.revisitAt)}
+                        </>
+                      )}
                     </p>
                   </Link>
                 </li>

@@ -12,6 +12,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Evidence** records a source path, commit, quote, hash, status, and confidence; it can be linked to an ingested source snapshot so the path, commit, and hash are locked.
 - **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
 - **Decision debt** is an explainable 0–100 score based on evidence coverage and status, unresolved evidence, approvals, decision state, and deal impact.
+- **Outcomes and revisits** close the loop: record validated/invalidated/partial outcomes, a summary, and the next revisit date.
 - **Decision pins** capture a testable decision point: chosen value, separating test, expected result, code scope, owner, and supersession trigger.
 - **Decision dossiers** aggregate the whole workspace into a versioned deal-level document with an executive summary, decision records, open questions, and an evidence appendix.
 - **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
@@ -62,6 +63,16 @@ A decision pin makes the decision testable instead of only narrative:
 
 Pins can be superseded and can record a last run result/time. They are included in generated evidence reports.
 
+## Outcomes and Revisits
+
+A decision can be closed out with:
+
+- **Outcome** — `PENDING`, `VALIDATED`, `INVALIDATED`, or `PARTIAL`.
+- **Outcome summary** — what happened when the decision was tested in practice.
+- **Revisit date** — when the decision should be reviewed again.
+
+Outcomes and revisit dates appear on decision cards, decision records, generated evidence reports, and deal dossiers. Dossiers flag overdue revisits that have no outcome recorded.
+
 ## Decision Diligence Dossier
 
 A workspace can generate a versioned, deal-level dossier that includes:
@@ -95,6 +106,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Testable decision pins with separating tests and supersession triggers.
 - Evidence linked to immutable source snapshots with locked path, commit, and hash.
 - Versioned deal-level Decision Diligence Dossiers with evidence appendices.
+- Decision outcomes and scheduled revisit dates with overdue-revisit flags.
 - Expiring, revocable dossier share links with optional source redaction.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.

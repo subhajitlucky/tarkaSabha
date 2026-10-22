@@ -11,6 +11,7 @@ import {
   isEmail,
   isEvidenceKind,
   isEvidenceStatus,
+  isOutcomeStatus,
   isPinStatus,
   isWorkspaceRole,
   optionalText,
@@ -87,6 +88,14 @@ describe('decision and evidence validators', () => {
     expect(isPinStatus('ACTIVE')).toBe(true)
     expect(isPinStatus('SUPERSEDED')).toBe(true)
     expect(isPinStatus('DRAFT')).toBe(false)
+  })
+
+  it('validates outcome statuses', () => {
+    expect(isOutcomeStatus('PENDING')).toBe(true)
+    expect(isOutcomeStatus('VALIDATED')).toBe(true)
+    expect(isOutcomeStatus('INVALIDATED')).toBe(true)
+    expect(isOutcomeStatus('PARTIAL')).toBe(true)
+    expect(isOutcomeStatus('UNKNOWN')).toBe(false)
   })
 
   it('validates invite email addresses', () => {

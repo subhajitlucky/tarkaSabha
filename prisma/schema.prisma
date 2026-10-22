@@ -369,6 +369,12 @@ model Decision {
   debtScore   Int        @default(0)
   debtRationale String?
   scoredAt    DateTime?
+  /// When this decision should be revisited.
+  revisitAt   DateTime?
+  /// PENDING | VALIDATED | INVALIDATED | PARTIAL
+  outcome     String?
+  outcomeSummary String?
+  outcomeAt   DateTime?
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   workspace   Workspace  @relation(fields: [workspaceId], references: [id], onDelete: Cascade)

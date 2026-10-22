@@ -43,6 +43,9 @@ export async function POST(
             impact: true,
             debtScore: true,
             debtRationale: true,
+            revisitAt: true,
+            outcome: true,
+            outcomeSummary: true,
             updatedAt: true,
             owner: { select: { name: true, email: true } },
             evidence: {

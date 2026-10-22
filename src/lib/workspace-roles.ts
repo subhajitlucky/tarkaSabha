@@ -6,6 +6,7 @@ export const EVIDENCE_STATUSES = ['VERIFIED', 'DISPUTED', 'UNSUPPORTED', 'INFERR
 export const CONFIDENCES = ['HIGH', 'MEDIUM', 'LOW'] as const
 export const APPROVAL_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const
 export const PIN_STATUSES = ['ACTIVE', 'SUPERSEDED'] as const
+export const OUTCOME_STATUSES = ['PENDING', 'VALIDATED', 'INVALIDATED', 'PARTIAL'] as const
 
 export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number]
 export type DecisionStatus = (typeof DECISION_STATUSES)[number]
@@ -15,6 +16,7 @@ export type EvidenceStatus = (typeof EVIDENCE_STATUSES)[number]
 export type Confidence = (typeof CONFIDENCES)[number]
 export type ApprovalStatus = (typeof APPROVAL_STATUSES)[number]
 export type PinStatus = (typeof PIN_STATUSES)[number]
+export type OutcomeStatus = (typeof OUTCOME_STATUSES)[number]
 
 export const MAX_WORKSPACE_NAME = 120
 export const MAX_WORKSPACE_DESCRIPTION = 500
@@ -33,6 +35,7 @@ export const MAX_PIN_EXPECTED = 1000
 export const MAX_PIN_SCOPE = 500
 export const MAX_PIN_RUN_RESULT = 1000
 export const MAX_PIN_TRIGGER = 1000
+export const MAX_OUTCOME_SUMMARY = 2000
 
 function isOneOf<T extends string>(values: readonly T[], value: unknown): value is T {
   return typeof value === 'string' && (values as readonly string[]).includes(value)
@@ -61,6 +64,9 @@ export const isApprovalStatus = (value: unknown): value is ApprovalStatus =>
 
 export const isPinStatus = (value: unknown): value is PinStatus =>
   isOneOf(PIN_STATUSES, value)
+
+export const isOutcomeStatus = (value: unknown): value is OutcomeStatus =>
+  isOneOf(OUTCOME_STATUSES, value)
 
 export function isEmail(value: unknown): value is string {
   if (typeof value !== 'string') return false

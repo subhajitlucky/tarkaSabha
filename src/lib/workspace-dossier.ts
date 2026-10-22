@@ -54,6 +54,9 @@ export interface DossierDecision {
   impact: string
   debtScore: number
   debtRationale?: string | null
+  revisitAt?: Date | string | null
+  outcome?: string | null
+  outcomeSummary?: string | null
   owner?: { name: string | null; email: string | null } | null
   evidence: DossierEvidence[]
   pins: DossierPin[]
@@ -198,6 +201,11 @@ export function buildWorkspaceDossier({
           `- **Debt rationale:** ${decision.debtRationale.replace(/\n/g, '; ')}`
         )
       }
+      lines.push(`- **Outcome:** ${decision.outcome || 'Not recorded'}`)
+      if (decision.outcomeSummary) {
+        lines.push(`- **Outcome summary:** ${decision.outcomeSummary}`)
+      }
+      lines.push(`- **Revisit:** ${decision.revisitAt ? iso(decision.revisitAt) : 'Not scheduled'}`)
       lines.push('')
       lines.push(decision.summary?.trim() || '_No context recorded._', '')
 
@@ -287,6 +295,13 @@ export function buildWorkspaceDossier({
     }
     if (decision.approvals.length === 0) {
       openItems.push(`**${decision.title}** has no approval recorded.`)
+    }
+    if (
+      decision.revisitAt &&
+      !decision.outcome &&
+      new Date(decision.revisitAt).getTime() <= generatedAt.getTime()
+    ) {
+      openItems.push(`**${decision.title}** is due for a revisit and has no outcome recorded.`)
     }
     for (const pin of decision.pins) {
       if (!pin.lastRunResult) {

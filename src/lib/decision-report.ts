@@ -8,6 +8,9 @@ export interface ReportDecision {
   impact: string
   debtScore?: number | null
   debtRationale?: string | null
+  revisitAt?: Date | string | null
+  outcome?: string | null
+  outcomeSummary?: string | null
   createdAt: Date | string
   updatedAt: Date | string
   owner?: { name: string | null; email: string | null } | null
@@ -100,6 +103,9 @@ export function buildDecisionReport({
       decision.debtRationale ? ` — ${decision.debtRationale.replace(/\n/g, '; ')}` : ''
     }`
   )
+  lines.push(`- **Outcome:** ${decision.outcome || 'Not recorded'}`)
+  if (decision.outcomeSummary) lines.push(`- **Outcome summary:** ${decision.outcomeSummary}`)
+  lines.push(`- **Revisit:** ${decision.revisitAt ? iso(decision.revisitAt) : 'Not scheduled'}`)
   lines.push(`- **Created:** ${iso(decision.createdAt)}`)
   lines.push(`- **Updated:** ${iso(decision.updatedAt)}`, '')
 

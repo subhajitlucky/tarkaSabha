@@ -156,6 +156,8 @@ export interface DecisionSummary {
   status: DecisionStatus | string
   impact: DecisionImpact | string
   debtScore?: number
+  revisitAt?: string | null
+  outcome?: string | null
   updatedAt: string
   owner?: { name: string | null } | null
   _count?: {
@@ -348,6 +350,10 @@ export interface DecisionDetail {
   debtScore: number
   debtRationale?: string | null
   scoredAt?: string | null
+  revisitAt?: string | null
+  outcome?: string | null
+  outcomeSummary?: string | null
+  outcomeAt?: string | null
   createdAt: string
   updatedAt: string
   role: WorkspaceRole

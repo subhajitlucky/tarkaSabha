@@ -9,6 +9,9 @@ const decision = {
   impact: 'CRITICAL',
   debtScore: 42,
   debtRationale: 'Only one evidence item (+25)\nNo approval recorded (+20)',
+  revisitAt: new Date('2027-01-15T00:00:00.000Z'),
+  outcome: 'VALIDATED',
+  outcomeSummary: 'The control held in production.',
   createdAt: new Date('2026-10-01T09:00:00.000Z'),
   updatedAt: new Date('2026-10-02T10:00:00.000Z'),
   owner: { name: 'Asha Rao', email: 'asha@example.com' },
@@ -65,6 +68,9 @@ describe('buildDecisionReport', () => {
     expect(report).toContain('- **Workspace:** Project Kestrel')
     expect(report).toContain('- **Impact:** CRITICAL')
     expect(report).toContain('- **Decision debt:** 42/100')
+    expect(report).toContain('- **Outcome:** VALIDATED')
+    expect(report).toContain('- **Outcome summary:** The control held in production.')
+    expect(report).toContain('- **Revisit:** 2027-01-15T00:00:00.000Z')
     expect(report).toContain('Only one evidence item (+25); No approval recorded (+20)')
     expect(report).toContain('src/auth/session.ts:42')
     expect(report).toContain('> Sessions are validated on every request.')

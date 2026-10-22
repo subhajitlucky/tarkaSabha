@@ -7,12 +7,15 @@ import {
   DECISION_STATUSES,
   MAX_DECISION_SUMMARY,
   MAX_DECISION_TITLE,
+  MAX_OUTCOME_SUMMARY,
+  OUTCOME_STATUSES,
   canEditDecisions,
   cleanText,
   getDecisionMembership,
   getWorkspaceMembership,
   isDecisionImpact,
   isDecisionStatus,
+  isOutcomeStatus,
   optionalText,
 } from '@/lib/workspaces'
 
@@ -44,6 +47,10 @@ export async function GET(
         debtScore: true,
         debtRationale: true,
         scoredAt: true,
+        revisitAt: true,
+        outcome: true,
+        outcomeSummary: true,
+        outcomeAt: true,
         createdAt: true,
         updatedAt: true,
         workspace: { select: { id: true, name: true } },
@@ -161,6 +168,10 @@ export async function PUT(
       impact?: string
       ownerId?: string | null
       reviewRoomId?: string | null
+      revisitAt?: Date | null
+      outcome?: string | null
+      outcomeSummary?: string | null
+      outcomeAt?: Date | null
     } = {}
 
     if (body.title !== undefined) {
@@ -203,6 +214,51 @@ export async function PUT(
         )
       }
       data.impact = body.impact
+    }
+
+    if (body.revisitAt !== undefined) {
+      if (body.revisitAt === null || body.revisitAt === '') {
+        data.revisitAt = null
+      } else if (typeof body.revisitAt === 'string') {
+        const date = new Date(body.revisitAt)
+        if (Number.isNaN(date.getTime())) {
+          return NextResponse.json({ error: 'Revisit date is invalid' }, { status: 400 })
+        }
+        data.revisitAt = date
+      } else {
+        return NextResponse.json(
+          { error: 'Revisit date must be an ISO date string or null' },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (body.outcome !== undefined) {
+      if (body.outcome === null) {
+        data.outcome = null
+        data.outcomeAt = null
+      } else if (isOutcomeStatus(body.outcome)) {
+        data.outcome = body.outcome
+        data.outcomeAt = body.outcome === 'PENDING' ? null : new Date()
+      } else {
+        return NextResponse.json(
+          { error: `Outcome must be one of: ${OUTCOME_STATUSES.join(', ')}` },
+          { status: 400 }
+        )
+      }
+    }
+
+    if (body.outcomeSummary !== undefined) {
+      const summary = optionalText(body.outcomeSummary, MAX_OUTCOME_SUMMARY)
+      if (summary === undefined) {
+        return NextResponse.json(
+          {
+            error: `Outcome summary must be a string (max ${MAX_OUTCOME_SUMMARY} characters)`,
+          },
+          { status: 400 }
+        )
+      }
+      data.outcomeSummary = summary
     }
 
     if (body.ownerId !== undefined) {
@@ -280,6 +336,10 @@ export async function PUT(
         debtScore: true,
         debtRationale: true,
         scoredAt: true,
+        revisitAt: true,
+        outcome: true,
+        outcomeSummary: true,
+        outcomeAt: true,
         owner: { select: { name: true, email: true } },
         reviewRoom: { select: { id: true, title: true } },
       },

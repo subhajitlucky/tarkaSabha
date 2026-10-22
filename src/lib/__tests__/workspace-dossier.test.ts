@@ -65,6 +65,8 @@ const decisions = [
     impact: 'CRITICAL',
     debtScore: 85,
     debtRationale: null,
+    revisitAt: new Date('2026-10-01T00:00:00.000Z'),
+    outcome: null,
     owner: null,
     updatedAt: new Date('2026-10-21T11:00:00.000Z'),
     evidence: [],
@@ -110,6 +112,7 @@ describe('buildWorkspaceDossier', () => {
     expect(dossier).toContain('## Contradictions and unsupported claims')
     expect(dossier).toContain('## Open questions')
     expect(dossier).toContain('has no evidence attached')
+    expect(dossier).toContain('is due for a revisit and has no outcome recorded')
     expect(dossier).toContain('## Evidence appendix')
     expect(dossier).toContain('src/middleware.ts')
     expect(dossier).toContain('## Sources')

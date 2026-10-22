@@ -80,6 +80,8 @@ export async function GET(
             status: true,
             impact: true,
             debtScore: true,
+            revisitAt: true,
+            outcome: true,
             updatedAt: true,
             owner: { select: { name: true } },
             _count: { select: { evidence: true, approvals: true } },
