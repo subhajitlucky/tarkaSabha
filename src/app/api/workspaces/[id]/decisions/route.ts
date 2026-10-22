@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { scoreDecisionDebt } from '@/lib/decision-debt'
 import {
   DECISION_IMPACTS,
@@ -163,6 +164,17 @@ export async function POST(
         updatedAt: true,
         owner: { select: { name: true } },
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: id,
+      actorId: session.user.id,
+      decisionId: decision.id,
+      action: 'decision.created',
+      entityType: 'Decision',
+      entityId: decision.id,
+      summary: `Created decision "${decision.title}".`,
+      metadata: { status: decision.status, impact: decision.impact },
     })
 
     return NextResponse.json(decision, { status: 201 })

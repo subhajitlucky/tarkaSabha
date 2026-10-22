@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import {
   MAX_PIN_EXPECTED,
   MAX_PIN_POINT,
@@ -164,6 +165,17 @@ export async function PATCH(
         updatedAt: true,
         owner: { select: { name: true, email: true } },
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: pin.decision.workspaceId,
+      actorId: session.user.id,
+      decisionId: pin.decisionId,
+      action: 'pin.updated',
+      entityType: 'DecisionPin',
+      entityId: id,
+      summary: `Updated pin "${updated.decisionPoint}".`,
+      metadata: { fields: Object.keys(data), status: updated.status },
     })
 
     return NextResponse.json(updated)

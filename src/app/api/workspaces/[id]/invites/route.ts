@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import {
   DEFAULT_INVITE_DAYS,
   MAX_INVITE_DAYS,
@@ -126,6 +127,16 @@ export async function POST(
         expiresAt: true,
         createdAt: true,
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: id,
+      actorId: session.user.id,
+      action: 'invite.created',
+      entityType: 'WorkspaceInvite',
+      entityId: invite.id,
+      summary: `Created a ${role.toLowerCase()} invitation.`,
+      metadata: { role },
     })
 
     return NextResponse.json(

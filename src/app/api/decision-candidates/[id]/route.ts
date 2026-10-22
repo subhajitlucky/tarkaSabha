@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { scoreDecisionDebt } from '@/lib/decision-debt'
 import {
   MAX_DECISION_SUMMARY,
@@ -98,6 +99,16 @@ export async function PATCH(
         data: { status: 'REJECTED' },
         select: { id: true, status: true, decisionId: true },
       })
+
+      await recordAuditEvent({
+        workspaceId: candidate.workspaceId,
+        actorId: session.user.id,
+        action: 'candidate.rejected',
+        entityType: 'DecisionCandidate',
+        entityId: id,
+        summary: 'Rejected a candidate decision.',
+      })
+
       return NextResponse.json({ candidate: rejected, decision: null })
     }
 
@@ -212,6 +223,17 @@ export async function PATCH(
         rationale,
       },
       select: { id: true, status: true, decisionId: true },
+    })
+
+    await recordAuditEvent({
+      workspaceId: candidate.workspaceId,
+      actorId: session.user.id,
+      decisionId: decision.id,
+      action: 'candidate.confirmed',
+      entityType: 'DecisionCandidate',
+      entityId: id,
+      summary: `Confirmed candidate as decision "${title}".`,
+      metadata: { evidenceCount: evidenceRows.length },
     })
 
     return NextResponse.json({

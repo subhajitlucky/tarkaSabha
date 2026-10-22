@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { ingestGitHubRepo, parseGitHubRepo } from '@/lib/github-ingest'
 import { canEditDecisions, getWorkspaceMembership } from '@/lib/workspaces'
 
@@ -108,6 +109,21 @@ export async function POST(
         },
       },
       select: SOURCE_SELECT,
+    })
+
+    await recordAuditEvent({
+      workspaceId: id,
+      actorId: session.user.id,
+      action: 'source.ingested',
+      entityType: 'WorkspaceSource',
+      entityId: source.id,
+      summary: `Ingested ${source.owner}/${source.name}@${source.ref}.`,
+      metadata: {
+        files: source.fileCount,
+        commits: source.commitCount,
+        pullRequests: source.pullRequestCount,
+        issues: source.issueCount,
+      },
     })
 
     return NextResponse.json(source, { status: 201 })

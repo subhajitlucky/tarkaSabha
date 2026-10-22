@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import {
   MAX_WORKSPACE_DESCRIPTION,
   MAX_WORKSPACE_NAME,
@@ -86,6 +87,15 @@ export async function POST(request: NextRequest) {
           select: { decisions: true, memberships: true },
         },
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: workspace.id,
+      actorId: session.user.id,
+      action: 'workspace.created',
+      entityType: 'Workspace',
+      entityId: workspace.id,
+      summary: `Created workspace "${workspace.name}".`,
     })
 
     return NextResponse.json(workspace, { status: 201 })

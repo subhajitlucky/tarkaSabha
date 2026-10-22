@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import {
   MAX_PIN_EXPECTED,
   MAX_PIN_POINT,
@@ -144,6 +145,17 @@ export async function POST(
         supersessionTrigger: supersessionTrigger ?? null,
       },
       select: PIN_SELECT,
+    })
+
+    await recordAuditEvent({
+      workspaceId: membership.workspaceId,
+      actorId: session.user.id,
+      decisionId: id,
+      action: 'pin.created',
+      entityType: 'DecisionPin',
+      entityId: pin.id,
+      summary: `Added pin "${pin.decisionPoint}".`,
+      metadata: { status: pin.status },
     })
 
     return NextResponse.json(pin, { status: 201 })

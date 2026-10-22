@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { buildDecisionReport, sha256 } from '@/lib/decision-report'
 import {
   canEditDecisions,
@@ -145,6 +146,17 @@ export async function POST(
         createdAt: true,
         publishedAt: true,
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: membership.workspaceId,
+      actorId: session.user.id,
+      decisionId: id,
+      action: 'report.generated',
+      entityType: 'Report',
+      entityId: report.id,
+      summary: `Generated report version ${report.version}.`,
+      metadata: { version: report.version, contentHash: report.contentHash },
     })
 
     return NextResponse.json(report, { status: 201 })

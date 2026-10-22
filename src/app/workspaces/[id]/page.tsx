@@ -355,7 +355,16 @@ export default function WorkspacePage() {
         eyebrow="Decision workspace"
         title={workspace.name}
         lede={workspace.description || 'No workspace description yet.'}
-        actions={<RoleBadge role={workspace.role} />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/workspaces/${workspace.id}/activity`}>
+              <Button variant="ghost" size="sm">
+                Activity
+              </Button>
+            </Link>
+            <RoleBadge role={workspace.role} />
+          </div>
+        }
       />
 
       <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">

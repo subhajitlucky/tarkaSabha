@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { sha256 } from '@/lib/decision-report'
 import { buildWorkspaceDossier } from '@/lib/workspace-dossier'
 import { canEditDecisions, getWorkspaceMembership } from '@/lib/workspaces'
@@ -141,6 +142,16 @@ export async function POST(
         contentHash: true,
         createdAt: true,
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: id,
+      actorId: session.user.id,
+      action: 'dossier.generated',
+      entityType: 'WorkspaceDossier',
+      entityId: dossier.id,
+      summary: `Generated dossier version ${dossier.version}.`,
+      metadata: { version: dossier.version, contentHash: dossier.contentHash },
     })
 
     return NextResponse.json(

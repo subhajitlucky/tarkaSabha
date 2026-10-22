@@ -229,6 +229,18 @@ export interface SourceSnapshotRecord {
   retrievedAt: string
 }
 
+export interface AuditEventRecord {
+  id: string
+  action: string
+  entityType: string
+  entityId?: string | null
+  summary: string
+  metadata?: Record<string, unknown> | null
+  createdAt: string
+  actor?: { name: string | null; email: string | null } | null
+  decision?: { id: string; title: string } | null
+}
+
 export interface CandidateEvidenceRecord {
   id: string
   quote?: string | null

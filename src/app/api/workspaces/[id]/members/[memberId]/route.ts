@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import {
   WORKSPACE_ROLES,
   canManageWorkspace,
@@ -108,6 +109,16 @@ export async function PUT(
       },
     })
 
+    await recordAuditEvent({
+      workspaceId: managed.workspaceId,
+      actorId: session.user.id,
+      action: 'member.role_changed',
+      entityType: 'Membership',
+      entityId: managed.target.id,
+      summary: `Changed a member role from ${managed.target.role} to ${body.role}.`,
+      metadata: { previousRole: managed.target.role, role: body.role, memberId: managed.target.userId },
+    })
+
     return NextResponse.json(updated)
   } catch (error) {
     console.error('Error updating workspace member:', error)
@@ -148,6 +159,16 @@ export async function DELETE(
     }
 
     await prisma.membership.delete({ where: { id: managed.target.id } })
+
+    await recordAuditEvent({
+      workspaceId: managed.workspaceId,
+      actorId: session.user.id,
+      action: 'member.removed',
+      entityType: 'Membership',
+      entityId: managed.target.id,
+      summary: `Removed a ${managed.target.role.toLowerCase()} from the workspace.`,
+      metadata: { role: managed.target.role, memberId: managed.target.userId },
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

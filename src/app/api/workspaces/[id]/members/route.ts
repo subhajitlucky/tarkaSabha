@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import {
   WORKSPACE_ROLES,
   canManageWorkspace,
@@ -89,6 +90,16 @@ export async function POST(
         createdAt: true,
         user: { select: { name: true, email: true } },
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: id,
+      actorId: session.user.id,
+      action: 'member.added',
+      entityType: 'Membership',
+      entityId: created.id,
+      summary: `Added ${user.name || user.email || 'a member'} as ${role}.`,
+      metadata: { role },
     })
 
     return NextResponse.json(created, { status: 201 })

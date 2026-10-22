@@ -13,6 +13,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Approvals** record an actor, role, note, status, and a SHA-256 snapshot hash.
 - **Decision debt** is an explainable 0–100 score based on evidence coverage and status, unresolved evidence, approvals, decision state, and deal impact.
 - **Outcomes and revisits** close the loop: record validated/invalidated/partial outcomes, a summary, and the next revisit date.
+- **Append-only audit events** record workspace, decision, evidence, approval, report, dossier, source, candidate, invite, and membership actions.
 - **Decision pins** capture a testable decision point: chosen value, separating test, expected result, code scope, owner, and supersession trigger.
 - **Decision dossiers** aggregate the whole workspace into a versioned deal-level document with an executive summary, decision records, open questions, and an evidence appendix.
 - **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
@@ -73,6 +74,10 @@ A decision can be closed out with:
 
 Outcomes and revisit dates appear on decision cards, decision records, generated evidence reports, and deal dossiers. Dossiers flag overdue revisits that have no outcome recorded.
 
+## Audit Log
+
+Workspace write actions append an `AuditEvent` with actor, action, entity, summary, timestamp, and optional metadata. Events are exposed read-only at `/workspaces/[id]/activity`; there are no update or delete endpoints. Logging is best-effort so an audit failure cannot roll back the user action that produced it.
+
 ## Decision Diligence Dossier
 
 A workspace can generate a versioned, deal-level dossier that includes:
@@ -113,6 +118,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Expiring, revocable dossier share links with optional source redaction.
 - HMAC-signed dossier exports and print/save-as-PDF output.
 - Public `/diligence` sample page with a downloadable decision dossier.
+- Append-only workspace audit trail with a read-only activity feed.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { recalculateDecisionDebt } from '@/lib/decision-debt-server'
 import {
   CONFIDENCES,
@@ -167,6 +168,17 @@ export async function POST(
     })
 
     const debt = await recalculateDecisionDebt(id)
+
+    await recordAuditEvent({
+      workspaceId: membership.workspaceId,
+      actorId: session.user.id,
+      decisionId: id,
+      action: 'evidence.added',
+      entityType: 'Evidence',
+      entityId: evidence.id,
+      summary: `Added ${kind} evidence from ${source}.`,
+      metadata: { status, confidence, snapshotId },
+    })
 
     return NextResponse.json(
       {

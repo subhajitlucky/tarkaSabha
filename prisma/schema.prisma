@@ -59,6 +59,7 @@ model User {
   decisionPins    DecisionPin[]
   dossiers        WorkspaceDossier[]
   dossierShares   DossierShare[]
+  auditEvents     AuditEvent[]
 }
 
 model Feedback {
@@ -266,9 +267,32 @@ model Workspace {
   sources     WorkspaceSource[]
   candidates  DecisionCandidate[]
   dossiers    WorkspaceDossier[]
+  auditEvents AuditEvent[]
 
   @@index([creatorId])
   @@index([updatedAt])
+}
+
+/// Append-only workspace audit trail. Events are never updated or deleted by
+/// the application; UI and API surfaces are read-only.
+model AuditEvent {
+  id          String    @id @default(cuid())
+  workspaceId String
+  actorId     String?
+  decisionId  String?
+  action      String
+  entityType  String
+  entityId    String?
+  summary     String
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  actor       User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  decision    Decision? @relation(fields: [decisionId], references: [id], onDelete: SetNull)
+
+  @@index([workspaceId, createdAt])
+  @@index([decisionId, createdAt])
+  @@index([actorId])
 }
 
 /// A versioned, deal-level Decision Diligence Dossier generated from the whole
@@ -386,6 +410,7 @@ model Decision {
   reports     Report[]
   candidate   DecisionCandidate?
   pins        DecisionPin[]
+  auditEvents AuditEvent[]
 
   @@index([workspaceId, updatedAt])
   @@index([createdById])

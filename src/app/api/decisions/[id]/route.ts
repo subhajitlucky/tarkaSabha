@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { recalculateDecisionDebt } from '@/lib/decision-debt-server'
 import {
   DECISION_IMPACTS,
@@ -349,6 +350,17 @@ export async function PUT(
       data.status !== undefined || data.impact !== undefined
         ? await recalculateDecisionDebt(id)
         : null
+
+    await recordAuditEvent({
+      workspaceId: membership.workspaceId,
+      actorId: session.user.id,
+      decisionId: id,
+      action: 'decision.updated',
+      entityType: 'Decision',
+      entityId: id,
+      summary: `Updated decision "${decision.title}".`,
+      metadata: { fields: Object.keys(data) },
+    })
 
     return NextResponse.json({
       ...decision,

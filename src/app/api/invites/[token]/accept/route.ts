@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { sha256 } from '@/lib/decision-report'
 import { isWorkspaceRole } from '@/lib/workspaces'
 
@@ -73,6 +74,16 @@ export async function POST(
         acceptedAt: new Date(),
         acceptedById: session.user.id,
       },
+    })
+
+    await recordAuditEvent({
+      workspaceId: invite.workspaceId,
+      actorId: session.user.id,
+      action: 'invite.accepted',
+      entityType: 'WorkspaceInvite',
+      entityId: invite.id,
+      summary: `Accepted a ${membership.role.toLowerCase()} invitation.`,
+      metadata: { role: membership.role },
     })
 
     return NextResponse.json({

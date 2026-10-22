@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { getLLMResponse, ProviderType } from '@/lib/llm-provider'
 import { LLM_TIMEOUT_MS, withTimeout } from '@/lib/llm-protection'
 import {
@@ -182,6 +183,18 @@ export async function POST(
         select: CANDIDATE_SELECT,
       })
       created.push(row)
+    }
+
+    if (created.length > 0) {
+      await recordAuditEvent({
+        workspaceId: id,
+        actorId: session.user.id,
+        action: 'candidate.extracted',
+        entityType: 'WorkspaceSource',
+        entityId: sourceId,
+        summary: `Extracted ${created.length} candidate decision${created.length === 1 ? '' : 's'}.`,
+        metadata: { count: created.length, model: provider.model },
+      })
     }
 
     return NextResponse.json(

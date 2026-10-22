@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { recordAuditEvent } from '@/lib/audit'
 import { sha256 } from '@/lib/decision-report'
 import { recalculateDecisionDebt } from '@/lib/decision-debt-server'
 import {
@@ -166,6 +167,17 @@ export async function POST(
     })
 
     const debt = await recalculateDecisionDebt(id)
+
+    await recordAuditEvent({
+      workspaceId: membership.workspaceId,
+      actorId: session.user.id,
+      decisionId: id,
+      action: 'approval.recorded',
+      entityType: 'Approval',
+      entityId: approval.id,
+      summary: `Recorded ${body.status} approval.`,
+      metadata: { role, status: body.status },
+    })
 
     return NextResponse.json(
       {
