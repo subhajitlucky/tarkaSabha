@@ -15,8 +15,8 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  * crisp corners and a change of ink rather than a lift.
  */
 const base =
-  'inline-flex items-center justify-center gap-2 font-medium select-none ' +
-  'rounded-[3px] border transition-colors duration-150 ' +
+  'inline-flex items-center justify-center gap-2 font-semibold tracking-[-0.01em] select-none ' +
+  'rounded-[2px] border transition-colors duration-150 ' +
   'disabled:opacity-45 disabled:cursor-not-allowed ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2'
 

@@ -526,7 +526,8 @@ export default function DecisionPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-        <section aria-labelledby="evidence-heading">
+        <div className="space-y-10">
+          <section aria-labelledby="evidence-heading">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2
               id="evidence-heading"
@@ -588,7 +589,14 @@ export default function DecisionPage() {
               ))}
             </ul>
           )}
-        </section>
+          </section>
+
+          <DecisionPins
+            decisionId={decision.id}
+            initialPins={decision.pins}
+            canEdit={canEdit}
+          />
+        </div>
 
         <aside className="space-y-4">
           <Card className="space-y-2">
@@ -1072,14 +1080,6 @@ export default function DecisionPage() {
             )}
           </Card>
         </aside>
-      </div>
-
-      <div className="mt-10">
-        <DecisionPins
-          decisionId={decision.id}
-          initialPins={decision.pins}
-          canEdit={canEdit}
-        />
       </div>
     </div>
   )

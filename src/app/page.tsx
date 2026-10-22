@@ -1,226 +1,295 @@
-'use client'
-
-import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
-import { Persona, Chat, Provider, WorkspaceSummary } from '@/types'
-import { useAuth } from '@/components/AuthProvider'
-import { Button } from '@/components/ui/Button'
-import { Card, Rule } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 
-/** The four stages, used as both the hero specimen and the "how it works" list. */
-const STAGES = [
+const CASE_EVIDENCE = [
+  {
+    id: 'E-01',
+    path: 'src/lib/crypto.ts',
+    note: 'AES-256-GCM with random salt and IV',
+    hash: 'a56947…',
+  },
+  {
+    id: 'E-04',
+    path: 'src/app/api/providers/route.ts',
+    note: 'Encrypted before storage; masked in responses',
+    hash: 'f08cce…',
+  },
+  {
+    id: 'E-06',
+    path: 'src/lib/__tests__/crypto.test.ts',
+    note: 'Round-trip, legacy path, malformed input',
+    hash: 'cc5287…',
+  },
+]
+
+const STEPS = [
   {
     n: '01',
     title: 'Frame the decision',
-    body: 'Name what is under review, who owns it, and how much it matters to the deal.',
+    body: 'Name the choice under review, the owner, and the deal consequence.',
   },
   {
     n: '02',
     title: 'Attach the evidence',
-    body: 'Record the code path, commit, document, or test — with the exact quote and a hash where possible.',
+    body: 'Source paths, commits, quotes, hashes. A claim without a source stays visible.',
   },
   {
     n: '03',
-    title: 'Convene a review room',
-    body: 'When the record needs pressure, agents with distinct jobs test the reasoning and surface the gaps.',
+    title: 'Put it under pressure',
+    body: 'Debt, contradictions, pins, and the agent review room test the reasoning.',
   },
   {
     n: '04',
-    title: 'Move the decision',
-    body: 'Track the decision through draft, review, and approval with the evidence still attached.',
+    title: 'Close the record',
+    body: 'Approve, share a redacted dossier, sign the export, schedule the revisit.',
   },
 ]
 
-const CAPABILITIES = [
-  {
-    label: 'Decision record',
-    body: 'A decision is the product object: title, context, owner, state, impact, and evidence.',
-  },
-  {
-    label: 'Source-backed evidence',
-    body: 'Path, commit, quote, hash, confidence, and status. A claim without a source stays visible as unsupported.',
-  },
-  {
-    label: 'Role-scoped rooms',
-    body: 'Owners, admins, reviewers, and viewers. Reviewers can edit decisions; viewers can only read.',
-  },
-  {
-    label: 'Review rooms',
-    body: 'The agent council is a room inside a decision, not a separate chat product.',
-  },
-  {
-    label: 'Auditable runs',
-    body: 'Every candidate is kept with its score and the judge’s reason. Nothing is a black box.',
-  },
-  {
-    label: 'Your keys, encrypted',
-    body: 'AES-256-GCM at rest, provider calls stay server-side, twelve providers supported.',
-  },
-]
-
-export default function Home() {
-  const [personas, setPersonas] = useState<Persona[]>([])
-  const [providers, setProviders] = useState<Provider[]>([])
-  const [chats, setChats] = useState<Chat[]>([])
-  const [workspaces, setWorkspaces] = useState<WorkspaceSummary[]>([])
-  const [dataLoaded, setDataLoaded] = useState(false)
-  const { isAuthenticated } = useAuth()
-  // Derived rather than set inside an effect: authenticated, first pass not landed yet.
-  const dataLoading = isAuthenticated && !dataLoaded
-
-  const fetchPersonas = useCallback(async () => {
-    const res = await fetch('/api/personas')
-    const data = await res.json()
-    setPersonas(data)
-  }, [])
-
-  const fetchProviders = useCallback(async () => {
-    const res = await fetch('/api/providers')
-    const data = await res.json()
-    setProviders(data)
-  }, [])
-
-  const fetchChats = useCallback(async () => {
-    const res = await fetch('/api/chats')
-    const data = await res.json()
-    setChats(data)
-  }, [])
-
-  const fetchWorkspaces = useCallback(async () => {
-    const res = await fetch('/api/workspaces')
-    if (!res.ok) return
-    const data = await res.json()
-    setWorkspaces(Array.isArray(data) ? data : [])
-  }, [])
-
-  const fetchData = useCallback(async () => {
-    try {
-      await Promise.all([fetchPersonas(), fetchProviders(), fetchChats(), fetchWorkspaces()])
-    } finally {
-      setDataLoaded(true)
-    }
-  }, [fetchPersonas, fetchProviders, fetchChats, fetchWorkspaces])
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      fetchData()
-    }
-  }, [isAuthenticated, fetchData])
-
-  const stats = [
-    { value: workspaces.length, label: 'Workspaces' },
-    { value: chats.length, label: 'Review rooms' },
-    { value: personas.length, label: 'Agents' },
-    { value: providers.length, label: 'Providers' },
-  ]
-
+function CaseFile() {
   return (
-    <div className="mx-auto max-w-6xl px-5">
-      {/* ============================ masthead ============================ */}
-      <section className="grid gap-12 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16 lg:py-24">
-        <div className="rise">
-          <Badge tone="accent" className="mb-6">
-            Decision evidence workspace
-          </Badge>
-
-          <h1 className="text-[2.75rem] leading-[1.05] tracking-[-0.03em] text-text sm:text-6xl">
-            A decision
-            <br />
-            <span className="text-accent">you can defend.</span>
-          </h1>
-
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
-            Tarka Sabha turns a deal decision into a source-backed record: the claims, the
-            code and documents behind them, the open questions, and the approval trail. The
-            agent council is now a review room inside that record.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <Link href="/workspaces">
-              <Button variant="primary" size="lg">
-                Open workspaces
-              </Button>
-            </Link>
-            <Link href={isAuthenticated ? '/history' : '/demo'}>
-              <Button variant="secondary" size="lg">
-                {isAuthenticated ? 'See your review rooms' : 'See a sample review'}
-              </Button>
-            </Link>
-          </div>
-
-          {isAuthenticated && (
-            <dl className="mt-12 grid max-w-xl grid-cols-2 gap-x-6 gap-y-4 border-t border-line pt-6 sm:grid-cols-4">
-              {stats.map((stat) => (
-                <div key={stat.label}>
-                  <dt className="eyebrow">{stat.label}</dt>
-                  <dd className="mt-1 font-display text-3xl text-text tabular-nums">
-                    {dataLoading ? '—' : stat.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          )}
+    <div className="rise" style={{ animationDelay: '120ms' }}>
+      <div className="relative border border-line bg-surface p-5 shadow-lift sm:p-6">
+        <span
+          aria-hidden="true"
+          className="absolute -left-px top-7 h-24 w-px bg-accent shadow-[0_0_18px_var(--accent-glow)]"
+        />
+        <div className="flex items-center justify-between gap-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-subtle">
+          <span>Case file</span>
+          <span>D-001 / Security</span>
         </div>
 
-        {/* Specimen: the pipeline, set as a printed procedure. */}
-        <Card
-          className="rise self-start lg:mt-4"
-          style={{ '--i': 2 } as React.CSSProperties}
-        >
-          <Rule label="Procedure" className="mb-5" />
-          <ol className="space-y-5">
-            {STAGES.map((stage) => (
-              <li key={stage.n} className="grid grid-cols-[2.5rem_1fr] gap-3">
-                <span className="font-mono text-xs text-accent">{stage.n}</span>
-                <span>
-                  <span className="block font-display text-[0.9375rem] text-text">
-                    {stage.title}
-                  </span>
-                  <span className="mt-1 block text-sm leading-relaxed text-muted">
-                    {stage.body}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ol>
-        </Card>
-      </section>
+        <div className="mt-7 flex items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.12em] text-accent">
+          <span className="h-1.5 w-1.5 bg-accent" />
+          Verified
+        </div>
+        <h2 className="mt-3 max-w-sm text-3xl leading-[1.02] text-text">
+          Provider keys are encrypted at rest.
+        </h2>
+        <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
+          AES-256-GCM encryption, server-side decryption, masked responses. The control holds;
+          the master-key lifecycle does not.
+        </p>
 
-      {/* ============================ capability ========================== */}
-      <section className="border-t border-line py-16">
-        <Rule label="Capability" className="mb-10" />
-        <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {CAPABILITIES.map((item) => (
-            <div key={item.label}>
-              <h2 className="font-display text-[0.9375rem] text-text">{item.label}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">
-                {item.body}
-              </p>
+        <div className="mt-6 space-y-3 border-t border-line pt-4">
+          {CASE_EVIDENCE.map((item) => (
+            <div key={item.id} className="grid grid-cols-[2.2rem_1fr_auto] items-start gap-2">
+              <span className="font-mono text-[0.62rem] text-accent">{item.id}</span>
+              <span>
+                <span className="block break-all font-mono text-[0.68rem] text-text">
+                  {item.path}
+                </span>
+                <span className="mt-0.5 block text-xs leading-relaxed text-muted">
+                  {item.note}
+                </span>
+              </span>
+              <span className="font-mono text-[0.6rem] text-subtle">{item.hash}</span>
             </div>
           ))}
         </div>
+
+        <div className="mt-5 border-t border-line pt-4">
+          <div className="flex items-center justify-between gap-3 font-mono text-[0.62rem] uppercase tracking-[0.1em]">
+            <span className="text-subtle">Decision debt</span>
+            <span className="text-text">30 / 100</span>
+          </div>
+          <div className="mt-2 h-1 overflow-hidden bg-surface-2">
+            <div className="h-full w-[30%] bg-accent" />
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-line pt-3 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-subtle">
+          <span>SHA-256 2d1366…</span>
+          <span className="text-success">Approved</span>
+        </div>
+      </div>
+      <div className="mt-2 flex items-center justify-between gap-3 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-subtle">
+        <span>Public sample · ebee93f</span>
+        <Link href="/diligence" className="text-accent transition-colors hover:text-accent-hover">
+          Open the case →
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <div className="overflow-hidden">
+      <section className="relative border-b border-line">
+        <div className="mx-auto grid max-w-6xl gap-12 px-5 py-16 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:py-24">
+          <div className="rise">
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge tone="accent">Decision evidence</Badge>
+              <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-subtle">
+                For M&amp;A / PE
+              </span>
+            </div>
+
+            <h1 className="mt-8 max-w-2xl text-[3.35rem] leading-[0.94] tracking-[-0.045em] text-text sm:text-7xl">
+              The code remembers.
+              <br />
+              <span className="text-accent">Make it provable.</span>
+            </h1>
+
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
+              Tarka Sabha turns a target’s technical decisions into a source-backed dossier:
+              evidence, contradictions, debt, approvals, and the questions to ask before you
+              sign.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-2">
+              <Link href="/workspaces">
+                <Button variant="primary" size="lg">
+                  Open the workspace
+                </Button>
+              </Link>
+              <Link href="/diligence">
+                <Button variant="secondary" size="lg">
+                  See the sample dossier
+                </Button>
+              </Link>
+            </div>
+
+            <dl className="mt-12 grid max-w-xl grid-cols-3 border-t border-line pt-5">
+              {[
+                ['Source-backed', 'Evidence, not recall'],
+                ['Explainable', 'Debt, pins, approvals'],
+                ['Portable', 'Signed, redacted dossiers'],
+              ].map(([title, body]) => (
+                <div key={title} className="pr-4">
+                  <dt className="font-display text-lg text-text">{title}</dt>
+                  <dd className="mt-1 text-xs leading-relaxed text-subtle">{body}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+
+          <CaseFile />
+        </div>
       </section>
 
-      {/* ============================== closing =========================== */}
-      <section className="border-t border-line py-20">
-        <div className="grid items-end gap-8 md:grid-cols-[1fr_auto]">
-          <div>
-            <h2 className="max-w-lg text-3xl leading-tight text-text sm:text-4xl">
-              Stop shipping decisions without a record.
-              <span className="text-accent"> Build the evidence pack.</span>
-            </h2>
-            <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted">
-              Open a workspace for the next decision. Bring your own API key from any of
-              twelve providers; keys are encrypted before they are stored and never leave
-              the server.
-            </p>
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-5 py-14">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <p className="eyebrow">The record</p>
+            <span className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-subtle">
+              Frame → Evidence → Pressure → Close
+            </span>
           </div>
-          <Link href="/workspaces">
-            <Button variant="primary" size="lg">
-              Open a workspace
+          <div className="mt-8 grid border-t border-line sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map((step) => (
+              <div
+                key={step.n}
+                className="border-b border-line py-6 sm:border-r sm:px-5 sm:last:border-r-0 lg:border-b-0"
+              >
+                <span className="font-mono text-[0.65rem] text-accent">{step.n}</span>
+                <h2 className="mt-4 font-display text-xl leading-tight text-text">
+                  {step.title}
+                </h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{step.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-line">
+        <div className="mx-auto max-w-6xl px-5 py-16">
+          <div className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+            <Card className="flex flex-col justify-between p-6 sm:p-8">
+              <div>
+                <p className="eyebrow">Evidence, not a narrative</p>
+                <h2 className="mt-4 max-w-xl text-3xl leading-[1.05] text-text sm:text-4xl">
+                  Every claim arrives with its source coordinates.
+                </h2>
+                <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted">
+                  A quote without a path is a story. Tarka keeps the path, commit, quote, hash,
+                  confidence, and status together — and leaves unsupported claims visible.
+                </p>
+              </div>
+              <div className="mt-8 space-y-3 border-t border-line pt-5">
+                {CASE_EVIDENCE.slice(0, 2).map((item) => (
+                  <div key={item.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="font-mono text-[0.62rem] text-accent">{item.id}</span>
+                    <span className="break-all font-mono text-xs text-text">{item.path}</span>
+                    <span className="font-mono text-[0.6rem] text-subtle">{item.hash}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <div className="grid gap-3">
+              <Card className="p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="eyebrow">Decision debt</p>
+                    <p className="mt-3 font-display text-4xl text-text">30<span className="text-xl text-subtle">/100</span></p>
+                  </div>
+                  <Badge tone="success">Moderate</Badge>
+                </div>
+                <p className="mt-3 text-xs leading-relaxed text-muted">
+                  Evidence coverage, unresolved findings, approvals, state, and deal impact in
+                  one explainable number.
+                </p>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="eyebrow">Audit trail</p>
+                  <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                </div>
+                <div className="mt-4 space-y-2 font-mono text-[0.65rem] text-muted">
+                  <p><span className="text-accent">11:13</span> evidence.added · E-04</p>
+                  <p><span className="text-accent">11:13</span> approval.recorded · approved</p>
+                  <p><span className="text-accent">11:14</span> dossier.generated · v1</p>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-line">
+        <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-10 sm:flex-row sm:items-center sm:justify-between">
+          <p className="max-w-2xl text-sm leading-relaxed text-muted">
+            <span className="font-display text-lg text-text">The council is a room, not the product.</span>{' '}
+            Agents can pressure-test a decision, but the decision, the evidence, and the approval
+            record remain the durable artifact.
+          </p>
+          <Link href="/history">
+            <Button variant="ghost" size="sm">
+              Open review rooms →
             </Button>
           </Link>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-16 sm:py-20">
+        <div className="grid items-end gap-8 md:grid-cols-[1fr_auto]">
+          <div>
+            <p className="eyebrow">Before the next signature</p>
+            <h2 className="mt-4 max-w-2xl text-4xl leading-[1.02] text-text sm:text-5xl">
+              Bring the evidence pack, not just the code review.
+            </h2>
+            <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
+              Start with the public sample dossier, then open a workspace for the decision in
+              front of you.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link href="/diligence">
+              <Button variant="primary" size="lg">
+                Read the sample
+              </Button>
+            </Link>
+            <Link href="/workspaces">
+              <Button variant="secondary" size="lg">
+                Open a workspace
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>

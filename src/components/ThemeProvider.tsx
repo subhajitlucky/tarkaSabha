@@ -25,7 +25,7 @@ function subscribe(onChange: () => void) {
 function getSnapshot(): Theme {
   const saved = localStorage.getItem('theme')
   if (saved === 'light' || saved === 'dark') return saved
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
+  return 'dark'
 }
 
 /** The server cannot know the saved theme; the inline script paints it first. */

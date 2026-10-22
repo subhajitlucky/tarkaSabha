@@ -34,7 +34,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const callbackUrl = searchParams.get('callbackUrl') || '/debate'
+  const callbackUrl = searchParams.get('callbackUrl') || '/workspaces'
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
@@ -57,10 +57,10 @@ function LoginForm() {
           >
             त
           </span>
-          <h1 className="text-2xl text-text">Take your seat</h1>
+          <h1 className="text-3xl text-text">Sign in to the record</h1>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Sign in to convene councils, keep an archive of them, and store provider keys
-            encrypted against your account.
+            Open your workspaces, keep source-backed evidence, and leave an approval trail
+            behind every decision.
           </p>
         </div>
 
@@ -94,8 +94,8 @@ function LoginForm() {
 
         <p className="text-center text-[0.8125rem] text-subtle">
           Just here to look?{' '}
-          <a href="/demo" className="text-accent transition-colors hover:text-accent-hover">
-            See a sample council
+          <a href="/diligence" className="text-accent transition-colors hover:text-accent-hover">
+            See the sample dossier
           </a>
         </p>
       </Card>

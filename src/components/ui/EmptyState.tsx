@@ -48,13 +48,20 @@ export function PageHeader({
     <header className={cx('mb-8', className)}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
-          <h1 className="text-3xl leading-tight text-text sm:text-4xl">{title}</h1>
+          {eyebrow && (
+            <p className="eyebrow mb-3 flex items-center gap-2">
+              <span aria-hidden="true" className="h-1.5 w-1.5 bg-accent" />
+              {eyebrow}
+            </p>
+          )}
+          <h1 className="max-w-4xl text-4xl leading-[1.02] tracking-[-0.035em] text-text sm:text-5xl">
+            {title}
+          </h1>
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {lede && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{lede}</p>}
-      <span className="draw-rule mt-5 block h-px bg-line" />
+      {lede && <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">{lede}</p>}
+      <span className="draw-rule mt-6 block h-px bg-line" />
     </header>
   )
 }

@@ -77,8 +77,8 @@ export default function FeedbackPage() {
               <Button variant="secondary" onClick={() => setSuccess(false)}>
                 Send another
               </Button>
-              <Link href="/dashboard">
-                <Button variant="primary">View your feedback</Button>
+              <Link href="/workspaces">
+                <Button variant="primary">Open your workspaces</Button>
               </Link>
             </div>
           </div>

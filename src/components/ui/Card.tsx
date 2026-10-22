@@ -16,7 +16,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
     <div
       ref={ref}
       className={cx(
-        'rounded-[4px] border border-line bg-surface',
+        'rounded-[2px] border border-line bg-surface/90',
         !flush && 'p-5',
         raised && 'raised',
         className

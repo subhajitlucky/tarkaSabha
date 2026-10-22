@@ -355,22 +355,29 @@ export default function WorkspacePage() {
         eyebrow="Decision workspace"
         title={workspace.name}
         lede={workspace.description || 'No workspace description yet.'}
-        actions={
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/workspaces/${workspace.id}/insights`}>
-              <Button variant="ghost" size="sm">
-                Insights
-              </Button>
-            </Link>
-            <Link href={`/workspaces/${workspace.id}/activity`}>
-              <Button variant="ghost" size="sm">
-                Activity
-              </Button>
-            </Link>
-            <RoleBadge role={workspace.role} />
-          </div>
-        }
+        actions={<RoleBadge role={workspace.role} />}
       />
+
+      <nav
+        aria-label="Workspace sections"
+        className="mb-8 flex items-center gap-5 border-b border-line"
+      >
+        <span className="border-b-2 border-accent py-3 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-text">
+          Overview
+        </span>
+        <Link
+          href={`/workspaces/${workspace.id}/insights`}
+          className="border-b-2 border-transparent py-3 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted transition-colors hover:text-text"
+        >
+          Insights
+        </Link>
+        <Link
+          href={`/workspaces/${workspace.id}/activity`}
+          className="border-b-2 border-transparent py-3 font-mono text-[0.65rem] uppercase tracking-[0.14em] text-muted transition-colors hover:text-text"
+        >
+          Activity
+        </Link>
+      </nav>
 
       <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
@@ -494,7 +501,8 @@ export default function WorkspacePage() {
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <section aria-labelledby="decision-list-heading">
+        <div className="space-y-10">
+          <section aria-labelledby="decision-list-heading">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2
               id="decision-list-heading"
@@ -576,7 +584,14 @@ export default function WorkspacePage() {
               ))}
             </ul>
           )}
-        </section>
+          </section>
+
+          <WorkspaceDossierPanel
+            workspaceId={workspace.id}
+            initialDossiers={workspace.dossiers}
+            canEdit={canEdit}
+          />
+        </div>
 
         <aside className="space-y-4">
           {canEdit ? (
@@ -757,14 +772,6 @@ export default function WorkspacePage() {
             </ul>
           </Card>
         </aside>
-      </div>
-
-      <div className="mt-10">
-        <WorkspaceDossierPanel
-          workspaceId={workspace.id}
-          initialDossiers={workspace.dossiers}
-          canEdit={canEdit}
-        />
       </div>
     </div>
   )
