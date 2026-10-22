@@ -70,7 +70,7 @@ export default function ActivityPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-5xl px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-14">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -111,7 +111,7 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-14">
       <div className="mb-6">
         <Link
           href={`/workspaces/${id}`}

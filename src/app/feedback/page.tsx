@@ -58,14 +58,39 @@ export default function FeedbackPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-5 py-14">
-      <PageHeader
-        eyebrow="Feedback"
-        title="Tell us what is wrong"
-        lede="A bug, a missing feature, or an argument the council got badly wrong — all of it is useful."
-      />
+    <div className="mx-auto max-w-[80rem] px-5 sm:px-8 lg:px-10 py-14">
+      <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
+        <div>
+          <PageHeader
+            eyebrow="Feedback"
+            title="Tell us what is wrong"
+            lede="A bug, a missing feature, or an argument the council got badly wrong — all of it is useful."
+          />
 
-      <Card>
+          <Card className="mt-8">
+            <p className="eyebrow">What helps</p>
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-muted">
+              <li className="flex gap-3">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-accent" />
+                The page and the action you were trying to complete.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-accent" />
+                What you expected, and what happened instead.
+              </li>
+              <li className="flex gap-3">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-accent" />
+                A source or screenshot if the record looks wrong.
+              </li>
+            </ul>
+            <p className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
+              Feedback is read by the team. If you leave an email, we may follow up with a
+              question — not a newsletter.
+            </p>
+          </Card>
+        </div>
+
+        <Card className="self-start">
         {success ? (
           <div className="py-8 text-center">
             <p className="eyebrow mb-3 text-success">Received</p>
@@ -148,7 +173,8 @@ export default function FeedbackPage() {
             </Button>
           </form>
         )}
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }

@@ -136,7 +136,7 @@ export default function Home() {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(60rem_34rem_at_15%_0%,rgba(15,91,67,0.55),transparent_62%),radial-gradient(40rem_30rem_at_90%_25%,rgba(95,191,145,0.12),transparent_60%)]"
         />
-        <div className="relative mx-auto grid max-w-6xl gap-12 px-5 py-16 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-14 lg:py-24">
+        <div className="relative mx-auto grid max-w-[88rem] gap-12 px-5 sm:px-8 lg:px-10 py-16 lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-14 lg:py-24">
           <div className="rise">
             <p className="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-[#89e6bb]">
               Technical due diligence for private equity
@@ -187,8 +187,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-b border-line bg-surface">
-        <div className="mx-auto max-w-6xl px-5 py-16">
+      <section id="product" className="scroll-mt-24 border-b border-line bg-surface">
+        <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 py-16">
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
               <p className="eyebrow">From code to a convincing investment thesis</p>
@@ -226,7 +226,7 @@ export default function Home() {
       </section>
 
       <section className="bg-bg">
-        <div className="mx-auto max-w-6xl px-5 py-16">
+        <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 py-16">
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <Card className="p-6 sm:p-8">
               <div className="flex flex-wrap items-center gap-3">
@@ -280,7 +280,7 @@ export default function Home() {
       </section>
 
       <section className="border-t border-line bg-surface">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-14 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-[88rem] flex-col gap-8 px-5 sm:px-8 lg:px-10 py-14 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="eyebrow">Before the next signature</p>
             <h2 className="mt-3 max-w-2xl text-4xl leading-[1.02] text-text">

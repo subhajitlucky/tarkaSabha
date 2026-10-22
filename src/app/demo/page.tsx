@@ -67,7 +67,7 @@ const CANDIDATES = [
 
 export default function DemoPage() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
+    <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 py-14">
       <PageHeader
         eyebrow="Sample review room"
         title="A review room, on the record"

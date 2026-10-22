@@ -28,43 +28,66 @@ const SECTIONS = [
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-3xl px-5 py-14">
-      <PageHeader
-        eyebrow="About"
-        title="Evidence, on the record"
-        lede="Tarka Sabha is a decision evidence workspace for technical diligence. Frame the decision, attach the source, test the claim, and leave an approval trail that someone else can read."
-      />
+    <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 py-14">
+      <div className="grid gap-12 lg:grid-cols-[0.72fr_1.28fr] lg:gap-16">
+        <aside className="self-start lg:sticky lg:top-24">
+          <PageHeader
+            eyebrow="About"
+            title="Evidence, on the record"
+            lede="Tarka Sabha is a decision evidence workspace for technical diligence. Frame the decision, attach the source, test the claim, and leave an approval trail that someone else can read."
+          />
 
-      <div className="space-y-10">
-        {SECTIONS.map((section) => (
-          <section key={section.heading}>
-            <h2 className="text-2xl text-text">{section.heading}</h2>
-            <p className="mt-3 leading-relaxed text-muted">{section.body}</p>
-          </section>
-        ))}
-      </div>
+          <div className="mt-8 hidden border-t border-line pt-5 lg:block">
+            <p className="eyebrow">Contents</p>
+            <ol className="mt-4 space-y-2.5">
+              {SECTIONS.map((section, index) => (
+                <li key={section.heading}>
+                  <a
+                    href={`#section-${index + 1}`}
+                    className="group flex items-start gap-3 text-sm text-muted transition-colors hover:text-accent"
+                  >
+                    <span className="mt-0.5 font-mono text-[0.62rem] text-subtle group-hover:text-accent">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <span className="leading-snug">{section.heading}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </aside>
 
-      <Card className="mt-12">
-        <Rule label="On honesty" className="mb-4" />
-        <p className="text-sm leading-relaxed text-muted">
-          The platform is built to show its working rather than to sound certain. Every
-          decision carries a debt score and a rationale; every report carries a hash; every
-          approval covers a named snapshot. Where the evidence is thin, the record should say
-          so — not invent a conclusion.
-        </p>
-        <div className="mt-6 flex flex-wrap gap-2">
-          <Link href="/diligence">
-            <Button variant="primary" size="sm">
-              Read the sample dossier
-            </Button>
-          </Link>
-          <Link href="/workspaces">
-            <Button variant="secondary" size="sm">
-              Open a workspace
-            </Button>
-          </Link>
+        <div className="max-w-3xl space-y-10">
+          {SECTIONS.map((section, index) => (
+            <section key={section.heading} id={`section-${index + 1}`} className="scroll-mt-24">
+              <h2 className="text-2xl text-text">{section.heading}</h2>
+              <p className="mt-3 leading-relaxed text-muted">{section.body}</p>
+            </section>
+          ))}
+
+          <Card className="mt-12">
+            <Rule label="On honesty" className="mb-4" />
+            <p className="text-sm leading-relaxed text-muted">
+              The platform is built to show its working rather than to sound certain. Every
+              decision carries a debt score and a rationale; every report carries a hash; every
+              approval covers a named snapshot. Where the evidence is thin, the record should say
+              so — not invent a conclusion.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link href="/diligence">
+                <Button variant="primary" size="sm">
+                  Read the sample dossier
+                </Button>
+              </Link>
+              <Link href="/workspaces">
+                <Button variant="secondary" size="sm">
+                  Open a workspace
+                </Button>
+              </Link>
+            </div>
+          </Card>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

@@ -95,11 +95,11 @@ export function MemberRow({
     <li className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-sm text-text">
+          <p className="break-words text-sm text-text">
             {membership.user.name || membership.user.email || 'Unnamed member'}
           </p>
           {membership.user.name && membership.user.email && (
-            <p className="truncate font-mono text-xs text-subtle">{membership.user.email}</p>
+            <p className="break-all font-mono text-xs text-subtle">{membership.user.email}</p>
           )}
         </div>
         {!canEditThisMember && <RoleBadge role={membership.role} />}

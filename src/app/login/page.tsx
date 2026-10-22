@@ -1,10 +1,11 @@
 'use client'
 
-import { Suspense, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { signIn } from 'next-auth/react'
+import { useAuth } from '@/components/AuthProvider'
 import { Button } from '@/components/ui/Button'
-import { Card, Rule } from '@/components/ui/Card'
+import { Rule } from '@/components/ui/Card'
 
 function GoogleMark() {
   return (
@@ -31,10 +32,18 @@ function GoogleMark() {
 
 function LoginForm() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const callbackUrl = searchParams.get('callbackUrl') || '/workspaces'
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      router.replace(callbackUrl.startsWith('/login') ? '/workspaces' : callbackUrl)
+    }
+  }, [authLoading, callbackUrl, isAuthenticated, router])
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
@@ -48,57 +57,91 @@ function LoginForm() {
   }
 
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md items-center px-5 py-14">
-      <Card className="w-full" raised>
-        <div className="mb-6">
-          <span
-            aria-hidden="true"
-            className="mb-4 flex h-11 w-11 items-center justify-center rounded-[3px] border border-accent-line bg-accent-soft font-display text-lg text-accent"
+    <div className="mx-auto flex min-h-[70vh] max-w-6xl items-center px-5 py-14">
+      <div className="grid w-full overflow-hidden border border-line bg-surface shadow-lift lg:grid-cols-[0.85fr_1.15fr]">
+        <aside className="hidden flex-col justify-between bg-accent-soft/70 p-8 lg:flex lg:p-10">
+          <div>
+            <span
+              aria-hidden="true"
+              className="flex h-11 w-11 items-center justify-center border border-accent-line bg-surface font-display text-lg text-accent"
+            >
+              त
+            </span>
+            <p className="eyebrow mt-8">The private workspace</p>
+            <h2 className="mt-4 text-4xl leading-[1.05] text-text">
+              The record behind the decision.
+            </h2>
+            <p className="mt-4 text-sm leading-relaxed text-muted">
+              Open your workspaces, keep source-backed evidence, and leave an approval trail
+              behind every decision.
+            </p>
+          </div>
+
+          <div className="mt-10 space-y-4 border-t border-accent-line pt-5">
+            {[
+              ['Source-backed evidence', 'Every claim carries a path, quote, and hash.'],
+              ['Decision records', 'Ownership, trade-offs, pins, and approvals in one place.'],
+              ['Shareable dossiers', 'A board-ready record with open questions called out.'],
+            ].map(([title, body]) => (
+              <div key={title}>
+                <p className="text-sm font-semibold text-text">{title}</p>
+                <p className="mt-0.5 text-xs leading-relaxed text-muted">{body}</p>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        <div className="p-6 sm:p-10">
+          <div className="mb-6">
+            <span
+              aria-hidden="true"
+              className="mb-4 flex h-11 w-11 items-center justify-center border border-accent-line bg-accent-soft font-display text-lg text-accent lg:hidden"
+            >
+              त
+            </span>
+            <p className="eyebrow">Workspace access</p>
+            <h1 className="mt-3 text-3xl text-text">Sign in to the record</h1>
+            <p className="mt-2 text-sm leading-relaxed text-muted">
+              Use the account that owns or reviews the workspace.
+            </p>
+          </div>
+
+          {error && (
+            <p
+              role="alert"
+              className="mb-5 rounded-[3px] border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger"
+            >
+              {error}
+            </p>
+          )}
+
+          <Button
+            variant="secondary"
+            size="lg"
+            // Deliberately off-palette: Google's brand guidelines require the
+            // white button with dark text for this mark.
+            className="w-full bg-white text-slate-900 hover:bg-slate-50"
+            onClick={handleGoogleSignIn}
+            disabled={isLoading}
           >
-            त
-          </span>
-          <h1 className="text-3xl text-text">Sign in to the record</h1>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Open your workspaces, keep source-backed evidence, and leave an approval trail
-            behind every decision.
+            <GoogleMark />
+            {isLoading ? 'Signing in…' : 'Continue with Google'}
+          </Button>
+
+          <p className="mt-4 text-center text-[0.8125rem] text-subtle">
+            By continuing you agree to the terms of service and privacy policy.
+          </p>
+
+          <Rule className="my-6" />
+
+          <p className="text-center text-[0.8125rem] text-subtle">
+            Just here to look?{' '}
+            <a href="/diligence" className="text-accent transition-colors hover:text-accent-hover">
+              See the sample dossier
+            </a>
           </p>
         </div>
-
-        {error && (
-          <p
-            role="alert"
-            className="mb-5 rounded-[3px] border border-danger/30 bg-danger-soft px-3 py-2 text-sm text-danger"
-          >
-            {error}
-          </p>
-        )}
-
-        <Button
-          variant="secondary"
-          size="lg"
-          // Deliberately off-palette: Google's brand guidelines require the
-          // white button with dark text for this mark.
-          className="w-full bg-white text-slate-900 hover:bg-slate-50"
-          onClick={handleGoogleSignIn}
-          disabled={isLoading}
-        >
-          <GoogleMark />
-          {isLoading ? 'Signing in…' : 'Continue with Google'}
-        </Button>
-
-        <p className="mt-4 text-center text-[0.8125rem] text-subtle">
-          By continuing you agree to the terms of service and privacy policy.
-        </p>
-
-        <Rule className="my-6" />
-
-        <p className="text-center text-[0.8125rem] text-subtle">
-          Just here to look?{' '}
-          <a href="/diligence" className="text-accent transition-colors hover:text-accent-hover">
-            See the sample dossier
-          </a>
-        </p>
-      </Card>
+      </div>
     </div>
   )
 }

@@ -140,7 +140,7 @@ export default function InsightsPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-14">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -181,7 +181,7 @@ export default function InsightsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-14">
       <div className="mb-6">
         <Link
           href={`/workspaces/${id}`}
@@ -298,7 +298,7 @@ export default function InsightsPage() {
                       className="flex items-center justify-between gap-3 rounded-[4px] border border-line bg-surface p-4 transition-colors hover:border-accent-line"
                     >
                       <div className="min-w-0">
-                        <p className="truncate text-sm text-text">{decision.title}</p>
+                        <p className="break-words text-sm text-text">{decision.title}</p>
                         <p className="mt-1 font-mono text-xs text-subtle">
                           {decision.status} · {decision.impact}
                           {decision.outcome ? ` · ${decision.outcome}` : ''}
@@ -346,7 +346,7 @@ export default function InsightsPage() {
                         className="flex items-center justify-between gap-3 rounded-[4px] border border-line bg-surface p-4 transition-colors hover:border-accent-line"
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm text-text">{decision.title}</p>
+                          <p className="break-words text-sm text-text">{decision.title}</p>
                           <p className="mt-1 font-mono text-xs text-subtle">
                             Revisit {formatDate(decision.revisitAt)}
                           </p>

@@ -96,7 +96,7 @@ export default function WorkspacesPage() {
   )
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-14">
       <PageHeader
         eyebrow="Decision workspace"
         title="Workspaces"
@@ -192,11 +192,11 @@ export default function WorkspacesPage() {
                           <span className="font-mono text-[0.62rem] text-accent">
                             {String(index + 1).padStart(2, '0')}
                           </span>
-                          <h3 className="truncate font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
+                          <h3 className="break-words font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
                             {workspace.name}
                           </h3>
                         </div>
-                        <p className="mt-1 line-clamp-1 pl-7 text-sm leading-relaxed text-muted">
+                        <p className="mt-1 line-clamp-2 pl-7 text-sm leading-relaxed text-muted">
                           {workspace.description || 'No description recorded.'}
                         </p>
                       </div>
@@ -234,7 +234,7 @@ export default function WorkspacesPage() {
                     <Input
                       value={name}
                       onChange={(event) => setName(event.target.value)}
-                      placeholder="Project Kestrel — acquisition review"
+                      placeholder="Project Kestrel"
                       maxLength={120}
                       required
                     />

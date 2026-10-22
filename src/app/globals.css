@@ -1,12 +1,11 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Tarka Sabha — "The Research Desk"
+   Tarka Sabha — Financial desk
 
-   A diligence record rendered as a printed research note: warm ivory paper,
-   ink text, oxblood correction marks, hairline evidence rules, and almost no
-   decorative chrome. The council is a room inside the record; the record is
-   the product.
+   A stone-white diligence canvas, charcoal ink, deep-emerald signals, and
+   thin evidence rules. The public site frames the product; the private
+   workspace is the product itself.
 
    Everything below is semantic. Components say `bg-surface` or `text-muted`,
    never `isLight ? 'bg-white' : 'bg-slate-900'`, so the theme flips in one

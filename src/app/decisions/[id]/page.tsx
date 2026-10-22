@@ -420,7 +420,7 @@ export default function DecisionPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-14">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -473,7 +473,7 @@ export default function DecisionPage() {
   const canEdit = canEditDecisions(decision.role)
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-14">
       <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-subtle">
         <Link href="/workspaces" className="transition-colors hover:text-accent">
           Workspaces
@@ -515,7 +515,7 @@ export default function DecisionPage() {
         </div>
         <div className="border-l border-line py-4 pl-4">
           <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">Owner</p>
-          <p className="mt-2 truncate text-sm text-text">
+          <p className="mt-2 break-words text-sm text-text">
             {decision.owner?.name || decision.owner?.email || 'Unassigned'}
           </p>
         </div>

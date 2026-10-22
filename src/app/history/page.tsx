@@ -6,6 +6,7 @@ import { Chat } from '@/types'
 import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 
 export default function HistoryPage() {
@@ -46,7 +47,7 @@ export default function HistoryPage() {
   }, [authLoading, isAuthenticated])
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-14">
       <PageHeader
         eyebrow="Review rooms"
         title="Past review rooms"
@@ -78,15 +79,28 @@ export default function HistoryPage() {
           }
         />
       ) : chats.length === 0 ? (
-        <EmptyState
-          title="No review rooms yet"
-          description="Open a review room, give the agents an objective, and the transcript will be filed here."
-          action={
-            <Link href="/debate">
-              <Button variant="primary">Open the first one</Button>
-            </Link>
-          }
-        />
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <EmptyState
+            title="No review rooms yet"
+            description="Open a review room, give the agents an objective, and the transcript will be filed here."
+            action={
+              <Link href="/debate">
+                <Button variant="primary">Open the first one</Button>
+              </Link>
+            }
+          />
+          <Card>
+            <p className="eyebrow">What gets filed</p>
+            <ul className="mt-4 space-y-3 text-xs leading-relaxed text-muted">
+              <li>The objective and the agents who sat on it.</li>
+              <li>The arguments, disagreement, and scored deliverable.</li>
+              <li>A link back to the decision it was convened for.</li>
+            </ul>
+            <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
+              A review room is a working session. The decision record is the durable artifact.
+            </p>
+          </Card>
+        </div>
       ) : (
         <div className="border-y border-line">
           {chats.map((chat) => {
@@ -98,7 +112,7 @@ export default function HistoryPage() {
                 className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-line px-1 py-4 transition-colors last:border-b-0 hover:bg-surface-2"
               >
                 <div className="min-w-0">
-                  <h2 className="truncate font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
+                  <h2 className="break-words font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
                     {chat.topic || chat.title}
                   </h2>
                   <p className="mt-1 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-subtle">

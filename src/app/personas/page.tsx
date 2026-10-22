@@ -157,7 +157,7 @@ export default function PersonasPage() {
 
   if (authLoading) {
     return (
-      <div className="mx-auto max-w-5xl px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-14">
         <p className="eyebrow">Loading…</p>
       </div>
     )
@@ -180,7 +180,7 @@ export default function PersonasPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-14">
       <PageHeader
         eyebrow="Agents"
         title="Review-room agents"
@@ -213,6 +213,8 @@ export default function PersonasPage() {
         </Card>
       )}
 
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0">
       {loading ? (
         <p className="py-16 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
@@ -235,7 +237,7 @@ export default function PersonasPage() {
                 <div className="flex items-start gap-3">
                   <Avatar name={persona.name} size="md" />
                   <div className="min-w-0 flex-1">
-                    <h2 className="truncate font-display text-base text-text">
+                    <h2 className="break-words font-display text-base text-text">
                       {persona.name}
                     </h2>
                     <p className="mt-0.5 font-mono text-xs uppercase tracking-[0.1em] text-accent">
@@ -277,6 +279,36 @@ export default function PersonasPage() {
           ))}
         </ul>
       )}
+        </div>
+
+        <aside className="space-y-4">
+          <Card>
+            <p className="eyebrow">A useful council</p>
+            <div className="mt-4 space-y-4">
+              {[
+                ['Researcher', 'Gathers evidence and flags uncertainty.'],
+                ['Critic', 'Attacks the weakest part of the reasoning.'],
+                ['Synthesizer', 'Pulls the threads into a recommendation.'],
+                ['Planner', 'Turns the discussion into concrete next steps.'],
+              ].map(([role, description]) => (
+                <div key={role}>
+                  <p className="text-sm font-semibold text-text">{role}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted">{description}</p>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card>
+            <p className="eyebrow">In the record</p>
+            <p className="mt-3 text-xs leading-relaxed text-muted">
+              Agents argue inside a review room, but the decision, evidence, and approvals remain
+              the durable artifact. The transcript is attached to the record — not the other way
+              around.
+            </p>
+          </Card>
+        </aside>
+      </div>
 
       <Modal
         open={showForm}

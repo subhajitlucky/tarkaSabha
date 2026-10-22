@@ -79,7 +79,7 @@ const OPEN_QUESTIONS = [
 
 export default function DiligencePage() {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-14">
+    <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 py-14">
       <PageHeader
         eyebrow="Decision diligence"
         title="Know what the code decided before you sign."

@@ -190,7 +190,7 @@ export default function ProvidersPage() {
 
   if (authLoading) {
     return (
-      <div className="mx-auto max-w-4xl px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-14">
         <p className="eyebrow">Loading…</p>
       </div>
     )
@@ -213,7 +213,7 @@ export default function ProvidersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-14">
       <PageHeader
         eyebrow="Providers"
         title="Model providers"
@@ -234,6 +234,8 @@ export default function ProvidersPage() {
         </p>
       )}
 
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="min-w-0">
       {loading ? (
         <p className="py-16 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
@@ -255,7 +257,7 @@ export default function ProvidersPage() {
               <Card className="flex flex-wrap items-center gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h2 className="truncate font-display text-base text-text">
+                    <h2 className="break-words font-display text-base text-text">
                       {provider.name}
                     </h2>
                     {provider.isDefault && <Badge tone="accent">Default</Badge>}
@@ -267,7 +269,7 @@ export default function ProvidersPage() {
                     <span className="mx-1.5">·</span>
                     temp {provider.temperature}
                   </p>
-                  <p className="mt-0.5 truncate font-mono text-xs text-subtle">
+                  <p className="mt-0.5 break-all font-mono text-xs text-subtle">
                     {provider.apiUrl}
                   </p>
                   {testStatus[provider.id] && (
@@ -307,6 +309,30 @@ export default function ProvidersPage() {
           ))}
         </ul>
       )}
+        </div>
+
+        <aside className="space-y-4">
+          <Card>
+            <p className="eyebrow">Supported providers</p>
+            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2">
+              {PROVIDER_TYPES.map((provider) => (
+                <p key={provider.value} className="text-xs text-muted">
+                  {provider.label}
+                </p>
+              ))}
+            </div>
+          </Card>
+
+          <Card>
+            <p className="eyebrow">Key handling</p>
+            <ul className="mt-4 space-y-3 text-xs leading-relaxed text-muted">
+              <li>Keys are encrypted with AES-256-GCM before storage.</li>
+              <li>Keys are never sent to the browser after save.</li>
+              <li>Test a key before a review room depends on it.</li>
+            </ul>
+          </Card>
+        </aside>
+      </div>
 
       <Modal
         open={showForm}
