@@ -14,48 +14,48 @@
    ========================================================================= */
 
 :root {
-  /* ============================ Archive =================================
-     The optional low-light reading room: charcoal paper, warm document text,
-     and a single oxblood signal. No neon, no dashboard glow.
+  /* ============================ Dark archive ============================
+     Optional low-light mode: charcoal-green surfaces, cool document text,
+     and the same deep emerald signal.
      ===================================================================== */
 
-  --bg: #12110e;
-  --surface: #191712;
-  --surface-2: #211e18;
-  --surface-3: #2a261e;
+  --bg: #080d0b;
+  --surface: #0d1511;
+  --surface-2: #132019;
+  --surface-3: #1a2a21;
 
-  --line: #393328;
-  --line-strong: #574d3d;
+  --line: #24382e;
+  --line-strong: #385646;
 
-  --text: #eae3d5;
-  --text-muted: #b2a894;
-  --text-subtle: #908775;
+  --text: #e9f1ec;
+  --text-muted: #a4b5ab;
+  --text-subtle: #7d9085;
 
-  --accent: #d08a7b;
-  --accent-hover: #e2a092;
-  --accent-ink: #1b0f0c;
-  --accent-soft: rgb(208 138 123 / 0.1);
-  --accent-line: rgb(208 138 123 / 0.28);
-  --accent-glow: rgb(208 138 123 / 0.16);
+  --accent: #5fbf91;
+  --accent-hover: #7fd3a8;
+  --accent-ink: #07100b;
+  --accent-soft: rgb(95 191 145 / 0.1);
+  --accent-line: rgb(95 191 145 / 0.3);
+  --accent-glow: rgb(95 191 145 / 0.18);
 
   --danger: #e07a6d;
   --danger-soft: rgb(224 122 109 / 0.12);
   --danger-glow: rgb(224 122 109 / 0.18);
-  --success: #8dbd9b;
-  --success-soft: rgb(141 189 155 / 0.12);
+  --success: #7bd3a7;
+  --success-soft: rgb(123 211 167 / 0.12);
 
   --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
   --shadow-lift: var(--inset-top), 0 16px 36px -24px rgb(0 0 0 / 0.9);
   --shadow-pop: var(--inset-top), 0 22px 54px -28px rgb(0 0 0 / 0.95);
 
   --atmosphere:
-    radial-gradient(58rem 38rem at 10% -10%, rgb(208 138 123 / 0.06), transparent 64%),
-    radial-gradient(48rem 32rem at 90% -4%, rgb(119 142 128 / 0.04), transparent 60%);
+    radial-gradient(58rem 38rem at 10% -10%, rgb(95 191 145 / 0.06), transparent 64%),
+    radial-gradient(48rem 32rem at 90% -4%, rgb(92 139 128 / 0.04), transparent 60%);
   --grain-opacity: 0.45;
   --grain-color: rgb(255 255 255 / 0.015);
 
-  --tone-1: #d08a7b;
-  --tone-2: #8dbd9b;
+  --tone-1: #5fbf91;
+  --tone-2: #7bb7d3;
   --tone-3: #c8a56a;
   --tone-4: #93a9c1;
   --tone-5: #b891a8;
@@ -64,51 +64,51 @@
 }
 
 html.light {
-  /* ============================ Research desk ===========================
-     Warm ivory paper, ink-green text, oxblood correction marks, hairline
-     rules. This is the default: a document, not a dashboard.
+  /* ============================ Financial desk ==========================
+     Stone-white canvas, charcoal text, deep emerald signal, thin borders.
+     The default: a light financial product, not a dark developer tool.
      ===================================================================== */
 
-  --bg: #f4f0e6;
-  --surface: #fcf9f2;
-  --surface-2: #ece6d8;
-  --surface-3: #e1d9c8;
+  --bg: #f4f7f5;
+  --surface: #ffffff;
+  --surface-2: #eef3f0;
+  --surface-3: #e3ebe6;
 
-  --line: #d7cebc;
-  --line-strong: #b8ad97;
+  --line: #e0e7e2;
+  --line-strong: #bdc9c2;
 
-  --text: #17201d;
-  --text-muted: #5e665f;
-  --text-subtle: #7b8178;
+  --text: #111816;
+  --text-muted: #5b6661;
+  --text-subtle: #7d8983;
 
-  --accent: #7b2f2a;
-  --accent-hover: #5f211e;
-  --accent-ink: #fcf9f2;
-  --accent-soft: rgb(123 47 42 / 0.08);
-  --accent-line: rgb(123 47 42 / 0.24);
-  --accent-glow: rgb(123 47 42 / 0.12);
+  --accent: #0f5b43;
+  --accent-hover: #0a4634;
+  --accent-ink: #ffffff;
+  --accent-soft: #e7f2ed;
+  --accent-line: #b7d4c8;
+  --accent-glow: rgb(15 91 67 / 0.12);
 
-  --danger: #9c3a33;
-  --danger-soft: rgb(156 58 51 / 0.1);
-  --danger-glow: rgb(156 58 51 / 0.14);
-  --success: #2f6b4f;
-  --success-soft: rgb(47 107 79 / 0.1);
+  --danger: #bf4a43;
+  --danger-soft: #fbeeed;
+  --danger-glow: rgb(191 74 67 / 0.14);
+  --success: #1f8a5b;
+  --success-soft: #e8f5ee;
 
-  --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.75);
+  --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.8);
   --atmosphere:
-    radial-gradient(58rem 38rem at 10% -10%, rgb(123 47 42 / 0.04), transparent 64%),
-    radial-gradient(48rem 32rem at 90% -4%, rgb(91 113 98 / 0.03), transparent 60%);
-  --grain-opacity: 0.4;
-  --grain-color: rgb(80 65 40 / 0.018);
+    radial-gradient(58rem 38rem at 10% -10%, rgb(15 91 67 / 0.035), transparent 64%),
+    radial-gradient(48rem 32rem at 90% -4%, rgb(82 116 102 / 0.025), transparent 60%);
+  --grain-opacity: 0.32;
+  --grain-color: rgb(20 45 35 / 0.012);
 
-  --tone-1: #7b2f2a;
-  --tone-2: #2f6b4f;
+  --tone-1: #0f5b43;
+  --tone-2: #2f7d6a;
   --tone-3: #9a6a12;
   --tone-4: #4d6b96;
   --tone-5: #7d4d6b;
 
-  --shadow-lift: var(--inset-top), 0 12px 30px -24px rgb(55 45 30 / 0.24);
-  --shadow-pop: var(--inset-top), 0 18px 44px -28px rgb(55 45 30 / 0.3);
+  --shadow-lift: var(--inset-top), 0 12px 30px -24px rgb(20 35 28 / 0.22);
+  --shadow-pop: var(--inset-top), 0 18px 44px -28px rgb(20 35 28 / 0.28);
 
   color-scheme: light;
 }

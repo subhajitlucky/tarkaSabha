@@ -601,7 +601,7 @@ export default function WorkspacePage() {
                   <Input
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
-                    placeholder="Proceed with the Kestrel acquisition"
+                    placeholder="Proceed with Kestrel"
                     maxLength={200}
                     required
                   />

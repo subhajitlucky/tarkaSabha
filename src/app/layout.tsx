@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Manrope, Newsreader } from "next/font/google";
-import Navbar from "@/components/Navbar";
+import { Shell } from "@/components/Shell";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Analytics } from "@vercel/analytics/next";
@@ -67,61 +67,7 @@ export default function RootLayout({
 
         <ThemeProvider>
           <AuthProvider>
-            <Navbar />
-
-            <main id="main" className="pt-[65px] print:pt-0">
-              {children}
-            </main>
-
-            <footer className="mt-24 border-t border-line print:hidden">
-              <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[1.4fr_1fr]">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      aria-hidden="true"
-                      className="flex h-9 w-9 items-center justify-center rounded-[3px] border border-accent-line bg-accent-soft font-display text-sm text-accent"
-                    >
-                      त
-                    </span>
-                    <span className="font-display text-lg text-text">Tarka Sabha</span>
-                  </div>
-                  <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-                    A decision evidence workspace. Frame the decision, attach source-backed
-                    evidence, and keep the review trail together — with an agent council
-                    available as a review room inside the record.
-                  </p>
-                </div>
-
-                <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
-                  {[
-                    ['/workspaces', 'Workspaces'],
-                    ['/diligence', 'Diligence'],
-                    ['/history', 'Review rooms'],
-                    ['/demo', 'Sample'],
-                    ['/debate', 'New review'],
-                    ['/personas', 'Agents'],
-                    ['/providers', 'Providers'],
-                    ['/feedback', 'Feedback'],
-                  ].map(([href, label]) => (
-                    <a
-                      key={href}
-                      href={href}
-                      className="text-muted transition-colors hover:text-accent"
-                    >
-                      {label}
-                    </a>
-                  ))}
-                </nav>
-              </div>
-
-              <div className="border-t border-line">
-                <div className="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-6 text-xs text-subtle sm:flex-row sm:items-center sm:justify-between">
-                  <p>© {new Date().getFullYear()} Tarka Sabha</p>
-                  <p>Decision evidence, on the record.</p>
-                </div>
-              </div>
-            </footer>
-
+            <Shell>{children}</Shell>
             <Analytics />
           </AuthProvider>
         </ThemeProvider>

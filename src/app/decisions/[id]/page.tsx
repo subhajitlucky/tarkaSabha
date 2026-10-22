@@ -614,24 +614,27 @@ export default function DecisionPage() {
             </p>
           </Card>
 
-          <Card className="space-y-4">
-            <div className="flex items-center justify-between gap-2">
-              <p className="eyebrow">Outcome & revisit</p>
-              {decision.outcome && (
-                <Badge
-                  tone={
-                    decision.outcome === 'VALIDATED'
-                      ? 'success'
-                      : decision.outcome === 'INVALIDATED'
-                        ? 'danger'
-                        : 'neutral'
-                  }
-                >
-                  {decision.outcome}
-                </Badge>
-              )}
-            </div>
+          <details className="border border-line bg-surface">
+            <summary className="cursor-pointer list-none p-4">
+              <div className="flex items-center justify-between gap-2">
+                <p className="eyebrow">Outcome & revisit</p>
+                {decision.outcome && (
+                  <Badge
+                    tone={
+                      decision.outcome === 'VALIDATED'
+                        ? 'success'
+                        : decision.outcome === 'INVALIDATED'
+                          ? 'danger'
+                          : 'neutral'
+                    }
+                  >
+                    {decision.outcome}
+                  </Badge>
+                )}
+              </div>
+            </summary>
 
+            <div className="space-y-4 border-t border-line p-4">
             {canEdit ? (
               <>
                 <Field label="Outcome">
@@ -688,15 +691,17 @@ export default function DecisionPage() {
                 {decision.outcomeSummary && <p>{decision.outcomeSummary}</p>}
               </div>
             )}
-          </Card>
+            </div>
+          </details>
 
           {canEdit ? (
-            <Card className="space-y-4">
-              <div>
+            <details className="border border-line bg-surface">
+              <summary className="cursor-pointer list-none p-4">
                 <p className="eyebrow">Review state</p>
                 <h2 className="mt-2 font-display text-xl text-text">Move the decision</h2>
-              </div>
+              </summary>
 
+              <div className="space-y-4 border-t border-line p-4">
               <Field label="State">
                 <Select
                   value={statusDraft}
@@ -725,7 +730,8 @@ export default function DecisionPage() {
               >
                 {savingStatus ? 'Saving…' : 'Save state'}
               </Button>
-            </Card>
+              </div>
+            </details>
           ) : (
             <Card>
               <p className="eyebrow">View-only access</p>
@@ -737,13 +743,13 @@ export default function DecisionPage() {
           )}
 
           {canEdit && (
-            <Card className="space-y-4">
-              <div>
+            <details className="border border-line bg-surface">
+              <summary className="cursor-pointer list-none p-4">
                 <p className="eyebrow">Add evidence</p>
                 <h2 className="mt-2 font-display text-xl text-text">Put a source on record</h2>
-              </div>
+              </summary>
 
-              <form onSubmit={handleAddEvidence} className="space-y-4">
+              <form onSubmit={handleAddEvidence} className="space-y-4 border-t border-line p-4">
                 <Field
                   label="Source snapshot"
                   hint={
@@ -864,11 +870,14 @@ export default function DecisionPage() {
                   {addingEvidence ? 'Adding…' : 'Add evidence'}
                 </Button>
               </form>
-            </Card>
+            </details>
           )}
 
-          <Card className="space-y-3">
-            <p className="eyebrow">Review room</p>
+          <details className="border border-line bg-surface">
+            <summary className="cursor-pointer list-none p-4">
+              <p className="eyebrow">Review room</p>
+            </summary>
+            <div className="space-y-3 border-t border-line p-4">
             {decision.reviewRoom ? (
               <>
                 <p className="text-sm leading-relaxed text-text">{decision.reviewRoom.title}</p>
@@ -935,10 +944,14 @@ export default function DecisionPage() {
                 {roomError}
               </p>
             )}
-          </Card>
+            </div>
+          </details>
 
-          <Card className="space-y-3">
-            <p className="eyebrow">Approvals</p>
+          <details className="border border-line bg-surface">
+            <summary className="cursor-pointer list-none p-4">
+              <p className="eyebrow">Approvals</p>
+            </summary>
+            <div className="space-y-3 border-t border-line p-4">
 
             {canEdit && (
               <div className="space-y-2 border-b border-line pb-3">
@@ -1013,13 +1026,17 @@ export default function DecisionPage() {
                 ))}
               </ul>
             )}
-          </Card>
-
-          <Card className="space-y-3">
-            <div className="flex items-center justify-between gap-3">
-              <p className="eyebrow">Reports</p>
-              <span className="font-mono text-xs text-subtle">{decision.reports.length}</span>
             </div>
+          </details>
+
+          <details className="border border-line bg-surface">
+            <summary className="cursor-pointer list-none p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="eyebrow">Reports</p>
+                <span className="font-mono text-xs text-subtle">{decision.reports.length}</span>
+              </div>
+            </summary>
+            <div className="space-y-3 border-t border-line p-4">
 
             {canEdit && (
               <div className="space-y-2 border-b border-line pb-3">
@@ -1082,7 +1099,8 @@ export default function DecisionPage() {
                 ))}
               </ul>
             )}
-          </Card>
+            </div>
+          </details>
         </aside>
       </div>
     </div>
