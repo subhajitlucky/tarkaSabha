@@ -494,35 +494,35 @@ export default function DecisionPage() {
         actions={<RoleBadge role={decision.role} />}
       />
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <Card className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">State</p>
-            <div className="mt-2">
-              <DecisionStatusBadge status={decision.status} />
-            </div>
-          </Card>
-          <Card className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">Impact</p>
-            <div className="mt-2">
-              <ImpactBadge impact={decision.impact} />
-            </div>
-          </Card>
-          <Card className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">Debt</p>
-            <div className="mt-2">
-              <DebtBadge score={decision.debtScore} />
-            </div>
-          </Card>
-          <Card className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">Owner</p>
-            <p className="mt-2 truncate text-sm text-text">
-              {decision.owner?.name || decision.owner?.email || 'Unassigned'}
-            </p>
-          </Card>
-          <Card className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">Updated</p>
-            <p className="mt-2 text-sm text-text">{formatDate(decision.updatedAt)}</p>
-          </Card>
+      <div className="mb-8 grid grid-cols-2 border-y border-line sm:grid-cols-3 lg:grid-cols-5">
+        <div className="py-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">State</p>
+          <div className="mt-2">
+            <DecisionStatusBadge status={decision.status} />
+          </div>
+        </div>
+        <div className="border-l border-line py-4 pl-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">Impact</p>
+          <div className="mt-2">
+            <ImpactBadge impact={decision.impact} />
+          </div>
+        </div>
+        <div className="border-l border-line py-4 pl-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">Debt</p>
+          <div className="mt-2">
+            <DebtBadge score={decision.debtScore} />
+          </div>
+        </div>
+        <div className="border-l border-line py-4 pl-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">Owner</p>
+          <p className="mt-2 truncate text-sm text-text">
+            {decision.owner?.name || decision.owner?.email || 'Unassigned'}
+          </p>
+        </div>
+        <div className="border-l border-line py-4 pl-4">
+          <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">Updated</p>
+          <p className="mt-2 text-sm text-text">{formatDate(decision.updatedAt)}</p>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
@@ -548,46 +548,50 @@ export default function DecisionPage() {
               }
             />
           ) : (
-            <ul className="space-y-3">
-              {decision.evidence.map((item) => (
-                <li key={item.id}>
-                  <Card className="space-y-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge tone="outline">{item.kind}</Badge>
-                      <EvidenceStatusBadge status={item.status} />
-                      <ConfidenceBadge confidence={item.confidence} />
-                      <span className="ml-auto font-mono text-xs text-subtle">
-                        {formatDate(item.createdAt)}
-                      </span>
+            <div className="border-y border-line">
+              {decision.evidence.map((item, index) => (
+                <div
+                  key={item.id}
+                  className="space-y-3 border-b border-line py-5 last:border-b-0"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[0.62rem] text-accent">
+                      E-{String(index + 1).padStart(2, '0')}
+                    </span>
+                    <Badge tone="outline">{item.kind}</Badge>
+                    <EvidenceStatusBadge status={item.status} />
+                    <ConfidenceBadge confidence={item.confidence} />
+                    <span className="ml-auto font-mono text-[0.62rem] uppercase tracking-[0.08em] text-subtle">
+                      {formatDate(item.createdAt)}
+                    </span>
+                  </div>
+
+                  <p className="break-words font-mono text-xs text-muted">{item.source}</p>
+
+                  {item.snapshot && (
+                    <a
+                      href={item.snapshot.url || item.snapshot.path}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-block font-mono text-xs text-accent transition-colors hover:underline"
+                    >
+                      Linked snapshot · {item.snapshot.path}
+                    </a>
+                  )}
+
+                  <blockquote className="border-l-2 border-accent-line pl-3 text-sm leading-relaxed text-text whitespace-pre-wrap">
+                    {item.quote}
+                  </blockquote>
+
+                  {(item.commit || item.sha256) && (
+                    <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-line pt-2 font-mono text-xs text-subtle">
+                      {item.commit && <p className="break-all">commit {item.commit}</p>}
+                      {item.sha256 && <p className="break-all">sha256 {item.sha256}</p>}
                     </div>
-
-                    <p className="break-words font-mono text-xs text-muted">{item.source}</p>
-
-                    {item.snapshot && (
-                      <a
-                        href={item.snapshot.url || item.snapshot.path}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-block font-mono text-xs text-accent transition-colors hover:underline"
-                      >
-                        Linked snapshot · {item.snapshot.path}
-                      </a>
-                    )}
-
-                    <blockquote className="border-l-2 border-accent-line pl-3 text-sm leading-relaxed text-text whitespace-pre-wrap">
-                      {item.quote}
-                    </blockquote>
-
-                    {(item.commit || item.sha256) && (
-                      <div className="space-y-1 border-t border-line pt-2 font-mono text-xs text-subtle">
-                        {item.commit && <p className="break-all">commit {item.commit}</p>}
-                        {item.sha256 && <p className="break-all">sha256 {item.sha256}</p>}
-                      </div>
-                    )}
-                  </Card>
-                </li>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
           )}
           </section>
 

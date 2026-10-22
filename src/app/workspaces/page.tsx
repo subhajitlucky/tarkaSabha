@@ -4,7 +4,6 @@ import { FormEvent, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useAuth } from '@/components/AuthProvider'
 import { Button } from '@/components/ui/Button'
-import { Card } from '@/components/ui/Card'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Field, Input, Textarea } from '@/components/ui/Field'
 import { formatDate } from '@/components/workspaces/format'
@@ -106,16 +105,10 @@ export default function WorkspacesPage() {
           isAuthenticated ? (
             <Link href="#new-workspace">
               <Button variant="primary" size="sm">
-                New workspace
+                New matter
               </Button>
             </Link>
-          ) : (
-            <Link href="/login?callbackUrl=/workspaces">
-              <Button variant="primary" size="sm">
-                Sign in
-              </Button>
-            </Link>
-          )
+          ) : undefined
         }
       />
 
@@ -140,89 +133,96 @@ export default function WorkspacesPage() {
         />
       ) : (
         <>
-          <div className="mb-8 grid gap-3 sm:grid-cols-3">
+          <div className="mb-8 grid grid-cols-3 border-y border-line">
             {[
-              { label: 'Rooms', value: workspaces.length },
+              { label: 'Matters', value: workspaces.length },
               { label: 'Decisions', value: totalDecisions },
               { label: 'Members', value: totalMembers },
-            ].map((stat) => (
-              <Card key={stat.label} className="py-4">
-                <p className="font-mono text-[0.65rem] uppercase tracking-[0.14em] text-subtle">
+            ].map((stat, index) => (
+              <div
+                key={stat.label}
+                className={index === 0 ? 'py-5' : 'border-l border-line py-5 pl-5'}
+              >
+                <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-subtle">
                   {stat.label}
                 </p>
-                <p className="mt-1 font-display text-3xl text-text">{stat.value}</p>
-              </Card>
+                <p className="mt-1 font-display text-4xl text-text">{stat.value}</p>
+              </div>
             ))}
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
             <section aria-labelledby="workspace-list-heading">
-              <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <h2
                   id="workspace-list-heading"
                   className="font-mono text-xs uppercase tracking-[0.14em] text-subtle"
                 >
-                  All rooms
+                  Matters
                 </h2>
                 <span className="font-mono text-xs text-subtle">{workspaces.length}</span>
               </div>
 
               {loadError ? (
-                <p role="alert" className="rounded-[2px] border border-line bg-surface p-5 text-sm text-danger">
+                <p role="alert" className="border border-line bg-surface p-5 text-sm text-danger">
                   {loadError}
                 </p>
               ) : workspaces.length === 0 ? (
                 <EmptyState
-                  title="No workspaces yet"
-                  description="Create a room for the next decision you need to defend. Decisions, evidence, and approvals stay together."
+                  title="No matters opened"
+                  description="Open a case file for the next decision you need to defend. Decisions, evidence, and approvals stay together."
                 />
               ) : (
-                <ul className="grid gap-3 md:grid-cols-2">
+                <div className="border-y border-line">
+                  <div className="hidden grid-cols-[minmax(0,1fr)_4rem_4rem_7rem_1.25rem] gap-4 border-b border-line py-2 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-subtle sm:grid">
+                    <span>Matter</span>
+                    <span>Decisions</span>
+                    <span>Members</span>
+                    <span>Updated</span>
+                    <span />
+                  </div>
                   {workspaces.map((workspace, index) => (
-                    <li key={workspace.id}>
-                      <Link
-                        href={`/workspaces/${workspace.id}`}
-                        className="group flex h-full flex-col border border-line bg-surface p-5 transition-colors hover:border-accent-line"
-                      >
-                        <div className="flex items-center justify-between gap-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-subtle">
-                          <span>Room {String(index + 1).padStart(2, '0')}</span>
-                          <span>
-                            {workspace._count?.decisions ?? 0}{' '}
-                            {(workspace._count?.decisions ?? 0) === 1 ? 'decision' : 'decisions'}
+                    <Link
+                      key={workspace.id}
+                      href={`/workspaces/${workspace.id}`}
+                      className="group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 border-b border-line px-1 py-4 transition-colors last:border-b-0 hover:bg-surface-2 sm:grid-cols-[minmax(0,1fr)_4rem_4rem_7rem_1.25rem]"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-baseline gap-3">
+                          <span className="font-mono text-[0.62rem] text-accent">
+                            {String(index + 1).padStart(2, '0')}
                           </span>
+                          <h3 className="truncate font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
+                            {workspace.name}
+                          </h3>
                         </div>
-
-                        <h3 className="mt-6 font-display text-2xl leading-[1.05] text-text transition-colors group-hover:text-accent">
-                          {workspace.name}
-                        </h3>
-
-                        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted">
-                          {workspace.description || 'No description yet.'}
+                        <p className="mt-1 line-clamp-1 pl-7 text-sm leading-relaxed text-muted">
+                          {workspace.description || 'No description recorded.'}
                         </p>
-
-                        <div className="mt-auto flex items-end justify-between gap-3 border-t border-line pt-4">
-                          <p className="font-mono text-[0.62rem] uppercase tracking-[0.1em] text-subtle">
-                            {workspace._count?.memberships ?? 1}{' '}
-                            {(workspace._count?.memberships ?? 1) === 1 ? 'member' : 'members'}
-                            <span className="mx-1.5">·</span>
-                            {formatDate(workspace.updatedAt)}
-                          </p>
-                          <span className="font-mono text-xs text-accent opacity-0 transition-opacity group-hover:opacity-100">
-                            Open →
-                          </span>
-                        </div>
-                      </Link>
-                    </li>
+                      </div>
+                      <span className="hidden font-mono text-xs text-muted sm:block">
+                        {workspace._count?.decisions ?? 0}
+                      </span>
+                      <span className="hidden font-mono text-xs text-muted sm:block">
+                        {workspace._count?.memberships ?? 1}
+                      </span>
+                      <span className="hidden font-mono text-[0.62rem] uppercase tracking-[0.08em] text-subtle sm:block">
+                        {formatDate(workspace.updatedAt)}
+                      </span>
+                      <span className="font-mono text-sm text-accent opacity-0 transition-opacity group-hover:opacity-100">
+                        →
+                      </span>
+                    </Link>
                   ))}
-                </ul>
+                </div>
               )}
             </section>
 
             <aside>
-              <Card id="new-workspace" className="scroll-mt-24 space-y-4">
+              <div id="new-workspace" className="scroll-mt-24 border-t border-line pt-4">
                 <div>
-                  <p className="eyebrow">New workspace</p>
-                  <h2 className="mt-3 font-display text-2xl text-text">Start a case file</h2>
+                  <p className="eyebrow">New matter</p>
+                  <h2 className="mt-3 font-display text-2xl text-text">Open a case file</h2>
                   <p className="mt-2 text-sm leading-relaxed text-muted">
                     Name it after the decision under review. Evidence and approvals are scoped
                     to this room.
@@ -265,10 +265,10 @@ export default function WorkspacesPage() {
                     className="w-full"
                     disabled={creating || name.trim().length === 0}
                   >
-                    {creating ? 'Creating…' : 'Create workspace'}
+                    {creating ? 'Creating…' : 'Open case file'}
                   </Button>
                 </form>
-              </Card>
+              </div>
             </aside>
           </div>
         </>

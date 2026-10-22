@@ -379,19 +379,22 @@ export default function WorkspacePage() {
         </Link>
       </nav>
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid grid-cols-2 border-y border-line sm:grid-cols-4">
         {[
           { label: 'Decisions', value: decisionCount },
           { label: 'Evidence items', value: evidenceCount },
           { label: 'Sources', value: sourceCount },
           { label: 'Members', value: memberCount },
-        ].map((stat) => (
-          <Card key={stat.label} className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">
+        ].map((stat, index) => (
+          <div
+            key={stat.label}
+            className={index === 0 ? 'py-5' : 'border-l border-line py-5 pl-5'}
+          >
+            <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">
               {stat.label}
             </p>
-            <p className="mt-1 font-display text-2xl text-text">{stat.value}</p>
-          </Card>
+            <p className="mt-1 font-display text-4xl text-text">{stat.value}</p>
+          </div>
         ))}
       </div>
 
@@ -443,60 +446,48 @@ export default function WorkspacePage() {
         )}
 
         {workspace.sources.length === 0 ? (
-          <EmptyState
-            title="No sources ingested"
-            description={
-              canEdit
-                ? 'Ingest a public GitHub repository to snapshot its files, commits, pull requests, and issues.'
-                : 'A reviewer or owner will ingest the repository sources.'
-            }
-          />
+          <div className="border-y border-line py-6 text-sm leading-relaxed text-muted">
+            {canEdit
+              ? 'No repository sources are on file. Ingest a public GitHub repository to snapshot its files, commits, pull requests, and issues.'
+              : 'No repository sources are on file yet.'}
+          </div>
         ) : (
-          <ul className="space-y-2">
+          <div className="border-y border-line">
             {workspace.sources.map((source) => (
-              <li key={source.id}>
-                <Link
-                  href={`/workspaces/${workspace.id}/sources/${source.id}`}
-                  className="group block rounded-[4px] border border-line bg-surface p-4 transition-colors hover:border-accent-line"
+              <Link
+                key={source.id}
+                href={`/workspaces/${workspace.id}/sources/${source.id}`}
+                className="group flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-1 py-4 transition-colors last:border-b-0 hover:bg-surface-2"
+              >
+                <p className="font-display text-lg text-text transition-colors group-hover:text-accent">
+                  {source.owner}/{source.name}
+                </p>
+                <Badge
+                  tone={
+                    source.status === 'READY'
+                      ? 'success'
+                      : source.status === 'FAILED'
+                        ? 'danger'
+                        : 'neutral'
+                  }
                 >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-display text-base text-text transition-colors group-hover:text-accent">
-                      {source.owner}/{source.name}
-                    </p>
-                    <Badge
-                      tone={
-                        source.status === 'READY'
-                          ? 'success'
-                          : source.status === 'FAILED'
-                            ? 'danger'
-                            : 'neutral'
-                      }
-                    >
-                      {source.status}
-                    </Badge>
-                    <span className="ml-auto font-mono text-xs text-subtle">
-                      {formatDate(source.updatedAt)}
-                    </span>
-                  </div>
-                  <p className="mt-1 font-mono text-xs text-subtle">
-                    {source.ref}
-                    {source.commitSha ? ` @ ${source.commitSha.slice(0, 7)}` : ''}
-                    <span className="mx-1.5">·</span>
-                    {source.fileCount} files
-                    <span className="mx-1.5">·</span>
-                    {source.commitCount} commits
-                    <span className="mx-1.5">·</span>
-                    {source.pullRequestCount}{' '}
-                    {source.pullRequestCount === 1 ? 'PR' : 'PRs'}
-                    <span className="mx-1.5">·</span>
-                    {source.issueCount}{' '}
-                    {source.issueCount === 1 ? 'issue' : 'issues'}
-                  </p>
-                  {source.error && <p className="mt-1 text-xs text-danger">{source.error}</p>}
-                </Link>
-              </li>
+                  {source.status}
+                </Badge>
+                <span className="font-mono text-[0.62rem] text-subtle">
+                  {source.ref}
+                  {source.commitSha ? ` @ ${source.commitSha.slice(0, 7)}` : ''}
+                </span>
+                <span className="ml-auto font-mono text-[0.62rem] text-subtle">
+                  {source.fileCount} files · {source.commitCount} commits ·{' '}
+                  {source.pullRequestCount}{' '}
+                  {source.pullRequestCount === 1 ? 'PR' : 'PRs'} · {source.issueCount}{' '}
+                  {source.issueCount === 1 ? 'issue' : 'issues'}
+                  <span className="ml-3">{formatDate(source.updatedAt)}</span>
+                </span>
+                {source.error && <p className="w-full text-xs text-danger">{source.error}</p>}
+              </Link>
             ))}
-          </ul>
+          </div>
         )}
       </section>
 
@@ -523,66 +514,70 @@ export default function WorkspacePage() {
               }
             />
           ) : (
-            <ul className="space-y-3">
-              {workspace.decisions.map((decision) => (
-                <li key={decision.id}>
-                  <Link
-                    href={`/decisions/${decision.id}`}
-                    className="group flex h-full flex-col rounded-[4px] border border-line bg-surface p-5 transition-colors hover:border-accent-line"
-                  >
-                    <div className="flex flex-wrap items-center gap-2">
-                      <DecisionStatusBadge status={decision.status} />
-                      <ImpactBadge impact={decision.impact} />
-                      <DebtBadge score={decision.debtScore ?? 0} />
-                      {decision.outcome && (
-                        <Badge
-                          tone={
-                            decision.outcome === 'VALIDATED'
-                              ? 'success'
-                              : decision.outcome === 'INVALIDATED'
-                                ? 'danger'
-                                : 'neutral'
-                          }
-                        >
-                          {decision.outcome}
-                        </Badge>
-                      )}
-                      <span className="ml-auto font-mono text-xs text-subtle">
-                        {formatDate(decision.updatedAt)}
-                      </span>
-                    </div>
-
-                    <h3 className="mt-3 font-display text-lg leading-snug text-text transition-colors group-hover:text-accent">
+            <div className="border-y border-line">
+              {workspace.decisions.map((decision, index) => (
+                <Link
+                  key={decision.id}
+                  href={`/decisions/${decision.id}`}
+                  className="group block border-b border-line px-1 py-5 transition-colors last:border-b-0 hover:bg-surface-2"
+                >
+                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="font-mono text-[0.62rem] text-accent">
+                      D-{String(index + 1).padStart(2, '0')}
+                    </span>
+                    <h3 className="font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
                       {decision.title}
                     </h3>
+                    <span className="ml-auto font-mono text-[0.62rem] uppercase tracking-[0.08em] text-subtle">
+                      {formatDate(decision.updatedAt)}
+                    </span>
+                  </div>
 
-                    {decision.summary && (
-                      <p className="mt-1 line-clamp-2 text-sm leading-relaxed text-muted">
-                        {decision.summary}
-                      </p>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 pl-7">
+                    <DecisionStatusBadge status={decision.status} />
+                    <ImpactBadge impact={decision.impact} />
+                    <DebtBadge score={decision.debtScore ?? 0} />
+                    {decision.outcome && (
+                      <Badge
+                        tone={
+                          decision.outcome === 'VALIDATED'
+                            ? 'success'
+                            : decision.outcome === 'INVALIDATED'
+                              ? 'danger'
+                              : 'neutral'
+                        }
+                      >
+                        {decision.outcome}
+                      </Badge>
                     )}
+                  </div>
 
-                    <p className="mt-auto pt-4 font-mono text-xs uppercase tracking-[0.1em] text-subtle">
-                      {decision._count?.evidence ?? 0}{' '}
-                      {(decision._count?.evidence ?? 0) === 1
-                        ? 'evidence item'
-                        : 'evidence items'}
-                      <span className="mx-1.5">·</span>
-                      {decision._count?.approvals ?? 0}{' '}
-                      {(decision._count?.approvals ?? 0) === 1 ? 'approval' : 'approvals'}
-                      <span className="mx-1.5">·</span>
-                      Owner {decision.owner?.name || 'unassigned'}
-                      {decision.revisitAt && (
-                        <>
-                          <span className="mx-1.5">·</span>
-                          Revisit {formatDate(decision.revisitAt)}
-                        </>
-                      )}
+                  {decision.summary && (
+                    <p className="mt-2 line-clamp-2 pl-7 text-sm leading-relaxed text-muted">
+                      {decision.summary}
                     </p>
-                  </Link>
-                </li>
+                  )}
+
+                  <p className="mt-3 pl-7 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-subtle">
+                    {decision._count?.evidence ?? 0}{' '}
+                    {(decision._count?.evidence ?? 0) === 1
+                      ? 'evidence item'
+                      : 'evidence items'}
+                    <span className="mx-1.5">·</span>
+                    {decision._count?.approvals ?? 0}{' '}
+                    {(decision._count?.approvals ?? 0) === 1 ? 'approval' : 'approvals'}
+                    <span className="mx-1.5">·</span>
+                    Owner {decision.owner?.name || 'unassigned'}
+                    {decision.revisitAt && (
+                      <>
+                        <span className="mx-1.5">·</span>
+                        Revisit {formatDate(decision.revisitAt)}
+                      </>
+                    )}
+                  </p>
+                </Link>
               ))}
-            </ul>
+            </div>
           )}
           </section>
 

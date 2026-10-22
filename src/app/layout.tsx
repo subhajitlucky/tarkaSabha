@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import { Instrument_Serif, JetBrains_Mono, Manrope } from "next/font/google";
+import { JetBrains_Mono, Manrope, Newsreader } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
-// Display: Instrument Serif, a high-contrast editorial face for case-file
-// headlines. Body: Manrope, a precise grotesk for reading and UI. Mono:
+// Display: Newsreader, a scholarly editorial face for research notes and
+// case-file headlines. Body: Manrope, a precise grotesk for UI. Mono:
 // JetBrains Mono for evidence coordinates, hashes, and status labels.
-const display = Instrument_Serif({
+const display = Newsreader({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: "400",
   display: "swap",
 });
 
@@ -38,10 +37,10 @@ export const metadata: Metadata = {
 const themeScript = `
   (function() {
     const saved = localStorage.getItem('theme');
-    if (saved === 'light') {
-      document.documentElement.classList.add('light');
-    } else {
+    if (saved === 'dark') {
       document.documentElement.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
     }
   })();
 `;
@@ -61,7 +60,7 @@ export default function RootLayout({
       >
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-[2px] focus:border focus:border-accent focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:text-text lg:focus:left-[16.5rem]"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:border focus:border-accent focus:bg-surface focus:px-4 focus:py-2 focus:text-sm focus:text-text"
         >
           Skip to content
         </a>
@@ -70,11 +69,11 @@ export default function RootLayout({
           <AuthProvider>
             <Navbar />
 
-            <main id="main" className="pt-[57px] lg:pl-[15.5rem] lg:pt-0 print:pl-0 print:pt-0">
+            <main id="main" className="pt-[65px] print:pt-0">
               {children}
             </main>
 
-            <footer className="mt-24 border-t border-line print:hidden lg:pl-[15.5rem]">
+            <footer className="mt-24 border-t border-line print:hidden">
               <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 lg:grid-cols-[1.4fr_1fr]">
                 <div>
                   <div className="flex items-center gap-3">

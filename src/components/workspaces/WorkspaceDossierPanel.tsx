@@ -95,39 +95,36 @@ export function WorkspaceDossierPanel({
           }
         />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
+        <div className="border-y border-line">
           {dossiers.map((dossier) => (
-            <li key={dossier.id}>
-              <div className="flex h-full flex-col rounded-[4px] border border-line bg-surface p-4 transition-colors hover:border-accent-line">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-display text-base text-text">Version {dossier.version}</p>
-                  <Badge tone={dossier.status === 'PUBLISHED' ? 'success' : 'neutral'}>
-                    {dossier.status}
-                  </Badge>
-                </div>
-                <p className="mt-1 font-mono text-xs text-subtle">
-                  {formatDate(dossier.createdAt)}
-                  <span className="mx-1.5">·</span>
-                  {dossier.contentHash.slice(0, 12)}…
-                </p>
-                <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <Link
-                    href={`/workspaces/${workspaceId}/dossiers/${dossier.id}`}
-                    className="font-mono text-xs text-accent transition-colors hover:underline"
-                  >
-                    Open dossier
-                  </Link>
-                  <a
-                    href={`/api/dossiers/${dossier.id}?download=1`}
-                    className="font-mono text-xs text-muted transition-colors hover:text-accent"
-                  >
-                    Download .md
-                  </a>
-                </div>
+            <div
+              key={dossier.id}
+              className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line px-1 py-4 last:border-b-0"
+            >
+              <p className="font-display text-lg text-text">Version {dossier.version}</p>
+              <Badge tone={dossier.status === 'PUBLISHED' ? 'success' : 'neutral'}>
+                {dossier.status}
+              </Badge>
+              <span className="font-mono text-[0.62rem] text-subtle">
+                {formatDate(dossier.createdAt)} · {dossier.contentHash.slice(0, 12)}…
+              </span>
+              <div className="ml-auto flex flex-wrap items-center gap-3">
+                <Link
+                  href={`/workspaces/${workspaceId}/dossiers/${dossier.id}`}
+                  className="font-mono text-xs text-accent transition-colors hover:underline"
+                >
+                  Open dossier
+                </Link>
+                <a
+                  href={`/api/dossiers/${dossier.id}?download=1`}
+                  className="font-mono text-xs text-muted transition-colors hover:text-accent"
+                >
+                  Download .md
+                </a>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </section>
   )

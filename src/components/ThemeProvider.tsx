@@ -25,12 +25,12 @@ function subscribe(onChange: () => void) {
 function getSnapshot(): Theme {
   const saved = localStorage.getItem('theme')
   if (saved === 'light' || saved === 'dark') return saved
-  return 'dark'
+  return 'light'
 }
 
 /** The server cannot know the saved theme; the inline script paints it first. */
 function getServerSnapshot(): Theme {
-  return 'dark'
+  return 'light'
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
