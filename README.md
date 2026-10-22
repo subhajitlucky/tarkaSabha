@@ -14,6 +14,7 @@ The original multi-agent council is still here as an optional **review room** in
 - **Decision debt** is an explainable 0–100 score based on evidence coverage and status, unresolved evidence, approvals, decision state, and deal impact.
 - **Outcomes and revisits** close the loop: record validated/invalidated/partial outcomes, a summary, and the next revisit date.
 - **Append-only audit events** record workspace, decision, evidence, approval, report, dossier, source, candidate, invite, and membership actions.
+- **Workspace insights** aggregate decision debt, evidence coverage, outcomes, evidence status, sources, and overdue revisits.
 - **Decision pins** capture a testable decision point: chosen value, separating test, expected result, code scope, owner, and supersession trigger.
 - **Decision dossiers** aggregate the whole workspace into a versioned deal-level document with an executive summary, decision records, open questions, and an evidence appendix.
 - **Reports** are versioned Markdown evidence reports with a download and an expiring public share link.
@@ -78,6 +79,18 @@ Outcomes and revisit dates appear on decision cards, decision records, generated
 
 Workspace write actions append an `AuditEvent` with actor, action, entity, summary, timestamp, and optional metadata. Events are exposed read-only at `/workspaces/[id]/activity`; there are no update or delete endpoints. Logging is best-effort so an audit failure cannot roll back the user action that produced it.
 
+## Insights
+
+`/workspaces/[id]/insights` summarizes:
+
+- decision count and average debt
+- debt distribution by LOW/MEDIUM/HIGH/CRITICAL
+- outcome distribution
+- evidence status distribution
+- evidence and approval coverage
+- ingested source totals
+- highest-debt decisions and overdue revisits
+
 ## Decision Diligence Dossier
 
 A workspace can generate a versioned, deal-level dossier that includes:
@@ -119,6 +132,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - HMAC-signed dossier exports and print/save-as-PDF output.
 - Public `/diligence` sample page with a downloadable decision dossier.
 - Append-only workspace audit trail with a read-only activity feed.
+- Workspace decision-health insights for debt, outcomes, coverage, and overdue revisits.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.

@@ -357,6 +357,11 @@ export default function WorkspacePage() {
         lede={workspace.description || 'No workspace description yet.'}
         actions={
           <div className="flex flex-wrap items-center gap-2">
+            <Link href={`/workspaces/${workspace.id}/insights`}>
+              <Button variant="ghost" size="sm">
+                Insights
+              </Button>
+            </Link>
             <Link href={`/workspaces/${workspace.id}/activity`}>
               <Button variant="ghost" size="sm">
                 Activity
