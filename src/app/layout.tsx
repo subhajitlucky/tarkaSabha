@@ -98,6 +98,7 @@ export default function RootLayout({
                 <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
                   {[
                     ['/workspaces', 'Workspaces'],
+                    ['/diligence', 'Diligence'],
                     ['/history', 'Review rooms'],
                     ['/demo', 'Sample'],
                     ['/debate', 'New review'],

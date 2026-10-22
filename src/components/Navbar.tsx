@@ -10,6 +10,7 @@ import { cx } from './ui/cx'
 
 const PRIMARY_LINKS = [
   { href: '/workspaces', label: 'Workspaces' },
+  { href: '/diligence', label: 'Diligence' },
   { href: '/history', label: 'Review rooms' },
   { href: '/demo', label: 'Sample' },
   { href: '/debate', label: 'New review' },

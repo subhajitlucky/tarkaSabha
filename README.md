@@ -90,6 +90,7 @@ Each dossier is stored with a SHA-256 content hash and can be viewed in the app 
 When `EXPORT_SIGNING_KEY` is set, a dossier can be exported as a signed JSON bundle containing the dossier metadata, content, and an HMAC-SHA256 signature over a canonical field list. The dossier viewer also has a print/save-as-PDF action with print-specific styles.
 
 - Live: https://tarkasabha.vercel.app
+- Decision diligence sample: https://tarkasabha.vercel.app/diligence
 - Sample council: https://tarkasabha.vercel.app/demo
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
 - Status: Live platform
@@ -111,6 +112,7 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Decision outcomes and scheduled revisit dates with overdue-revisit flags.
 - Expiring, revocable dossier share links with optional source redaction.
 - HMAC-signed dossier exports and print/save-as-PDF output.
+- Public `/diligence` sample page with a downloadable decision dossier.
 - Custom persona creation with name, bio, personality, provider, model, and temperature.
 - Topic-based debate sessions with multiple persona participants.
 - Sequential speaker orchestration with mention-aware priority.
