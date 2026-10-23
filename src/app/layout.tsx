@@ -28,9 +28,26 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL ?? "https://tarkasabha.vercel.app"
+  ),
   title: "Tarka Sabha — Decision evidence workspace",
   description:
     "Turn a deal decision into a source-backed record: claims, code and document evidence, open questions, and review. The agent council is a review room inside the record.",
+  openGraph: {
+    type: "website",
+    siteName: "Tarka Sabha",
+    locale: "en_US",
+    title: "Tarka Sabha — Decision evidence workspace",
+    description:
+      "Source-backed decision records, evidence, approvals, and diligence dossiers for technical M&A and private equity.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Tarka Sabha — Decision evidence workspace",
+    description:
+      "Source-backed decision records, evidence, approvals, and diligence dossiers for technical M&A and private equity.",
+  },
 };
 
 // Script to apply theme before React loads

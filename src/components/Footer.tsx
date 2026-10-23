@@ -1,7 +1,9 @@
 import Link from 'next/link'
 
 const FOOTER_LINKS = [
+  ['/product', 'Product'],
   ['/diligence', 'Diligence'],
+  ['/teams', 'For teams'],
   ['/about', 'About'],
   ['/demo', 'Sample review'],
   ['/workspaces', 'Open workspace'],

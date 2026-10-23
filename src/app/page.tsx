@@ -2,13 +2,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-
-const DECISIONS = [
-  { id: 'DEC-012', title: 'Use PostgreSQL as primary database', area: 'Infrastructure', risk: 'Medium', status: 'Reviewed' },
-  { id: 'DEC-014', title: 'Migrate from REST to GraphQL', area: 'Architecture', risk: 'Low', status: 'In review' },
-  { id: 'DEC-019', title: 'Adopt Kubernetes for production', area: 'DevOps', risk: 'Medium', status: 'Open' },
-  { id: 'DEC-021', title: 'Use Redis for session caching', area: 'Infrastructure', risk: 'Low', status: 'Reviewed' },
-]
+import { ProductPreview } from '@/components/marketing/ProductPreview'
 
 const EVIDENCE = [
   { id: 'E-01', source: 'architecture/infra.md', note: 'Data access and reliability decisions', kind: 'GitHub' },
@@ -17,116 +11,6 @@ const EVIDENCE = [
   { id: 'E-04', source: '#infrastructure', note: 'Operational constraints and risks', kind: 'Slack' },
 ]
 
-function ProductPreview() {
-  return (
-    <div className="relative border border-[#dce5e0] bg-white text-[#101714] shadow-[0_30px_90px_-44px_rgba(20,35,28,0.38)]">
-      <div className="flex items-center justify-between gap-3 border-b border-[#e3eae6] px-4 py-3">
-        <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center bg-[#0f5b43] font-display text-xs text-white">
-            त
-          </span>
-          <span className="text-sm font-semibold">Tarka Sabha</span>
-        </div>
-        <span className="font-mono text-[0.55rem] uppercase tracking-[0.14em] text-[#7d8983]">
-          Demo workspace
-        </span>
-      </div>
-
-      <div className="grid grid-cols-[7rem_1fr]">
-        <div className="border-r border-[#e3eae6] bg-[#f8faf9] p-3">
-          <p className="font-mono text-[0.5rem] uppercase tracking-[0.14em] text-[#7d8983]">Workspace</p>
-          <p className="mt-2 text-xs font-semibold">Project Kestrel</p>
-          <div className="mt-4 space-y-1">
-            {['Overview', 'Decisions', 'Evidence', 'Dossier', 'Team'].map((item, index) => (
-              <div
-                key={item}
-                className={
-                  index === 0
-                    ? 'border-l-2 border-[#0f5b43] bg-[#e8f2ed] px-2 py-1.5 text-[0.65rem] font-medium text-[#0f5b43]'
-                    : 'px-2 py-1.5 text-[0.65rem] text-[#65716b]'
-                }
-              >
-                {item}
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 border-t border-[#e3eae6] pt-3">
-            <p className="font-mono text-[0.5rem] uppercase tracking-[0.14em] text-[#7d8983]">Team</p>
-            <div className="mt-2 flex -space-x-1">
-              {['AR', 'SP', 'MK'].map((initials) => (
-                <span
-                  key={initials}
-                  className="flex h-5 w-5 items-center justify-center rounded-full border border-white bg-[#dfece6] font-mono text-[0.45rem] text-[#0f5b43]"
-                >
-                  {initials}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold">Project Kestrel</h2>
-                <span className="border border-[#b7d4c8] bg-[#e8f2ed] px-1.5 py-0.5 font-mono text-[0.45rem] uppercase tracking-[0.1em] text-[#0f5b43]">
-                  In diligence
-                </span>
-              </div>
-              <p className="mt-1 text-[0.62rem] text-[#65716b]">Payments infrastructure · Bengaluru · Series C</p>
-            </div>
-            <span className="border border-[#dce5e0] px-2 py-1 text-[0.55rem] text-[#65716b]">Share</span>
-          </div>
-
-          <div className="mt-3 flex gap-4 border-b border-[#e3eae6] text-[0.58rem]">
-            {['Overview', 'Decisions', 'Evidence', 'Dossier'].map((tab, index) => (
-              <span
-                key={tab}
-                className={
-                  index === 0
-                    ? 'border-b-2 border-[#0f5b43] pb-2 font-medium text-[#0f5b43]'
-                    : 'pb-2 text-[#7d8983]'
-                }
-              >
-                {tab}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-3 grid grid-cols-4 gap-2">
-            {[
-              ['24', 'Decisions'],
-              ['186', 'Evidence'],
-              ['7', 'Open questions'],
-              ['78%', 'Dossier'],
-            ].map(([value, label]) => (
-              <div key={label} className="border border-[#e3eae6] p-2">
-                <p className="text-lg leading-none">{value}</p>
-                <p className="mt-1 text-[0.48rem] text-[#7d8983]">{label}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-3 border border-[#e3eae6]">
-            <div className="flex items-center justify-between border-b border-[#e3eae6] px-2 py-1.5">
-              <p className="text-[0.58rem] font-medium">Recent decisions</p>
-              <span className="text-[0.5rem] text-[#0f5b43]">View all</span>
-            </div>
-            {DECISIONS.slice(0, 3).map((decision) => (
-              <div key={decision.id} className="flex items-center gap-2 border-b border-[#eef3f0] px-2 py-1.5 last:border-b-0">
-                <span className="font-mono text-[0.45rem] text-[#7d8983]">{decision.id}</span>
-                <span className="min-w-0 flex-1 truncate text-[0.55rem]">{decision.title}</span>
-                <span className="text-[0.45rem] text-[#7d8983]">{decision.risk}</span>
-                <span className="border border-[#dce5e0] px-1 py-0.5 text-[0.42rem] text-[#65716b]">{decision.status}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export default function Home() {
   return (
@@ -217,6 +101,42 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="border-b border-line bg-bg">
+        <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 lg:px-10">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">The record</p>
+              <h2 className="mt-3 max-w-2xl text-4xl leading-[1.02] text-text">
+                One decision. Four surfaces.
+              </h2>
+            </div>
+            <Link href="/product">
+              <Button variant="secondary" size="sm">
+                See the product
+              </Button>
+            </Link>
+          </div>
+
+          <div className="mt-8 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {[
+              ['01', 'Decision record', 'The choice, owner, impact, and review state in one place.', 'Owner · impact · status'],
+              ['02', 'Evidence ledger', 'Every claim points to a path, commit, quote, and where possible a hash.', '4 sources attached'],
+              ['03', 'Approval trail', 'Who signed off, on which snapshot, and what evidence they covered.', '1 approval'],
+              ['04', 'Diligence dossier', 'A versioned record that can travel to the IC without the chat.', 'v1 · expiring share'],
+            ].map(([number, title, body, detail]) => (
+              <Card key={number} className="flex h-full flex-col bg-surface">
+                <p className="font-mono text-[0.62rem] text-accent">{number}</p>
+                <h3 className="mt-5 font-display text-xl text-text">{title}</h3>
+                <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{body}</p>
+                <p className="mt-5 border-t border-line pt-3 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-subtle">
+                  {detail}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-bg">
         <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 py-16">
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -267,6 +187,66 @@ export default function Home() {
                 possible, a SHA-256 hash.
               </p>
             </Card>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-line bg-surface">
+        <div className="mx-auto grid max-w-[88rem] gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-10">
+          <div>
+            <p className="eyebrow">For deal teams</p>
+            <h2 className="mt-3 max-w-md text-4xl leading-[1.02] text-text">
+              Technical diligence for the people who sign.
+            </h2>
+            <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
+              Built for private-equity deal teams, technical advisors, and operating partners who
+              need a record that can survive the investment committee.
+            </p>
+            <Link href="/teams" className="mt-6 inline-block">
+              <Button variant="secondary" size="sm">
+                How we work with teams
+              </Button>
+            </Link>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              ['PE deal team', 'A diligence record the investment committee can read without a translator.'],
+              ['Technical advisor', 'A shared evidence surface instead of another exported document.'],
+              ['Operating partner', 'Decision debt and revisit obligations that outlive the deal team.'],
+            ].map(([title, body]) => (
+              <div key={title} className="border border-line bg-bg p-5">
+                <h3 className="font-display text-lg text-text">{title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-line bg-bg">
+        <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 lg:px-10">
+          <p className="eyebrow">FAQ</p>
+          <h2 className="mt-3 max-w-2xl text-4xl leading-[1.02] text-text">
+            Before you ask.
+          </h2>
+          <div className="mt-8 max-w-3xl border-y border-line">
+            {[
+              ['Is this another code review?', 'No. A code review asks whether a change looks acceptable. A decision record asks what the code has already chosen, who owns that choice, what evidence supports it, and what remains unresolved before signing.'],
+              ['What do we need to start a sprint?', 'A target, access to the repository or source material, the decision area you care about, and the people who can answer questions about production. The output is scoped per deal.'],
+              ['How are shares and private material handled?', 'Workspaces are private by default. Share links are hashed, expiring, and revocable. Provider keys are bring-your-own and encrypted before storage. Dossiers state what they cannot prove.'],
+              ['Does Tarka Sabha replace the data room?', 'No. It gives the deal team a source-backed decision layer alongside the data room, with the open questions attached rather than buried in a thread.'],
+            ].map(([question, answer]) => (
+              <details key={question} className="group border-b border-line last:border-b-0">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base text-text">
+                  {question}
+                  <span className="font-mono text-sm text-accent transition-transform group-open:rotate-45">
+                    +
+                  </span>
+                </summary>
+                <p className="max-w-2xl pb-5 text-sm leading-relaxed text-muted">{answer}</p>
+              </details>
+            ))}
           </div>
         </div>
       </section>

@@ -9,8 +9,9 @@ import { Button } from './ui/Button'
 import { cx } from './ui/cx'
 
 const PUBLIC_LINKS = [
-  { href: '/#product', label: 'Product' },
+  { href: '/product', label: 'Product' },
   { href: '/diligence', label: 'Diligence' },
+  { href: '/teams', label: 'For teams' },
   { href: '/about', label: 'About' },
 ]
 
