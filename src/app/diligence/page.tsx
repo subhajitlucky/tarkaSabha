@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card, Rule } from '@/components/ui/Card'
+import { BarList, DonutChart, MetricCard } from '@/components/ui/DataViz'
 import { PageHeader } from '@/components/ui/EmptyState'
 
 export const metadata: Metadata = {
@@ -77,6 +78,85 @@ const OPEN_QUESTIONS = [
   'Are provider keys scoped or restricted on the provider side?',
 ]
 
+
+const RISK_DECISIONS = [
+  { id: 'D-001', title: 'Key encryption', row: 0, col: 2 },
+  { id: 'D-003', title: 'Server-side runner', row: 1, col: 1 },
+  { id: 'D-002', title: 'Speaker order', row: 2, col: 1 },
+]
+
+const RISK_ROWS = ['High impact', 'Medium impact', 'Low impact']
+const RISK_COLS = ['Thin evidence', 'Partial evidence', 'Strong evidence']
+
+function RiskMatrix() {
+  return (
+    <div>
+      <div className="flex gap-3">
+        <div className="flex w-16 shrink-0 flex-col justify-around pb-7 font-mono text-[0.52rem] uppercase tracking-[0.1em] text-subtle">
+          <span>High</span>
+          <span>Medium</span>
+          <span>Low</span>
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="grid grid-cols-3 overflow-hidden border-l border-t border-line">
+            {RISK_ROWS.flatMap((row, rowIndex) =>
+              RISK_COLS.map((col, colIndex) => {
+                const items = RISK_DECISIONS.filter(
+                  (decision) => decision.row === rowIndex && decision.col === colIndex
+                )
+                const isThinHighRisk = rowIndex === 0 && colIndex < 2
+                const isManagedHighRisk = rowIndex === 0 && colIndex === 2
+                return (
+                  <div
+                    key={`${row}-${col}`}
+                    className={[
+                      'min-h-[72px] border-b border-r border-line p-2',
+                      isThinHighRisk
+                        ? 'bg-danger-soft'
+                        : isManagedHighRisk
+                          ? 'bg-accent-soft'
+                          : rowIndex === 2
+                            ? 'bg-surface-2/50'
+                            : 'bg-surface',
+                    ].join(' ')}
+                  >
+                    <div className="flex flex-wrap gap-1">
+                      {items.map((decision) => (
+                        <span
+                          key={decision.id}
+                          title={decision.title}
+                          className="border border-line bg-surface px-1.5 py-0.5 font-mono text-[0.55rem] text-text"
+                        >
+                          {decision.id}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+          <div className="mt-2 grid grid-cols-3 gap-2 font-mono text-[0.52rem] uppercase tracking-[0.1em] text-subtle">
+            {RISK_COLS.map((col) => (
+              <span key={col}>{col}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+      <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-t border-line pt-4 text-[0.65rem] text-muted">
+        <span className="flex items-center gap-2">
+          <span className="h-2 w-2 bg-danger-soft ring-1 ring-danger/30" />
+          High impact, thin evidence
+        </span>
+        <span className="flex items-center gap-2">
+          <span className="h-2 w-2 bg-accent-soft ring-1 ring-accent/30" />
+          High impact, strong evidence
+        </span>
+      </div>
+    </div>
+  )
+}
+
 export default function DiligencePage() {
   return (
     <div className="mx-auto max-w-[88rem] px-5 sm:px-8 lg:px-10 py-14">
@@ -98,74 +178,175 @@ export default function DiligencePage() {
         <Badge tone="outline">No customer data</Badge>
       </div>
 
-      <div className="mb-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: 'Decisions in inventory', value: '3' },
-          { label: 'Fully analyzed', value: '1' },
-          { label: 'Evidence items', value: '8' },
-          { label: 'Open questions', value: '6' },
-        ].map((stat) => (
-          <Card key={stat.label} className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">
-              {stat.label}
-            </p>
-            <p className="mt-1 font-display text-2xl text-text">{stat.value}</p>
-          </Card>
-        ))}
+      <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Decisions in inventory"
+          value="3"
+          detail="2 candidates · 1 verified"
+        />
+        <MetricCard
+          label="Fully analyzed"
+          value="1 / 3"
+          detail="33% of the inventory"
+        />
+        <MetricCard
+          label="Evidence items"
+          value="8"
+          detail="6 shown in the sample record"
+        />
+        <MetricCard
+          label="Open questions"
+          value="6"
+          detail="Key custody, rotation, backups, scope"
+        />
       </div>
 
       <section className="mb-12">
-        <Rule label="What the dossier answers" className="mb-6" />
-        <div className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            {
-              title: 'What was decided',
-              body: 'A ranked inventory of the architectural and operational choices already embedded in the code.',
-            },
-            {
-              title: 'What proves it',
-              body: 'Source paths, commits, quotes, and hashes tied to each finding. No unsourced claims.',
-            },
-            {
-              title: 'What does not add up',
-              body: 'Contradictions, unsupported claims, and residual risk called out separately from the evidence.',
-            },
-            {
-              title: 'What to ask next',
-              body: 'Diligence questions and requests that a buyer can put in the data room or send to management.',
-            },
-          ].map((item) => (
-            <div key={item.title}>
-              <h2 className="font-display text-base text-text">{item.title}</h2>
-              <p className="mt-2 text-sm leading-relaxed text-muted">{item.body}</p>
+        <Rule label="Dossier snapshot" className="mb-6" />
+        <div className="grid gap-6 lg:grid-cols-[0.8fr_1.2fr]">
+          <Card>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow">Decision coverage</p>
+                <h2 className="mt-2 font-display text-2xl leading-tight text-text">
+                  One decision is fully analyzed.
+                </h2>
+              </div>
+              <Badge tone="outline">Sample</Badge>
             </div>
+
+            <DonutChart
+              className="mt-6"
+              segments={[
+                { label: 'Analyzed', value: 1, color: 'var(--accent)' },
+                { label: 'Candidate', value: 2, color: 'var(--tone-3)' },
+              ]}
+              centerValue="3"
+              centerLabel="decisions"
+            />
+
+            <div className="mt-6 space-y-3 border-t border-line pt-5">
+              {[
+                ['Evidence items', '8'],
+                ['Open questions', '6'],
+                ['Fully analyzed', '1 of 3'],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-muted">{label}</span>
+                  <span className="font-mono text-xs text-text">{value}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+
+          <Card>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow">Decision risk map</p>
+                <h2 className="mt-2 font-display text-2xl leading-tight text-text">
+                  Where the evidence is thin
+                </h2>
+              </div>
+              <Badge tone="outline">Deal impact × evidence</Badge>
+            </div>
+            <div className="mt-6">
+              <RiskMatrix />
+            </div>
+          </Card>
+        </div>
+      </section>
+
+      <section className="mb-12">
+        <Rule label="Diligence sprint" className="mb-6" />
+        <div className="grid gap-3 md:grid-cols-4">
+          {[
+            ['01', 'Ingest', '8 source files', 'Repository, docs, tickets, and architecture notes.'],
+            ['02', 'Extract', '3 decisions', 'Find the choices already embedded in the code.'],
+            ['03', 'Verify', '8 evidence items', 'Tie each claim to a path, quote, and hash.'],
+            ['04', 'Publish', 'v1 dossier', 'Package the record with open questions attached.'],
+          ].map(([number, title, metric, body]) => (
+            <Card key={number} className="flex h-full flex-col">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[0.62rem] text-accent">{number}</span>
+                <span className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-subtle">
+                  {metric}
+                </span>
+              </div>
+              <h2 className="mt-5 font-display text-xl text-text">{title}</h2>
+              <p className="mt-1 text-xs leading-relaxed text-muted">{body}</p>
+            </Card>
           ))}
         </div>
       </section>
 
       <section className="mb-12">
-        <Rule label="Decision inventory" className="mb-6" />
-        <ul className="space-y-2">
-          {INVENTORY.map((item) => (
-            <li
-              key={item.id}
-              className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-[4px] border border-line bg-surface p-4"
-            >
-              <span className="font-mono text-xs text-accent">{item.id}</span>
-              <span className="text-sm text-text">{item.title}</span>
-              <span className="font-mono text-xs text-subtle">{item.area}</span>
-              <span className="ml-auto flex items-center gap-2">
-                <Badge tone={item.status === 'Verified' ? 'success' : 'outline'}>
-                  {item.status}
-                </Badge>
-                <span className="font-mono text-xs text-subtle">{item.impact}</span>
-              </span>
-            </li>
-          ))}
-        </ul>
+        <Rule label="What the dossier answers" className="mb-6" />
+        <Card flush className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[720px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-line font-mono text-[0.6rem] uppercase tracking-[0.14em] text-subtle">
+                  <th className="px-5 py-3 font-normal">Question</th>
+                  <th className="px-4 py-3 font-normal">What the dossier gives you</th>
+                  <th className="px-5 py-3 font-normal">Sample output</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ['What was decided', 'A ranked inventory of the architectural and operational choices already embedded in the code.', '3 decisions'],
+                  ['What proves it', 'Source paths, commits, quotes, and hashes tied to each finding. No unsourced claims.', '8 evidence items'],
+                  ['What does not add up', 'Contradictions, unsupported claims, and residual risk called out separately from the evidence.', '2 residual risks'],
+                  ['What to ask next', 'Diligence questions and requests a buyer can put in the data room or send to management.', '6 questions'],
+                ].map(([question, answer, output]) => (
+                  <tr key={question} className="border-b border-line last:border-b-0">
+                    <td className="px-5 py-4 text-sm font-semibold text-text">{question}</td>
+                    <td className="px-4 py-4 text-sm leading-relaxed text-muted">{answer}</td>
+                    <td className="px-5 py-4 font-mono text-xs text-accent">{output}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
       </section>
 
       <section className="mb-12">
+        <Rule label="Decision inventory" className="mb-6" />
+        <Card flush className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-line font-mono text-[0.6rem] uppercase tracking-[0.14em] text-subtle">
+                  <th className="px-5 py-3 font-normal">ID</th>
+                  <th className="px-4 py-3 font-normal">Decision</th>
+                  <th className="px-4 py-3 font-normal">Area</th>
+                  <th className="px-4 py-3 font-normal">Status</th>
+                  <th className="px-5 py-3 font-normal text-right">Impact</th>
+                </tr>
+              </thead>
+              <tbody>
+                {INVENTORY.map((item) => (
+                  <tr key={item.id} className="border-b border-line last:border-b-0">
+                    <td className="px-5 py-4 font-mono text-xs text-accent">{item.id}</td>
+                    <td className="px-4 py-4 text-sm text-text">{item.title}</td>
+                    <td className="px-4 py-4 font-mono text-xs text-subtle">{item.area}</td>
+                    <td className="px-4 py-4">
+                      <Badge tone={item.status === 'Verified' ? 'success' : 'outline'}>
+                        {item.status}
+                      </Badge>
+                    </td>
+                    <td className="px-5 py-4 text-right font-mono text-xs text-subtle">
+                      {item.impact}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+      </section>
+
+      <section id="decision-d-001" className="mb-12 scroll-mt-24">
         <Rule label="Sample decision record — D-001" className="mb-6" />
         <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <Card className="space-y-5">
@@ -248,18 +429,35 @@ export default function DiligencePage() {
               ))}
             </ol>
           </div>
-          <Card className="space-y-3">
-            <p className="eyebrow">Method and limits</p>
-            <p className="text-sm leading-relaxed text-muted">
-              Static review of the public repository at commit <code className="font-mono text-xs">ebee93f</code>.
-              It does not prove runtime behavior, key custody, backup encryption, or production
-              configuration. It is a sample of the artifact, not a full diligence engagement.
-            </p>
-            <p className="text-sm leading-relaxed text-muted">
-              No customer data, personal data, or real credentials are included. A real dossier
-              would remove secrets, PII, and customer identifiers before sharing.
-            </p>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <p className="eyebrow">Question themes</p>
+              <h2 className="mt-2 font-display text-xl text-text">Where diligence is thin</h2>
+              <BarList
+                className="mt-5"
+                items={[
+                  { label: 'Key custody', value: 2, meta: '2 questions' },
+                  { label: 'Rotation', value: 1, meta: '1 question' },
+                  { label: 'Backups', value: 1, meta: '1 question' },
+                  { label: 'Incident history', value: 1, meta: '1 question' },
+                  { label: 'Provider scope', value: 1, meta: '1 question' },
+                ]}
+              />
+            </Card>
+
+            <Card className="space-y-3">
+              <p className="eyebrow">Method and limits</p>
+              <p className="text-sm leading-relaxed text-muted">
+                Static review of the public repository at commit <code className="font-mono text-xs">ebee93f</code>.
+                It does not prove runtime behavior, key custody, backup encryption, or production
+                configuration. It is a sample of the artifact, not a full diligence engagement.
+              </p>
+              <p className="text-sm leading-relaxed text-muted">
+                No customer data, personal data, or real credentials are included. A real dossier
+                would remove secrets, PII, and customer identifiers before sharing.
+              </p>
+            </Card>
+          </div>
         </div>
       </section>
 

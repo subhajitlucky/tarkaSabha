@@ -53,6 +53,7 @@ export interface Chat {
   creatorId?: string | null
   messages?: Message[]
   participants?: PersonaOnChat[]
+  _count?: { messages: number }
 }
 
 export interface EvidenceEntry {

@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { BarList, MetricCard } from '@/components/ui/DataViz'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
@@ -155,6 +156,19 @@ export default function PersonasPage() {
         : [...d.tools, name],
     }))
 
+  const roleCounts = ROLE_OPTIONS.map((role) => ({
+    ...role,
+    count: personas.filter((persona) => persona.role === role.value).length,
+  }))
+  const maxRoleCount = Math.max(1, ...roleCounts.map((role) => role.count))
+  const coveredRoles = roleCounts.filter((role) => role.count > 0).length
+  const toolItems = TOOL_OPTIONS.map((tool) => {
+    const count = personas.filter((persona) => persona.tools?.includes(tool.value)).length
+    return { label: tool.label, value: count, meta: `${count} agent${count === 1 ? '' : 's'}` }
+  })
+  const totalTools = toolItems.reduce((total, tool) => total + tool.value, 0)
+  const providerOverrides = personas.filter((persona) => persona.providerId).length
+
   if (authLoading) {
     return (
       <div className="mx-auto max-w-[90rem] px-5 py-14">
@@ -204,8 +218,8 @@ export default function PersonasPage() {
       {providers.length === 0 && !loading && (
         <Card className="mb-6">
           <p className="text-sm text-muted">
-            You have no provider yet, so agents cannot be given a model. You can still
-            create them — they will fall back to the default provider when one exists.{' '}
+            You have no provider yet, so agents cannot be given a model. You can still create
+            them — they will fall back to the default provider when one exists.{' '}
             <Link href="/providers" className="text-accent hover:text-accent-hover">
               Add a provider
             </Link>
@@ -213,102 +227,222 @@ export default function PersonasPage() {
         </Card>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0">
       {loading ? (
-        <p className="py-16 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
+        <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
-      ) : personas.length === 0 ? (
-        <EmptyState
-          title="No agents configured"
-          description="A researcher gathers evidence, a critic attacks the weakest reasoning, a synthesizer pulls the threads together."
-          action={
-            <Button variant="primary" onClick={openCreate}>
-              Create the first agent
-            </Button>
-          }
-        />
       ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
-          {personas.map((persona) => (
-            <li key={persona.id}>
-              <Card className="flex h-full flex-col">
-                <div className="flex items-start gap-3">
-                  <Avatar name={persona.name} size="md" />
-                  <div className="min-w-0 flex-1">
-                    <h2 className="break-words font-display text-base text-text">
-                      {persona.name}
-                    </h2>
-                    <p className="mt-0.5 font-mono text-xs uppercase tracking-[0.1em] text-accent">
-                      {roleLabel(persona.role)}
-                    </p>
+        <>
+          <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Agents"
+              value={personas.length}
+              detail="Reusable across review rooms"
+            />
+            <MetricCard
+              label="Roles covered"
+              value={`${coveredRoles}/${ROLE_OPTIONS.length}`}
+              detail={coveredRoles === ROLE_OPTIONS.length ? 'Full council shape' : 'Coverage gaps remain'}
+            />
+            <MetricCard
+              label="Tool grants"
+              value={totalTools}
+              detail={`${toolItems.filter((tool) => tool.value > 0).length} tools in use`}
+            />
+            <MetricCard
+              label="Provider overrides"
+              value={providerOverrides}
+              detail="Agents using an explicit model"
+            />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="min-w-0 space-y-6">
+              <Card flush className="overflow-hidden">
+                <div className="border-b border-line p-5">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p className="eyebrow">Council coverage</p>
+                      <h2 className="mt-2 font-display text-2xl text-text">
+                        Roles and mandates
+                      </h2>
+                    </div>
+                    <Badge tone={coveredRoles === ROLE_OPTIONS.length ? 'success' : 'outline'}>
+                      {coveredRoles === ROLE_OPTIONS.length ? 'Complete' : 'Incomplete'}
+                    </Badge>
                   </div>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+                    A useful council is not five copies of the same analyst. Each role should
+                    stress a different part of the decision.
+                  </p>
                 </div>
 
-                <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted">
-                  {persona.bio}
-                </p>
-
-                {(persona.tools?.length ?? 0) > 0 && (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {persona.tools?.map((tool) => (
-                      <Badge key={tool} tone="outline">
-                        {TOOL_OPTIONS.find((t) => t.value === tool)?.label ?? tool}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-
-                <p className="mt-3 font-mono text-xs text-subtle">
-                  {persona.provider?.name
-                    ? `via ${persona.provider.name}`
-                    : 'default provider'}
-                </p>
-
-                <div className="mt-auto flex gap-2 pt-4">
-                  <Button size="sm" onClick={() => openEdit(persona)}>
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setPendingDelete(persona)}>
-                    Delete
-                  </Button>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[680px] border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-line font-mono text-[0.6rem] uppercase tracking-[0.14em] text-subtle">
+                        <th className="px-5 py-3 font-normal">Role</th>
+                        <th className="px-4 py-3 font-normal">Mandate</th>
+                        <th className="px-4 py-3 font-normal">Agents</th>
+                        <th className="px-5 py-3 font-normal">Coverage</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {roleCounts.map((role) => (
+                        <tr key={role.value} className="border-b border-line last:border-b-0">
+                          <td className="px-5 py-4">
+                            <span className="font-display text-base text-text">{role.label}</span>
+                          </td>
+                          <td className="px-4 py-4 text-sm text-muted">{role.hint}</td>
+                          <td className="px-4 py-4 font-mono text-sm text-text">{role.count}</td>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="h-1.5 w-24 overflow-hidden bg-surface-2">
+                                <div
+                                  className="h-full bg-accent"
+                                  style={{
+                                    width: `${(role.count / maxRoleCount) * 100}%`,
+                                  }}
+                                />
+                              </div>
+                              <Badge tone={role.count > 0 ? 'success' : 'outline'}>
+                                {role.count > 0 ? 'Covered' : 'Gap'}
+                              </Badge>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </Card>
-            </li>
-          ))}
-        </ul>
-      )}
-        </div>
 
-        <aside className="space-y-4">
-          <Card>
-            <p className="eyebrow">A useful council</p>
-            <div className="mt-4 space-y-4">
-              {[
-                ['Researcher', 'Gathers evidence and flags uncertainty.'],
-                ['Critic', 'Attacks the weakest part of the reasoning.'],
-                ['Synthesizer', 'Pulls the threads into a recommendation.'],
-                ['Planner', 'Turns the discussion into concrete next steps.'],
-              ].map(([role, description]) => (
-                <div key={role}>
-                  <p className="text-sm font-semibold text-text">{role}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-muted">{description}</p>
+              <Card flush className="overflow-hidden">
+                <div className="border-b border-line p-5">
+                  <div className="flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                      <p className="eyebrow">Agent library</p>
+                      <h2 className="mt-2 font-display text-2xl text-text">
+                        Available to the council
+                      </h2>
+                    </div>
+                    <span className="font-mono text-xs text-subtle">{personas.length} agents</span>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </Card>
 
-          <Card>
-            <p className="eyebrow">In the record</p>
-            <p className="mt-3 text-xs leading-relaxed text-muted">
-              Agents argue inside a review room, but the decision, evidence, and approvals remain
-              the durable artifact. The transcript is attached to the record — not the other way
-              around.
-            </p>
-          </Card>
-        </aside>
-      </div>
+                {personas.length === 0 ? (
+                  <div className="p-6">
+                    <div className="border border-dashed border-line bg-surface-2/40 px-6 py-10 text-center">
+                      <p className="font-display text-2xl text-text">No agents configured</p>
+                      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+                        Start with a researcher and a critic. Add a synthesizer when the
+                        council needs to turn disagreement into a recommendation.
+                      </p>
+                      <Button variant="primary" className="mt-5" onClick={openCreate}>
+                        Create the first agent
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <ul className="grid gap-3 p-5 md:grid-cols-2">
+                    {personas.map((persona) => (
+                      <li key={persona.id}>
+                        <Card className="flex h-full flex-col">
+                          <div className="flex items-start gap-3">
+                            <Avatar name={persona.name} size="md" />
+                            <div className="min-w-0 flex-1">
+                              <h3 className="break-words font-display text-base text-text">
+                                {persona.name}
+                              </h3>
+                              <p className="mt-0.5 font-mono text-xs uppercase tracking-[0.1em] text-accent">
+                                {roleLabel(persona.role)}
+                              </p>
+                            </div>
+                          </div>
+
+                          <p className="mt-3 text-sm leading-relaxed text-muted">
+                            {persona.bio}
+                          </p>
+
+                          {(persona.tools?.length ?? 0) > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-1.5">
+                              {persona.tools?.map((tool) => (
+                                <Badge key={tool} tone="outline">
+                                  {TOOL_OPTIONS.find((t) => t.value === tool)?.label ?? tool}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+
+                          <p className="mt-3 font-mono text-xs text-subtle">
+                            {persona.provider?.name
+                              ? `via ${persona.provider.name}`
+                              : 'default provider'}
+                          </p>
+
+                          <div className="mt-auto flex gap-2 pt-4">
+                            <Button size="sm" onClick={() => openEdit(persona)}>
+                              Edit
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setPendingDelete(persona)}
+                            >
+                              Delete
+                            </Button>
+                          </div>
+                        </Card>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            </div>
+
+            <aside className="space-y-4">
+              <Card>
+                <div className="flex items-end justify-between gap-3">
+                  <p className="eyebrow">Tool access</p>
+                  <span className="font-mono text-xs text-subtle">{totalTools} grants</span>
+                </div>
+                <BarList items={toolItems} className="mt-4" />
+                <p className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
+                  Tools are granted per agent. An agent without one answers from memory alone.
+                </p>
+              </Card>
+
+              <Card>
+                <p className="eyebrow">Design rules</p>
+                <ul className="mt-4 space-y-3 text-xs leading-relaxed text-muted">
+                  <li className="flex gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-accent" />
+                    Give each agent a distinct job, not a different tone.
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-accent" />
+                    Grant tool access only where the agent must verify a claim.
+                  </li>
+                  <li className="flex gap-3">
+                    <span className="mt-2 h-1.5 w-1.5 shrink-0 bg-accent" />
+                    Keep the transcript attached to the decision record.
+                  </li>
+                </ul>
+              </Card>
+
+              <Card>
+                <p className="eyebrow">In the record</p>
+                <p className="mt-3 text-xs leading-relaxed text-muted">
+                  Agents argue inside a review room, but the decision, evidence, and approvals
+                  remain the durable artifact. The transcript is attached to the record — not the
+                  other way around.
+                </p>
+              </Card>
+            </aside>
+          </div>
+        </>
+      )}
+
 
       <Modal
         open={showForm}

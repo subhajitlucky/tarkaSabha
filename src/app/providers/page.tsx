@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { DonutChart, MetricCard } from '@/components/ui/DataViz'
 import { Field, Input, Select } from '@/components/ui/Field'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Modal } from '@/components/ui/Modal'
@@ -73,12 +74,21 @@ export default function ProvidersPage() {
     }
   }, [isAuthenticated, load])
 
-  const openCreate = () => {
+  const openCreateFor = (type: ProviderType) => {
+    const preset = presetFor(type)
     setEditing(null)
-    setDraft(emptyDraft())
+    setDraft({
+      ...emptyDraft(),
+      provider: type,
+      name: preset?.label ?? 'Provider',
+      apiUrl: preset?.defaultUrl ?? '',
+      model: MODEL_OPTIONS[type]?.[0]?.value ?? DEFAULT_MODEL,
+    })
     setFormError(null)
     setShowForm(true)
   }
+
+  const openCreate = () => openCreateFor('openai')
 
   const openEdit = (provider: Provider) => {
     setEditing(provider)
@@ -187,6 +197,21 @@ export default function ProvidersPage() {
   }
 
   const preset = presetFor(draft.provider)
+  const connectedTypes = new Set(providers.map((provider) => provider.provider))
+  const connectedCount = connectedTypes.size
+  const defaultProvider = providers.find((provider) => provider.isDefault) ?? providers[0]
+  const testedCount = Object.values(testStatus).filter((status) => status.startsWith('Ready')).length
+  const catalogRows = PROVIDER_TYPES.map((type) => {
+    const matching = providers.filter((provider) => provider.provider === type.value)
+    return {
+      ...type,
+      matching,
+      connected: matching.length > 0,
+      isDefault: matching.some((provider) => provider.isDefault),
+      modelCount: MODEL_OPTIONS[type.value]?.length ?? 0,
+      firstModel: MODEL_OPTIONS[type.value]?.[0]?.label ?? 'Custom model',
+    }
+  })
 
   if (authLoading) {
     return (
@@ -234,105 +259,330 @@ export default function ProvidersPage() {
         </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0">
       {loading ? (
-        <p className="py-16 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
-          Loading…
+        <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
+          Loading providers…
         </p>
-      ) : providers.length === 0 ? (
-        <EmptyState
-          title="No providers configured"
-          description="Agents cannot answer without one. Add a key from OpenAI, Anthropic, Google, or any of the others."
-          action={
-            <Button variant="primary" onClick={openCreate}>
-              Add a provider
-            </Button>
-          }
-        />
       ) : (
-        <ul className="space-y-3">
-          {providers.map((provider) => (
-            <li key={provider.id}>
-              <Card className="flex flex-wrap items-center gap-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <h2 className="break-words font-display text-base text-text">
-                      {provider.name}
+        <>
+          <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              label="Connected keys"
+              value={providers.length}
+              detail="Encrypted at rest with AES-256-GCM"
+            />
+            <MetricCard
+              label="Catalog coverage"
+              value={`${connectedCount}/${PROVIDER_TYPES.length}`}
+              detail="Provider families with a key"
+            />
+            <MetricCard
+              label="Default route"
+              value={defaultProvider?.name ?? '—'}
+              detail={defaultProvider?.model ?? 'No default key selected'}
+            />
+            <MetricCard
+              label="Tested this session"
+              value={testedCount}
+              detail="Successful live key checks"
+            />
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_20rem]">
+            <div className="min-w-0 space-y-6">
+              <Card>
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="eyebrow">Catalog coverage</p>
+                    <h2 className="mt-2 font-display text-2xl text-text">
+                      Keys across the provider catalogue
                     </h2>
-                    {provider.isDefault && <Badge tone="accent">Default</Badge>}
                   </div>
-                  <p className="mt-1 font-mono text-xs text-subtle">
-                    {presetFor(provider.provider)?.label ?? provider.provider}
-                    <span className="mx-1.5">·</span>
-                    {provider.model}
-                    <span className="mx-1.5">·</span>
-                    temp {provider.temperature}
-                  </p>
-                  <p className="mt-0.5 break-all font-mono text-xs text-subtle">
-                    {provider.apiUrl}
-                  </p>
-                  {testStatus[provider.id] && (
-                    <p
-                      role="status"
-                      className={`mt-1 text-xs ${
-                        testStatus[provider.id].startsWith('Ready')
-                          ? 'text-success'
-                          : testStatus[provider.id] === 'Testing…'
-                            ? 'text-subtle'
-                            : 'text-danger'
-                      }`}
-                    >
-                      {testStatus[provider.id]}
-                    </p>
-                  )}
+                  <Badge tone={connectedCount > 0 ? 'success' : 'outline'}>
+                    {connectedCount > 0 ? 'Active' : 'No keys yet'}
+                  </Badge>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => testProvider(provider)}
-                    disabled={testStatus[provider.id] === 'Testing…'}
-                  >
-                    {testStatus[provider.id] === 'Testing…' ? 'Testing…' : 'Test key'}
-                  </Button>
-                  <Button size="sm" onClick={() => openEdit(provider)}>
-                    Edit
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setPendingDelete(provider)}>
-                    Delete
-                  </Button>
+                <div className="mt-6 grid items-center gap-6 lg:grid-cols-[auto_minmax(0,1fr)]">
+                  <DonutChart
+                    segments={[
+                      {
+                        label: 'Connected',
+                        value: connectedCount,
+                        color: 'var(--accent)',
+                      },
+                      {
+                        label: 'Available',
+                        value: PROVIDER_TYPES.length - connectedCount,
+                        color: 'var(--surface-3)',
+                      },
+                    ]}
+                    centerValue={`${connectedCount}/${PROVIDER_TYPES.length}`}
+                    centerLabel="providers"
+                  />
+                  <div className="space-y-4 border-t border-line pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm text-muted">Default route</span>
+                      <span className="text-right text-sm text-text">
+                        {defaultProvider
+                          ? `${defaultProvider.name} · ${defaultProvider.model}`
+                          : 'Not set'}
+                      </span>
+                    </div>
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm text-muted">Connected keys</span>
+                      <span className="font-display text-xl text-text">{providers.length}</span>
+                    </div>
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="text-sm text-muted">Catalog size</span>
+                      <span className="font-display text-xl text-text">
+                        {PROVIDER_TYPES.length}
+                      </span>
+                    </div>
+                    <p className="border-t border-line pt-4 text-xs leading-relaxed text-subtle">
+                      Any provider can be used by an agent. The default route is used when an
+                      agent does not override it.
+                    </p>
+                  </div>
                 </div>
               </Card>
-            </li>
-          ))}
-        </ul>
-      )}
-        </div>
 
-        <aside className="space-y-4">
-          <Card>
-            <p className="eyebrow">Supported providers</p>
-            <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2">
-              {PROVIDER_TYPES.map((provider) => (
-                <p key={provider.value} className="text-xs text-muted">
-                  {provider.label}
-                </p>
-              ))}
+              <Card flush className="overflow-hidden">
+                <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
+                  <div>
+                    <p className="eyebrow">Connected keys</p>
+                    <h2 className="mt-2 font-display text-2xl text-text">
+                      Your provider library
+                    </h2>
+                  </div>
+                  <span className="font-mono text-xs text-subtle">
+                    {providers.length} key{providers.length === 1 ? '' : 's'}
+                  </span>
+                </div>
+
+                {providers.length === 0 ? (
+                  <div className="p-5">
+                    <div className="border border-dashed border-line bg-surface-2/40 px-6 py-8 text-center">
+                      <p className="font-display text-xl text-text">No keys connected</p>
+                      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+                        Choose a provider from the catalogue below. Until a key exists, agents
+                        cannot run a review room.
+                      </p>
+                      <Button variant="primary" className="mt-4" onClick={openCreate}>
+                        Connect a provider
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[760px] border-collapse text-left">
+                      <thead>
+                        <tr className="border-b border-line font-mono text-[0.6rem] uppercase tracking-[0.14em] text-subtle">
+                          <th className="px-5 py-3 font-normal">Key</th>
+                          <th className="px-4 py-3 font-normal">Model</th>
+                          <th className="px-4 py-3 font-normal">Role</th>
+                          <th className="px-5 py-3 font-normal text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {providers.map((provider) => (
+                          <tr
+                            key={provider.id}
+                            className="border-b border-line last:border-b-0"
+                          >
+                            <td className="px-5 py-4">
+                              <p className="break-words text-sm font-semibold text-text">
+                                {provider.name}
+                              </p>
+                              <p className="mt-1 font-mono text-xs text-subtle">
+                                {presetFor(provider.provider)?.label ?? provider.provider}
+                              </p>
+                              {testStatus[provider.id] && (
+                                <p
+                                  role="status"
+                                  className={`mt-1 text-xs ${
+                                    testStatus[provider.id].startsWith('Ready')
+                                      ? 'text-success'
+                                      : testStatus[provider.id] === 'Testing…'
+                                        ? 'text-subtle'
+                                        : 'text-danger'
+                                  }`}
+                                >
+                                  {testStatus[provider.id]}
+                                </p>
+                              )}
+                            </td>
+                            <td className="px-4 py-4">
+                              <p className="break-all font-mono text-xs text-text">
+                                {provider.model}
+                              </p>
+                              <p className="mt-1 font-mono text-[0.62rem] text-subtle">
+                                temp {provider.temperature}
+                              </p>
+                            </td>
+                            <td className="px-4 py-4">
+                              {provider.isDefault ? (
+                                <Badge tone="accent">Default</Badge>
+                              ) : (
+                                <Badge tone="outline">Fallback</Badge>
+                              )}
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex flex-wrap justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => testProvider(provider)}
+                                  disabled={testStatus[provider.id] === 'Testing…'}
+                                >
+                                  {testStatus[provider.id] === 'Testing…' ? 'Testing…' : 'Test'}
+                                </Button>
+                                <Button size="sm" onClick={() => openEdit(provider)}>
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-danger hover:text-danger"
+                                  onClick={() => setPendingDelete(provider)}
+                                >
+                                  Delete
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </Card>
+
+              <Card flush className="overflow-hidden">
+                <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
+                  <div>
+                    <p className="eyebrow">Provider catalogue</p>
+                    <h2 className="mt-2 font-display text-2xl text-text">
+                      Supported model providers
+                    </h2>
+                  </div>
+                  <span className="font-mono text-xs text-subtle">
+                    {PROVIDER_TYPES.length} providers
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[760px] border-collapse text-left">
+                    <thead>
+                      <tr className="border-b border-line font-mono text-[0.6rem] uppercase tracking-[0.14em] text-subtle">
+                        <th className="px-5 py-3 font-normal">Provider</th>
+                        <th className="px-4 py-3 font-normal">Model family</th>
+                        <th className="px-4 py-3 font-normal">Access</th>
+                        <th className="px-4 py-3 font-normal">Status</th>
+                        <th className="px-5 py-3 font-normal text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {catalogRows.map((row) => (
+                        <tr key={row.value} className="border-b border-line last:border-b-0">
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="flex h-7 w-7 items-center justify-center border border-line bg-surface-2 font-mono text-[0.55rem] text-accent">
+                                {row.label.slice(0, 2).toUpperCase()}
+                              </span>
+                              <span className="text-sm text-text">{row.label}</span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-4">
+                            <p className="text-xs text-text">{row.firstModel}</p>
+                            <p className="mt-0.5 font-mono text-[0.6rem] text-subtle">
+                              {row.modelCount} model{row.modelCount === 1 ? '' : 's'} in catalogue
+                            </p>
+                          </td>
+                          <td className="px-4 py-4 font-mono text-xs text-muted">
+                            {row.requiresKey ? 'API key' : 'Local / no key'}
+                          </td>
+                          <td className="px-4 py-4">
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {row.connected ? (
+                                <Badge tone="success">
+                                  {row.matching.length} key{row.matching.length === 1 ? '' : 's'}
+                                </Badge>
+                              ) : (
+                                <Badge tone="outline">Not connected</Badge>
+                              )}
+                              {row.isDefault && <Badge tone="accent">Default</Badge>}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-right">
+                            {row.connected ? (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => openEdit(row.matching[0])}
+                              >
+                                Manage
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                onClick={() => openCreateFor(row.value)}
+                              >
+                                Connect
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
             </div>
-          </Card>
 
-          <Card>
-            <p className="eyebrow">Key handling</p>
-            <ul className="mt-4 space-y-3 text-xs leading-relaxed text-muted">
-              <li>Keys are encrypted with AES-256-GCM before storage.</li>
-              <li>Keys are never sent to the browser after save.</li>
-              <li>Test a key before a review room depends on it.</li>
-            </ul>
-          </Card>
-        </aside>
-      </div>
+            <aside className="space-y-4">
+              <Card>
+                <p className="eyebrow">Key handling</p>
+                <div className="mt-4 space-y-4 text-xs leading-relaxed text-muted">
+                  <div>
+                    <p className="font-semibold text-text">Encrypted before storage</p>
+                    <p className="mt-1">AES-256-GCM; the raw key is never returned to the browser.</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-text">Test before use</p>
+                    <p className="mt-1">A live test checks latency and a sample response.</p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-text">Local option</p>
+                    <p className="mt-1">Ollama runs against localhost and requires no key.</p>
+                  </div>
+                </div>
+              </Card>
+
+              <Card>
+                <p className="eyebrow">Default routing</p>
+                <p className="mt-3 text-sm leading-relaxed text-muted">
+                  {defaultProvider
+                    ? `Agents without an override use ${defaultProvider.name} (${defaultProvider.model}).`
+                    : 'No default provider is set. Select one so agents do not rely on an arbitrary key.'}
+                </p>
+                <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
+                  An individual agent can override the default with a specific key.
+                </p>
+              </Card>
+
+              <Card>
+                <p className="eyebrow">Why BYOK</p>
+                <p className="mt-3 text-xs leading-relaxed text-muted">
+                  Your keys stay with your workspace. Provider choice is explicit, spend is visible
+                  to you, and a single account is not shared across every diligence room.
+                </p>
+              </Card>
+            </aside>
+          </div>
+        </>
+      )}
+
 
       <Modal
         open={showForm}

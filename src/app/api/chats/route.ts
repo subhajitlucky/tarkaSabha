@@ -28,6 +28,10 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         updatedAt: true,
         isAutoMode: true,
+        objective: true,
+        _count: {
+          select: { messages: true },
+        },
         participants: {
           select: {
             id: true,
