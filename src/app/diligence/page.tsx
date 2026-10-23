@@ -112,12 +112,10 @@ function RiskMatrix() {
                     className={[
                       'min-h-[72px] border-b border-r border-line p-2',
                       isThinHighRisk
-                        ? 'bg-danger-soft'
+                        ? 'risk-high'
                         : isManagedHighRisk
-                          ? 'bg-accent-soft'
-                          : rowIndex === 2
-                            ? 'bg-surface-2/50'
-                            : 'bg-surface',
+                          ? 'risk-managed'
+                          : 'risk-neutral',
                     ].join(' ')}
                   >
                     <div className="flex flex-wrap gap-1">
@@ -145,11 +143,11 @@ function RiskMatrix() {
       </div>
       <div className="mt-5 flex flex-wrap gap-x-4 gap-y-2 border-t border-line pt-4 text-[0.65rem] text-muted">
         <span className="flex items-center gap-2">
-          <span className="h-2 w-2 bg-danger-soft ring-1 ring-danger/30" />
+          <span className="h-2 w-2 risk-high ring-1 ring-danger/30" />
           High impact, thin evidence
         </span>
         <span className="flex items-center gap-2">
-          <span className="h-2 w-2 bg-accent-soft ring-1 ring-accent/30" />
+          <span className="h-2 w-2 risk-managed ring-1 ring-accent/30" />
           High impact, strong evidence
         </span>
       </div>
@@ -182,21 +180,25 @@ export default function DiligencePage() {
         <MetricCard
           label="Decisions in inventory"
           value="3"
+          accent="var(--chart-1)"
           detail="2 candidates · 1 verified"
         />
         <MetricCard
           label="Fully analyzed"
           value="1 / 3"
+          accent="var(--chart-2)"
           detail="33% of the inventory"
         />
         <MetricCard
           label="Evidence items"
           value="8"
+          accent="var(--chart-3)"
           detail="6 shown in the sample record"
         />
         <MetricCard
           label="Open questions"
           value="6"
+          accent="var(--chart-4)"
           detail="Key custody, rotation, backups, scope"
         />
       </div>
@@ -218,8 +220,8 @@ export default function DiligencePage() {
             <DonutChart
               className="mt-6"
               segments={[
-                { label: 'Analyzed', value: 1, color: 'var(--accent)' },
-                { label: 'Candidate', value: 2, color: 'var(--tone-3)' },
+                { label: 'Analyzed', value: 1, color: 'var(--chart-1)' },
+                { label: 'Candidate', value: 2, color: 'var(--chart-3)' },
               ]}
               centerValue="3"
               centerLabel="decisions"
@@ -267,7 +269,7 @@ export default function DiligencePage() {
           ].map(([number, title, metric, body]) => (
             <Card key={number} className="flex h-full flex-col">
               <div className="flex items-center justify-between gap-2">
-                <span className="font-mono text-[0.62rem] text-accent">{number}</span>
+                <span className="font-mono text-[0.62rem] text-[var(--chart-3)]">{number}</span>
                 <span className="font-mono text-[0.58rem] uppercase tracking-[0.1em] text-subtle">
                   {metric}
                 </span>
@@ -301,7 +303,7 @@ export default function DiligencePage() {
                   <tr key={question} className="border-b border-line last:border-b-0">
                     <td className="px-5 py-4 text-sm font-semibold text-text">{question}</td>
                     <td className="px-4 py-4 text-sm leading-relaxed text-muted">{answer}</td>
-                    <td className="px-5 py-4 font-mono text-xs text-accent">{output}</td>
+                    <td className="px-5 py-4 font-mono text-xs text-text">{output}</td>
                   </tr>
                 ))}
               </tbody>
@@ -331,7 +333,7 @@ export default function DiligencePage() {
                     <td className="px-4 py-4 text-sm text-text">{item.title}</td>
                     <td className="px-4 py-4 font-mono text-xs text-subtle">{item.area}</td>
                     <td className="px-4 py-4">
-                      <Badge tone={item.status === 'Verified' ? 'success' : 'outline'}>
+                      <Badge tone={item.status === 'Verified' ? 'success' : 'warning'}>
                         {item.status}
                       </Badge>
                     </td>
@@ -421,7 +423,7 @@ export default function DiligencePage() {
             <ol className="mt-4 space-y-3">
               {OPEN_QUESTIONS.map((question, index) => (
                 <li key={question} className="flex gap-3 text-sm leading-relaxed text-muted">
-                  <span className="font-mono text-xs text-accent">
+                  <span className="font-mono text-xs text-[var(--chart-3)]">
                     {String(index + 1).padStart(2, '0')}
                   </span>
                   <span>{question}</span>
@@ -436,11 +438,11 @@ export default function DiligencePage() {
               <BarList
                 className="mt-5"
                 items={[
-                  { label: 'Key custody', value: 2, meta: '2 questions' },
-                  { label: 'Rotation', value: 1, meta: '1 question' },
-                  { label: 'Backups', value: 1, meta: '1 question' },
-                  { label: 'Incident history', value: 1, meta: '1 question' },
-                  { label: 'Provider scope', value: 1, meta: '1 question' },
+                  { label: 'Key custody', value: 2, meta: '2 questions', color: 'var(--chart-3)' },
+                  { label: 'Rotation', value: 1, meta: '1 question', color: 'var(--chart-3)' },
+                  { label: 'Backups', value: 1, meta: '1 question', color: 'var(--chart-3)' },
+                  { label: 'Incident history', value: 1, meta: '1 question', color: 'var(--chart-3)' },
+                  { label: 'Provider scope', value: 1, meta: '1 question', color: 'var(--chart-3)' },
                 ]}
               />
             </Card>

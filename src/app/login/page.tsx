@@ -59,7 +59,7 @@ function LoginForm() {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-6xl items-center px-5 py-14">
       <div className="grid w-full overflow-hidden border border-line bg-surface shadow-lift lg:grid-cols-[0.85fr_1.15fr]">
-        <aside className="hidden flex-col justify-between bg-accent-soft/70 p-8 lg:flex lg:p-10">
+        <aside className="hidden flex-col justify-between border-r border-line bg-surface-2 p-8 lg:flex lg:p-10">
           <div>
             <span
               aria-hidden="true"
@@ -129,7 +129,7 @@ function LoginForm() {
           </Button>
 
           <p className="mt-4 text-center text-[0.8125rem] text-subtle">
-            By continuing you agree to the terms of service and privacy policy.
+            By continuing you agree to the <a href="/terms" className="text-muted underline decoration-line underline-offset-4 hover:text-accent">terms</a> and <a href="/privacy" className="text-muted underline decoration-line underline-offset-4 hover:text-accent">privacy policy</a>.
           </p>
 
           <Rule className="my-6" />

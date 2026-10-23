@@ -3,26 +3,31 @@ import { Card } from './Card'
 import { cx } from './cx'
 
 const TONES = [
-  'var(--accent)',
-  'var(--tone-2)',
-  'var(--tone-3)',
-  'var(--tone-4)',
-  'var(--tone-5)',
+  'var(--chart-1)',
+  'var(--chart-2)',
+  'var(--chart-3)',
+  'var(--chart-4)',
+  'var(--chart-5)',
 ]
 
 export function MetricCard({
   label,
   value,
   detail,
+  accent,
   className,
 }: {
   label: string
   value: string | number
   detail?: ReactNode
+  accent?: string
   className?: string
 }) {
   return (
-    <Card className={cx('p-4', className)}>
+    <Card
+      className={cx('p-4', className)}
+      style={accent ? { borderTopColor: accent, borderTopWidth: 2 } : undefined}
+    >
       <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-subtle">
         {label}
       </p>
@@ -37,7 +42,7 @@ export function BarList({
   maxValue,
   className,
 }: {
-  items: Array<{ label: string; value: number; meta?: string }>
+  items: Array<{ label: string; value: number; meta?: string; color?: string }>
   maxValue?: number
   className?: string
 }) {
@@ -53,10 +58,13 @@ export function BarList({
               {item.meta ?? item.value}
             </span>
           </div>
-          <div className="mt-1.5 h-1.5 overflow-hidden bg-surface-2">
+          <div className="mt-1.5 h-2.5 overflow-hidden bg-surface-3">
             <div
-              className="h-full bg-accent transition-[width] duration-500"
-              style={{ width: `${(item.value / max) * 100}%` }}
+              className="h-full transition-[width] duration-500"
+              style={{
+                width: `${(item.value / max) * 100}%`,
+                backgroundColor: item.color ?? 'var(--chart-1)',
+              }}
             />
           </div>
         </div>
@@ -98,7 +106,7 @@ export function DonutChart({
       <div
         className={cx(
           'relative shrink-0',
-          size === 'sm' ? 'h-24 w-24' : 'h-32 w-32'
+          size === 'sm' ? 'h-24 w-24' : 'h-36 w-36'
         )}
       >
         <svg viewBox="0 0 120 120" className="h-full w-full">
@@ -107,8 +115,8 @@ export function DonutChart({
             cy="60"
             r={radius}
             fill="none"
-            stroke="var(--surface-2)"
-            strokeWidth="14"
+            stroke="var(--surface-3)"
+            strokeWidth="17"
           />
           {arcs.map((arc, index) => {
             const color = arc.color ?? TONES[index % TONES.length]
@@ -120,7 +128,7 @@ export function DonutChart({
                 r={radius}
                 fill="none"
                 stroke={color}
-                strokeWidth="14"
+                strokeWidth="17"
                 strokeDasharray={`${arc.length} ${circumference - arc.length}`}
                 strokeDashoffset={-arc.offset}
                 transform="rotate(-90 60 60)"
@@ -168,7 +176,7 @@ export function StackedBar({
   )
 
   return (
-    <div className={cx('flex h-2 overflow-hidden bg-surface-2', className)}>
+    <div className={cx('flex h-2.5 overflow-hidden bg-surface-3', className)}>
       {segments.map((segment, index) => (
         <div
           key={segment.label}

@@ -10,31 +10,31 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * Deliberately squared. The previous design leaned on large radii and a global
- * translateY hover, which reads as generic; a printed-journal direction wants
- * crisp corners and a change of ink rather than a lift.
+ * A restrained financial-action hierarchy: solid primary, bordered secondary,
+ * quiet ghost. Corners stay tight; the primary action carries the only lifted
+ * edge in the system.
  */
 const base =
   'inline-flex items-center justify-center gap-2 font-semibold tracking-[-0.01em] select-none ' +
-  'rounded-[2px] border transition-colors duration-150 ' +
-  'disabled:opacity-45 disabled:cursor-not-allowed ' +
-  'focus-visible:outline-2 focus-visible:outline-offset-2'
+  'rounded-[4px] border transition-[background-color,border-color,color,box-shadow,transform] duration-150 ' +
+  'disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none ' +
+  'focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-px'
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-accent text-accent-ink border-accent hover:bg-accent-hover hover:border-accent-hover glow-accent',
+    'bg-accent text-accent-ink border-accent shadow-[0_1px_2px_rgba(18,28,23,0.18)] hover:bg-accent-hover hover:border-accent-hover hover:shadow-[0_2px_4px_rgba(18,28,23,0.2)]',
   secondary:
-    'bg-surface-2 text-text border-line hover:border-line-strong hover:bg-surface-3',
+    'bg-surface text-text border-line-strong hover:border-accent hover:text-accent hover:bg-accent-soft/40',
   ghost:
     'bg-transparent text-muted border-transparent hover:text-text hover:bg-surface-2',
   danger:
-    'bg-transparent text-danger border-line hover:bg-danger-soft hover:border-danger hover:glow-danger',
+    'bg-danger text-white border-danger hover:bg-danger/90 hover:border-danger/90',
 }
 
 const sizes: Record<Size, string> = {
-  sm: 'text-sm px-2.5 py-1.5 tracking-wide',
-  md: 'text-sm px-3.5 py-2',
-  lg: 'text-[0.9375rem] px-5 py-2.5',
+  sm: 'text-[0.8125rem] px-3 py-1.5 tracking-[0.01em]',
+  md: 'text-sm px-4 py-2.5',
+  lg: 'text-[0.9375rem] px-5 py-3',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

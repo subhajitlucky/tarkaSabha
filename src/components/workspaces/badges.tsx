@@ -1,33 +1,33 @@
 import { Badge } from '@/components/ui/Badge'
 import { debtLevel } from '@/lib/decision-debt'
 
-type Tone = 'neutral' | 'accent' | 'danger' | 'success' | 'outline'
+type Tone = 'neutral' | 'accent' | 'danger' | 'success' | 'warning' | 'info' | 'outline'
 
 const decisionStatusTones: Record<string, Tone> = {
-  DRAFT: 'neutral',
-  IN_REVIEW: 'accent',
+  DRAFT: 'warning',
+  IN_REVIEW: 'info',
   APPROVED: 'success',
   ARCHIVED: 'outline',
 }
 
 const impactTones: Record<string, Tone> = {
-  LOW: 'neutral',
-  MEDIUM: 'outline',
-  HIGH: 'accent',
+  LOW: 'success',
+  MEDIUM: 'warning',
+  HIGH: 'danger',
   CRITICAL: 'danger',
 }
 
 const evidenceStatusTones: Record<string, Tone> = {
   VERIFIED: 'success',
   DISPUTED: 'danger',
-  UNSUPPORTED: 'danger',
-  INFERRED: 'accent',
+  UNSUPPORTED: 'warning',
+  INFERRED: 'info',
   OPEN: 'neutral',
 }
 
 const confidenceTones: Record<string, Tone> = {
   HIGH: 'success',
-  MEDIUM: 'neutral',
+  MEDIUM: 'warning',
   LOW: 'outline',
 }
 
@@ -61,9 +61,9 @@ export function DebtBadge({ score }: { score: number }) {
     level === 'LOW'
       ? 'success'
       : level === 'MEDIUM'
-        ? 'neutral'
+        ? 'warning'
         : level === 'HIGH'
-          ? 'accent'
+          ? 'danger'
           : 'danger'
 
   return (

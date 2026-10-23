@@ -4,8 +4,13 @@ const FOOTER_LINKS = [
   ['/product', 'Product'],
   ['/diligence', 'Diligence'],
   ['/teams', 'For teams'],
+  ['/pricing', 'Pricing'],
+  ['/security', 'Security'],
+  ['/privacy', 'Privacy'],
+  ['/terms', 'Terms'],
   ['/about', 'About'],
   ['/demo', 'Sample review'],
+  ['/careers', 'Careers'],
   ['/workspaces', 'Open workspace'],
   ['/feedback', 'Feedback'],
 ]
@@ -33,7 +38,7 @@ export function Footer() {
           </p>
         </div>
 
-        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm">
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
           {FOOTER_LINKS.map(([href, label]) => (
             <Link
               key={href}

@@ -162,9 +162,14 @@ export default function PersonasPage() {
   }))
   const maxRoleCount = Math.max(1, ...roleCounts.map((role) => role.count))
   const coveredRoles = roleCounts.filter((role) => role.count > 0).length
-  const toolItems = TOOL_OPTIONS.map((tool) => {
+  const toolItems = TOOL_OPTIONS.map((tool, index) => {
     const count = personas.filter((persona) => persona.tools?.includes(tool.value)).length
-    return { label: tool.label, value: count, meta: `${count} agent${count === 1 ? '' : 's'}` }
+    return {
+      label: tool.label,
+      value: count,
+      meta: `${count} agent${count === 1 ? '' : 's'}`,
+      color: `var(--chart-${(index % 5) + 1})`,
+    }
   })
   const totalTools = toolItems.reduce((total, tool) => total + tool.value, 0)
   const providerOverrides = personas.filter((persona) => persona.providerId).length
@@ -237,21 +242,25 @@ export default function PersonasPage() {
             <MetricCard
               label="Agents"
               value={personas.length}
+              accent="var(--chart-1)"
               detail="Reusable across review rooms"
             />
             <MetricCard
               label="Roles covered"
               value={`${coveredRoles}/${ROLE_OPTIONS.length}`}
+              accent="var(--chart-2)"
               detail={coveredRoles === ROLE_OPTIONS.length ? 'Full council shape' : 'Coverage gaps remain'}
             />
             <MetricCard
               label="Tool grants"
               value={totalTools}
+              accent="var(--chart-3)"
               detail={`${toolItems.filter((tool) => tool.value > 0).length} tools in use`}
             />
             <MetricCard
               label="Provider overrides"
               value={providerOverrides}
+              accent="var(--chart-4)"
               detail="Agents using an explicit model"
             />
           </div>
@@ -288,7 +297,7 @@ export default function PersonasPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {roleCounts.map((role) => (
+                      {roleCounts.map((role, roleIndex) => (
                         <tr key={role.value} className="border-b border-line last:border-b-0">
                           <td className="px-5 py-4">
                             <span className="font-display text-base text-text">{role.label}</span>
@@ -297,11 +306,12 @@ export default function PersonasPage() {
                           <td className="px-4 py-4 font-mono text-sm text-text">{role.count}</td>
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="h-1.5 w-24 overflow-hidden bg-surface-2">
+                              <div className="h-2.5 w-24 overflow-hidden bg-surface-3">
                                 <div
-                                  className="h-full bg-accent"
+                                  className="h-full"
                                   style={{
                                     width: `${(role.count / maxRoleCount) * 100}%`,
+                                    backgroundColor: `var(--chart-${(roleIndex % 5) + 1})`,
                                   }}
                                 />
                               </div>

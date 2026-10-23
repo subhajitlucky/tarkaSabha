@@ -269,21 +269,25 @@ export default function ProvidersPage() {
             <MetricCard
               label="Connected keys"
               value={providers.length}
+              accent="var(--chart-1)"
               detail="Encrypted at rest with AES-256-GCM"
             />
             <MetricCard
               label="Catalog coverage"
               value={`${connectedCount}/${PROVIDER_TYPES.length}`}
+              accent="var(--chart-2)"
               detail="Provider families with a key"
             />
             <MetricCard
               label="Default route"
               value={defaultProvider?.name ?? '—'}
+              accent="var(--chart-3)"
               detail={defaultProvider?.model ?? 'No default key selected'}
             />
             <MetricCard
               label="Tested this session"
               value={testedCount}
+              accent="var(--chart-4)"
               detail="Successful live key checks"
             />
           </div>
@@ -309,7 +313,7 @@ export default function ProvidersPage() {
                       {
                         label: 'Connected',
                         value: connectedCount,
-                        color: 'var(--accent)',
+                        color: 'var(--chart-1)',
                       },
                       {
                         label: 'Available',

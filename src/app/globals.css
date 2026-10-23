@@ -36,6 +36,18 @@
   --accent-soft: rgb(95 191 145 / 0.1);
   --accent-line: rgb(95 191 145 / 0.3);
   --accent-glow: rgb(95 191 145 / 0.18);
+  --warning: #d7a24a;
+  --warning-soft: rgb(215 162 74 / 0.14);
+  --info: #6aa9d6;
+  --info-soft: rgb(106 169 214 / 0.14);
+  --chart-1: #5fbf91;
+  --chart-2: #6aa9d6;
+  --chart-3: #d7a24a;
+  --chart-4: #d97a72;
+  --chart-5: #61b7ae;
+  --risk-high: rgb(191 74 67 / 0.16);
+  --risk-managed: rgb(95 191 145 / 0.14);
+  --risk-neutral: #141d18;
 
   --danger: #e07a6d;
   --danger-soft: rgb(224 122 109 / 0.12);
@@ -46,12 +58,6 @@
   --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.04);
   --shadow-lift: var(--inset-top), 0 16px 36px -24px rgb(0 0 0 / 0.9);
   --shadow-pop: var(--inset-top), 0 22px 54px -28px rgb(0 0 0 / 0.95);
-
-  --atmosphere:
-    radial-gradient(58rem 38rem at 10% -10%, rgb(95 191 145 / 0.06), transparent 64%),
-    radial-gradient(48rem 32rem at 90% -4%, rgb(92 139 128 / 0.04), transparent 60%);
-  --grain-opacity: 0.45;
-  --grain-color: rgb(255 255 255 / 0.015);
 
   --tone-1: #5fbf91;
   --tone-2: #7bb7d3;
@@ -68,24 +74,36 @@ html.light {
      The default: a light financial product, not a dark developer tool.
      ===================================================================== */
 
-  --bg: #f4f7f5;
+  --bg: #f5f5f1;
   --surface: #ffffff;
-  --surface-2: #eef3f0;
-  --surface-3: #e3ebe6;
+  --surface-2: #efefe9;
+  --surface-3: #e2e2da;
 
-  --line: #e0e7e2;
-  --line-strong: #bdc9c2;
+  --line: #deddd5;
+  --line-strong: #b8b7ae;
 
-  --text: #111816;
-  --text-muted: #5b6661;
-  --text-subtle: #7d8983;
+  --text: #151714;
+  --text-muted: #5c615b;
+  --text-subtle: #7d817a;
 
   --accent: #0f5b43;
   --accent-hover: #0a4634;
   --accent-ink: #ffffff;
-  --accent-soft: #e7f2ed;
-  --accent-line: #b7d4c8;
+  --accent-soft: #e7f1ec;
+  --accent-line: #b7d1c4;
   --accent-glow: rgb(15 91 67 / 0.12);
+  --warning: #a96708;
+  --warning-soft: #fbf0da;
+  --info: #2d6f9e;
+  --info-soft: #e7f0f6;
+  --chart-1: #0f5b43;
+  --chart-2: #2d6f9e;
+  --chart-3: #c07a14;
+  --chart-4: #a64b45;
+  --chart-5: #1c7a72;
+  --risk-high: #e9b8b0;
+  --risk-managed: #bfe0d2;
+  --risk-neutral: #e8e6de;
 
   --danger: #bf4a43;
   --danger-soft: #fbeeed;
@@ -94,17 +112,12 @@ html.light {
   --success-soft: #e8f5ee;
 
   --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.8);
-  --atmosphere:
-    radial-gradient(58rem 38rem at 10% -10%, rgb(15 91 67 / 0.035), transparent 64%),
-    radial-gradient(48rem 32rem at 90% -4%, rgb(82 116 102 / 0.025), transparent 60%);
-  --grain-opacity: 0.32;
-  --grain-color: rgb(20 45 35 / 0.012);
 
   --tone-1: #0f5b43;
-  --tone-2: #2f7d6a;
-  --tone-3: #9a6a12;
-  --tone-4: #4d6b96;
-  --tone-5: #7d4d6b;
+  --tone-2: #2d6f9e;
+  --tone-3: #c07a14;
+  --tone-4: #a64b45;
+  --tone-5: #1c7a72;
 
   --shadow-lift: var(--inset-top), 0 12px 30px -24px rgb(20 35 28 / 0.22);
   --shadow-pop: var(--inset-top), 0 18px 44px -28px rgb(20 35 28 / 0.28);
@@ -136,6 +149,10 @@ html.light {
   --color-danger-soft: var(--danger-soft);
   --color-success: var(--success);
   --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
 
   --text-xs: 0.8125rem;
   --text-xs--line-height: 1.5;
@@ -167,35 +184,9 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Paper light. The atmosphere should feel like a window, not a grid. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background: var(--atmosphere);
-}
-
-/* Paper grain. The lines must be LIGHT on the night theme: the first pass used
-   black at 1.4% alpha, which on a near-black background is invisible. */
-body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: var(--grain-opacity);
-  background-image:
-    repeating-linear-gradient(0deg, transparent 0 3px, var(--grain-color) 3px 4px),
-    repeating-linear-gradient(90deg, transparent 0 3px, var(--grain-color) 3px 4px);
-}
-
-/* Homepage hero: the light desk with a soft emerald wash. */
+/* The public hero is a flat desk surface. Green is an accent, not a wash. */
 .home-hero {
-  background:
-    radial-gradient(58rem 34rem at 10% 0%, var(--accent-soft), transparent 64%),
-    linear-gradient(180deg, var(--surface-2), var(--bg));
+  background: var(--surface);
 }
 
 /* Headings carry the display face and tighter tracking. */
@@ -260,6 +251,11 @@ h1 {
   padding: 0.1em 0.35em;
   border-radius: 3px;
 }
+
+/* ============================ risk cells ================================ */
+.risk-high { background: var(--risk-high); }
+.risk-managed { background: var(--risk-managed); }
+.risk-neutral { background: var(--risk-neutral); }
 
 /* ============================ surfaces ================================== */
 

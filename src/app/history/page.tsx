@@ -70,10 +70,11 @@ export default function HistoryPage() {
       (a, b) => (b.participants?.length ?? 0) - (a.participants?.length ?? 0)
     )
     .slice(0, 6)
-    .map((chat) => ({
+    .map((chat, index) => ({
       label: chat.topic || chat.title,
       value: chat.participants?.length ?? 0,
       meta: `${chat.participants?.length ?? 0} agents`,
+      color: `var(--chart-${(index % 5) + 1})`,
     }))
 
   return (
@@ -114,21 +115,25 @@ export default function HistoryPage() {
             <MetricCard
               label="Review rooms"
               value={chats.length}
+              accent="var(--chart-1)"
               detail={`${running} running now`}
             />
             <MetricCard
               label="Council seats"
               value={totalSeats}
+              accent="var(--chart-2)"
               detail={`Across ${chats.length} room${chats.length === 1 ? '' : 's'}`}
             />
             <MetricCard
               label="Latest review"
               value={latest ? formatDate(latest) : '—'}
+              accent="var(--chart-3)"
               detail="Last activity in the record"
             />
             <MetricCard
               label="Mode"
               value={running > 0 ? 'Live' : chats.length > 0 ? 'Filed' : 'Ready'}
+              accent="var(--chart-4)"
               detail="Server-run transcripts are preserved"
             />
           </div>

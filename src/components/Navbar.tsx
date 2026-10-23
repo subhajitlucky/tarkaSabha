@@ -12,6 +12,7 @@ const PUBLIC_LINKS = [
   { href: '/product', label: 'Product' },
   { href: '/diligence', label: 'Diligence' },
   { href: '/teams', label: 'For teams' },
+  { href: '/pricing', label: 'Pricing' },
   { href: '/about', label: 'About' },
 ]
 
@@ -82,7 +83,7 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
       <div className="mx-auto flex h-[65px] max-w-[88rem] items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
         <Wordmark />
 
-        <nav aria-label="Public" className="hidden items-center gap-7 lg:flex">
+        <nav aria-label="Public" className="hidden items-center gap-5 lg:flex xl:gap-7">
           {PUBLIC_LINKS.map((link) => (
             <Link
               key={link.href}
@@ -144,7 +145,7 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
       <div className="px-3 pt-4">
         <Link
           href="/workspaces#new-workspace"
-          className="flex items-center gap-2 border border-accent-line bg-accent-soft px-3 py-2 text-sm text-accent transition-colors hover:bg-accent hover:text-accent-ink"
+          className="flex items-center gap-2 border border-line-strong bg-surface px-3 py-2 text-sm font-semibold text-text transition-colors hover:border-accent hover:text-accent"
         >
           <span className="font-mono text-xs">＋</span>
           New workspace
@@ -162,7 +163,7 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
               className={cx(
                 'block border-l-2 px-3 py-2.5 text-sm transition-colors',
                 isActive(link.href)
-                  ? 'border-accent bg-accent-soft text-accent'
+                  ? 'border-accent bg-surface-2 font-semibold text-text'
                   : 'border-transparent text-muted hover:bg-surface-2 hover:text-text'
               )}
             >
@@ -181,7 +182,7 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
               className={cx(
                 'block px-3 py-2 text-sm transition-colors',
                 isActive(link.href)
-                  ? 'bg-accent-soft text-accent'
+                  ? 'bg-surface-2 font-semibold text-text'
                   : 'text-muted hover:bg-surface-2 hover:text-text'
               )}
             >
@@ -256,7 +257,7 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
                 className={cx(
                   'block border-l-2 px-3 py-2.5 text-sm transition-colors',
                   isActive(link.href)
-                    ? 'border-accent bg-accent-soft text-accent'
+                    ? 'border-accent bg-surface-2 font-semibold text-text'
                     : 'border-transparent text-muted hover:bg-surface-2 hover:text-text'
                 )}
               >
@@ -278,7 +279,7 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
                     className={cx(
                       'block border-l-2 px-3 py-2.5 text-sm transition-colors',
                       isActive(link.href)
-                        ? 'border-accent bg-accent-soft text-accent'
+                        ? 'border-accent bg-surface-2 font-semibold text-text'
                         : 'border-transparent text-muted hover:bg-surface-2 hover:text-text'
                     )}
                   >

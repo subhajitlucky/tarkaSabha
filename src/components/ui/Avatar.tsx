@@ -33,7 +33,7 @@ const SIZES = {
 } as const
 
 /**
- * A squared monogram. Replaces the gradient circles the old design used: the
+ * A squared monogram. Replaces the glowing circles the old design used: the
  * hue is derived from the name so agents stay distinguishable, and the shape
  * matches the rest of the system.
  */

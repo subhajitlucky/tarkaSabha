@@ -120,10 +120,11 @@ export default function WorkspacesPage() {
   const chartItems = [...workspaces]
     .sort((a, b) => (b._count?.decisions ?? 0) - (a._count?.decisions ?? 0))
     .slice(0, 6)
-    .map((workspace) => ({
+    .map((workspace, index) => ({
       label: workspace.name,
       value: workspace._count?.decisions ?? 0,
       meta: `${workspace._count?.decisions ?? 0} decision${(workspace._count?.decisions ?? 0) === 1 ? '' : 's'}`,
+      color: `var(--chart-${(index % 5) + 1})`,
     }))
 
   return (
@@ -168,11 +169,13 @@ export default function WorkspacesPage() {
             <MetricCard
               label="Matters"
               value={workspaces.length}
+              accent="var(--chart-1)"
               detail={`${activeMatters} active in the last 14 days`}
             />
             <MetricCard
               label="Decisions"
               value={totalDecisions}
+              accent="var(--chart-2)"
               detail={
                 workspaces.length
                   ? `${(totalDecisions / workspaces.length).toFixed(1)} per matter`
@@ -182,11 +185,13 @@ export default function WorkspacesPage() {
             <MetricCard
               label="Team seats"
               value={totalMembers}
+              accent="var(--chart-3)"
               detail={`Across ${workspaces.length} matter${workspaces.length === 1 ? '' : 's'}`}
             />
             <MetricCard
               label="Latest activity"
               value={latestActivity ? formatDate(latestActivity) : '—'}
+              accent="var(--chart-4)"
               detail={busiest ? `Busiest: ${busiest.name}` : 'No matter activity yet'}
             />
           </div>
@@ -258,7 +263,7 @@ export default function WorkspacesPage() {
                       Open diligence rooms
                     </h2>
                   </div>
-                  <span className="font-mono text-xs text-subtle">{workspaces.length} matters</span>
+                  <span className="font-mono text-xs text-subtle">{workspaces.length} matter{workspaces.length === 1 ? '' : 's'}</span>
                 </div>
 
                 {loadError ? (

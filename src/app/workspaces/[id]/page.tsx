@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { BarList, DonutChart, MetricCard } from '@/components/ui/DataViz'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { Field, Input, Select, Textarea } from '@/components/ui/Field'
 import {
@@ -339,6 +340,47 @@ export default function WorkspacePage() {
   )
   const memberCount = workspace.memberships.length
   const sourceCount = workspace.sources.length
+  const fileCount = workspace.sources.reduce((total, source) => total + source.fileCount, 0)
+  const approvedCount = workspace.decisions.filter(
+    (decision) => decision.status === 'APPROVED'
+  ).length
+  const inReviewCount = workspace.decisions.filter(
+    (decision) => decision.status === 'IN_REVIEW'
+  ).length
+  const draftCount = workspace.decisions.filter(
+    (decision) => decision.status === 'DRAFT'
+  ).length
+  const archivedCount = workspace.decisions.filter(
+    (decision) => decision.status === 'ARCHIVED'
+  ).length
+  const decisionsWithEvidence = workspace.decisions.filter(
+    (decision) => (decision._count?.evidence ?? 0) > 0
+  ).length
+  const approvalCount = workspace.decisions.reduce(
+    (total, decision) => total + (decision._count?.approvals ?? 0),
+    0
+  )
+  const dossierCount = workspace.dossiers.length
+  const latestDossier = workspace.dossiers[0]
+  const statusSegments = [
+    { label: 'Approved', value: approvedCount, color: 'var(--chart-1)' },
+    { label: 'In review', value: inReviewCount, color: 'var(--chart-2)' },
+    { label: 'Draft', value: draftCount, color: 'var(--chart-3)' },
+    { label: 'Archived', value: archivedCount, color: 'var(--text-subtle)' },
+  ]
+  const impactItems = DECISION_IMPACTS.map((value) => ({
+    label: value,
+    value: workspace.decisions.filter((decision) => decision.impact === value).length,
+    meta: `${workspace.decisions.filter((decision) => decision.impact === value).length} decision${workspace.decisions.filter((decision) => decision.impact === value).length === 1 ? '' : 's'}`,
+    color:
+      value === 'LOW'
+        ? 'var(--chart-1)'
+        : value === 'MEDIUM'
+          ? 'var(--chart-3)'
+          : value === 'HIGH'
+            ? 'var(--chart-4)'
+            : 'var(--danger)',
+  }))
 
   return (
     <div className="mx-auto max-w-[90rem] px-5 py-14">
@@ -379,26 +421,136 @@ export default function WorkspacePage() {
         </Link>
       </nav>
 
-      <div className="mb-8 grid grid-cols-2 border-y border-line sm:grid-cols-4">
-        {[
-          { label: 'Decisions', value: decisionCount },
-          { label: 'Evidence items', value: evidenceCount },
-          { label: 'Sources', value: sourceCount },
-          { label: 'Members', value: memberCount },
-        ].map((stat, index) => (
-          <div
-            key={stat.label}
-            className={index === 0 ? 'py-5' : 'border-l border-line py-5 pl-5'}
-          >
-            <p className="font-mono text-[0.62rem] uppercase tracking-[0.12em] text-subtle">
-              {stat.label}
-            </p>
-            <p className="mt-1 font-display text-4xl text-text">{stat.value}</p>
-          </div>
-        ))}
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Decisions"
+          value={decisionCount}
+          detail={`${approvedCount} approved · ${inReviewCount + draftCount} open`}
+          accent="var(--chart-1)"
+        />
+        <MetricCard
+          label="Evidence items"
+          value={evidenceCount}
+          detail={`${decisionsWithEvidence} of ${decisionCount} decisions covered`}
+          accent="var(--chart-2)"
+        />
+        <MetricCard
+          label="Sources"
+          value={sourceCount}
+          detail={`${fileCount} files ingested`}
+          accent="var(--chart-3)"
+        />
+        <MetricCard
+          label="Members"
+          value={memberCount}
+          detail={`${ownerCount} owner${ownerCount === 1 ? '' : 's'} on record`}
+          accent="var(--chart-4)"
+        />
       </div>
 
-      <section aria-labelledby="sources-heading" className="mb-8">
+      <div className="mb-8 grid gap-3 lg:grid-cols-3">
+        <Card>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="eyebrow">Decision status</p>
+              <h2 className="mt-2 font-display text-xl text-text">Where the record stands</h2>
+            </div>
+            <span className="font-mono text-xs text-subtle">{decisionCount}</span>
+          </div>
+          {decisionCount > 0 ? (
+            <DonutChart
+              className="mt-5"
+              size="sm"
+              segments={statusSegments}
+              centerValue={decisionCount}
+              centerLabel="decisions"
+            />
+          ) : (
+            <p className="mt-5 text-sm leading-relaxed text-muted">
+              Add a decision to see its review state.
+            </p>
+          )}
+        </Card>
+
+        <Card>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="eyebrow">Risk breakdown</p>
+              <h2 className="mt-2 font-display text-xl text-text">Deal impact by decision</h2>
+            </div>
+            <span className="font-mono text-xs text-subtle">{decisionCount}</span>
+          </div>
+          {decisionCount > 0 ? (
+            <BarList className="mt-5" items={impactItems} />
+          ) : (
+            <p className="mt-5 text-sm leading-relaxed text-muted">
+              Impact distribution will appear as decisions are added.
+            </p>
+          )}
+        </Card>
+
+        <Card>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="eyebrow">Record coverage</p>
+              <h2 className="mt-2 font-display text-xl text-text">What is evidenced</h2>
+            </div>
+            <span className="font-mono text-xs text-subtle">{approvalCount} approvals</span>
+          </div>
+          <div className="mt-5 space-y-4">
+            {[
+              {
+                label: 'Evidence coverage',
+                value: `${decisionsWithEvidence}/${decisionCount}`,
+                pct: decisionCount > 0 ? (decisionsWithEvidence / decisionCount) * 100 : 0,
+                color: 'var(--chart-2)',
+              },
+              {
+                label: 'Approved decisions',
+                value: `${approvedCount}/${decisionCount}`,
+                pct: decisionCount > 0 ? (approvedCount / decisionCount) * 100 : 0,
+                color: 'var(--chart-1)',
+              },
+              {
+                label: 'Dossier versions',
+                value: String(dossierCount),
+                pct: dossierCount > 0 ? 100 : 0,
+                color: 'var(--chart-3)',
+              },
+              {
+                label: 'Sources on file',
+                value: String(sourceCount),
+                pct: sourceCount > 0 ? 100 : 0,
+                color: 'var(--chart-4)',
+              },
+            ].map((item) => (
+              <div key={item.label}>
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-sm text-muted">{item.label}</span>
+                  <span className="font-mono text-xs text-text">{item.value}</span>
+                </div>
+                <div className="mt-1.5 h-2 overflow-hidden bg-surface-3">
+                  <div
+                    className="h-full"
+                    style={{ width: `${item.pct}%`, backgroundColor: item.color }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+          {latestDossier && (
+            <Link
+              href={`/workspaces/${workspace.id}/dossiers/${latestDossier.id}`}
+              className="mt-5 inline-block font-mono text-xs text-accent transition-colors hover:text-accent-hover"
+            >
+              Open dossier v{latestDossier.version} →
+            </Link>
+          )}
+        </Card>
+      </div>
+
+      <section aria-labelledby="sources-heading" className="mb-6">
+        <Card className="space-y-4">
         <div className="mb-3 flex items-center justify-between gap-3">
           <h2
             id="sources-heading"
@@ -410,33 +562,39 @@ export default function WorkspacePage() {
         </div>
 
         {canEdit && (
-          <form
-            onSubmit={ingestSource}
-            className="mb-3 grid gap-2 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
-          >
-            <Input
-              aria-label="GitHub repository URL"
-              value={sourceUrl}
-              onChange={(event) => setSourceUrl(event.target.value)}
-              placeholder="https://github.com/owner/repo"
-              required
-            />
-            <Input
-              aria-label="Branch or ref"
-              value={sourceRef}
-              onChange={(event) => setSourceRef(event.target.value)}
-              placeholder="Default branch"
-              maxLength={200}
-            />
-            <Button
-              type="submit"
-              size="sm"
-              variant="secondary"
-              disabled={ingestingSource || sourceUrl.trim().length === 0}
+          <details className="border border-line bg-surface-2/40">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-semibold text-text">
+              Add a source
+              <span className="font-mono text-xs text-accent">＋</span>
+            </summary>
+            <form
+              onSubmit={ingestSource}
+              className="grid gap-2 border-t border-line p-3 sm:grid-cols-[minmax(0,1fr)_10rem_auto]"
             >
-              {ingestingSource ? 'Ingesting…' : 'Ingest repo'}
-            </Button>
-          </form>
+              <Input
+                aria-label="GitHub repository URL"
+                value={sourceUrl}
+                onChange={(event) => setSourceUrl(event.target.value)}
+                placeholder="https://github.com/owner/repo"
+                required
+              />
+              <Input
+                aria-label="Branch or ref"
+                value={sourceRef}
+                onChange={(event) => setSourceRef(event.target.value)}
+                placeholder="Default branch"
+                maxLength={200}
+              />
+              <Button
+                type="submit"
+                size="sm"
+                variant="secondary"
+                disabled={ingestingSource || sourceUrl.trim().length === 0}
+              >
+                {ingestingSource ? 'Ingesting…' : 'Ingest repo'}
+              </Button>
+            </form>
+          </details>
         )}
 
         {sourceError && (
@@ -459,6 +617,9 @@ export default function WorkspacePage() {
                 href={`/workspaces/${workspace.id}/sources/${source.id}`}
                 className="group flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-line px-1 py-4 transition-colors last:border-b-0 hover:bg-surface-2"
               >
+                <span className="flex h-7 w-7 items-center justify-center border border-line bg-surface-2 font-mono text-[0.55rem] text-[var(--chart-2)]">
+                  GH
+                </span>
                 <p className="font-display text-lg text-text transition-colors group-hover:text-accent">
                   {source.owner}/{source.name}
                 </p>
@@ -468,7 +629,7 @@ export default function WorkspacePage() {
                       ? 'success'
                       : source.status === 'FAILED'
                         ? 'danger'
-                        : 'neutral'
+                        : 'warning'
                   }
                 >
                   {source.status}
@@ -489,97 +650,103 @@ export default function WorkspacePage() {
             ))}
           </div>
         )}
+        </Card>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="space-y-10">
-          <section aria-labelledby="decision-list-heading">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2
-              id="decision-list-heading"
-              className="font-mono text-xs uppercase tracking-[0.14em] text-subtle"
-            >
-              Decisions
-            </h2>
-            <span className="font-mono text-xs text-subtle">{decisionCount}</span>
-          </div>
-
-          {workspace.decisions.length === 0 ? (
-            <EmptyState
-              title="No decisions in this room"
-              description={
-                canEdit
-                  ? 'Add the first decision under review. Evidence and approvals will hang off it.'
-                  : 'A reviewer or owner will add the first decision.'
-              }
-            />
-          ) : (
-            <div className="border-y border-line">
-              {workspace.decisions.map((decision, index) => (
-                <Link
-                  key={decision.id}
-                  href={`/decisions/${decision.id}`}
-                  className="group block border-b border-line px-1 py-5 transition-colors last:border-b-0 hover:bg-surface-2"
-                >
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-mono text-[0.62rem] text-accent">
-                      D-{String(index + 1).padStart(2, '0')}
-                    </span>
-                    <h3 className="font-display text-xl leading-tight text-text transition-colors group-hover:text-accent">
-                      {decision.title}
-                    </h3>
-                    <span className="ml-auto font-mono text-[0.62rem] uppercase tracking-[0.08em] text-subtle">
-                      {formatDate(decision.updatedAt)}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 flex flex-wrap items-center gap-2 pl-7">
-                    <DecisionStatusBadge status={decision.status} />
-                    <ImpactBadge impact={decision.impact} />
-                    <DebtBadge score={decision.debtScore ?? 0} />
-                    {decision.outcome && (
-                      <Badge
-                        tone={
-                          decision.outcome === 'VALIDATED'
-                            ? 'success'
-                            : decision.outcome === 'INVALIDATED'
-                              ? 'danger'
-                              : 'neutral'
-                        }
-                      >
-                        {decision.outcome}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {decision.summary && (
-                    <p className="mt-2 line-clamp-2 pl-7 text-sm leading-relaxed text-muted">
-                      {decision.summary}
-                    </p>
-                  )}
-
-                  <p className="mt-3 pl-7 font-mono text-[0.62rem] uppercase tracking-[0.1em] text-subtle">
-                    {decision._count?.evidence ?? 0}{' '}
-                    {(decision._count?.evidence ?? 0) === 1
-                      ? 'evidence item'
-                      : 'evidence items'}
-                    <span className="mx-1.5">·</span>
-                    {decision._count?.approvals ?? 0}{' '}
-                    {(decision._count?.approvals ?? 0) === 1 ? 'approval' : 'approvals'}
-                    <span className="mx-1.5">·</span>
-                    Owner {decision.owner?.name || 'unassigned'}
-                    {decision.revisitAt && (
-                      <>
-                        <span className="mx-1.5">·</span>
-                        Revisit {formatDate(decision.revisitAt)}
-                      </>
-                    )}
-                  </p>
-                </Link>
-              ))}
+        <div className="min-w-0 space-y-10">
+          <Card flush className="overflow-hidden">
+            <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
+              <div>
+                <p className="eyebrow">Decision register</p>
+                <h2 className="mt-2 font-display text-2xl text-text">What is under review</h2>
+              </div>
+              <span className="font-mono text-xs text-subtle">{decisionCount} decisions</span>
             </div>
-          )}
-          </section>
+
+            {workspace.decisions.length === 0 ? (
+              <div className="p-5">
+                <EmptyState
+                  title="No decisions in this room"
+                  description={
+                    canEdit
+                      ? 'Add the first decision under review. Evidence and approvals will hang off it.'
+                      : 'A reviewer or owner will add the first decision.'
+                  }
+                />
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[780px] border-collapse text-left">
+                  <thead>
+                    <tr className="border-b border-line font-mono text-[0.6rem] uppercase tracking-[0.14em] text-subtle">
+                      <th className="px-5 py-3 font-normal">Decision</th>
+                      <th className="px-3 py-3 font-normal">Status</th>
+                      <th className="px-3 py-3 font-normal">Impact</th>
+                      <th className="px-3 py-3 font-normal">Debt</th>
+                      <th className="px-3 py-3 font-normal">Evidence</th>
+                      <th className="px-5 py-3 font-normal">Updated</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {workspace.decisions.map((decision, index) => (
+                      <tr
+                        key={decision.id}
+                        className="group border-b border-line transition-colors last:border-b-0 hover:bg-surface-2"
+                      >
+                        <td className="max-w-[28rem] px-5 py-4">
+                          <div className="flex items-baseline gap-3">
+                            <span className="whitespace-nowrap font-mono text-[0.62rem] text-subtle">
+                              D-{String(index + 1).padStart(2, '0')}
+                            </span>
+                            <Link
+                              href={`/decisions/${decision.id}`}
+                              className="break-words font-display text-lg leading-tight text-text transition-colors group-hover:text-accent"
+                            >
+                              {decision.title}
+                            </Link>
+                          </div>
+                          <div className="mt-1.5 flex flex-wrap items-center gap-2 pl-8">
+                            <span className="text-xs text-subtle">
+                              Owner {decision.owner?.name || 'unassigned'}
+                            </span>
+                            {decision.outcome && (
+                              <Badge
+                                tone={
+                                  decision.outcome === 'VALIDATED'
+                                    ? 'success'
+                                    : decision.outcome === 'INVALIDATED'
+                                      ? 'danger'
+                                      : 'neutral'
+                                }
+                              >
+                                {decision.outcome}
+                              </Badge>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-3 py-4">
+                          <DecisionStatusBadge status={decision.status} />
+                        </td>
+                        <td className="px-3 py-4">
+                          <ImpactBadge impact={decision.impact} />
+                        </td>
+                        <td className="px-3 py-4">
+                          <DebtBadge score={decision.debtScore ?? 0} />
+                        </td>
+                        <td className="px-3 py-4 font-mono text-sm text-text">
+                          {decision._count?.evidence ?? 0}
+                        </td>
+                        <td className="whitespace-nowrap px-5 py-4 font-mono text-[0.62rem] uppercase tracking-[0.08em] text-subtle">
+                          {formatDate(decision.updatedAt)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
 
           <WorkspaceDossierPanel
             workspaceId={workspace.id}
@@ -590,13 +757,21 @@ export default function WorkspacePage() {
 
         <aside className="space-y-4">
           {canEdit ? (
-            <Card className="space-y-4">
-              <div>
-                <p className="eyebrow">New decision</p>
-                <h2 className="mt-2 font-display text-xl text-text">What is under review?</h2>
-              </div>
+            <Card className="p-0">
+              <details>
+                <summary className="cursor-pointer list-none p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="eyebrow">New decision</p>
+                      <h2 className="mt-2 font-display text-xl text-text">
+                        What is under review?
+                      </h2>
+                    </div>
+                    <span className="font-mono text-sm text-accent">＋</span>
+                  </div>
+                </summary>
 
-              <form onSubmit={handleCreateDecision} className="space-y-4">
+              <form onSubmit={handleCreateDecision} className="space-y-4 border-t border-line p-4">
                 <Field label="Decision">
                   <Input
                     value={title}
@@ -642,6 +817,7 @@ export default function WorkspacePage() {
                   {creating ? 'Adding…' : 'Add decision'}
                 </Button>
               </form>
+              </details>
             </Card>
           ) : (
             <Card>
@@ -660,10 +836,15 @@ export default function WorkspacePage() {
             </div>
 
             {canManage && (
-              <form
-                onSubmit={handleInviteMember}
-                className="space-y-2 border-b border-line pb-4"
-              >
+              <details className="border-y border-line py-3">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-semibold text-text">
+                  Invite or add a member
+                  <span className="font-mono text-xs text-accent">＋</span>
+                </summary>
+                <form
+                  onSubmit={handleInviteMember}
+                  className="mt-3 space-y-2"
+                >
                 <Input
                   type="email"
                   aria-label="Member email"
@@ -748,7 +929,8 @@ export default function WorkspacePage() {
                     </p>
                   </div>
                 )}
-              </form>
+                </form>
+              </details>
             )}
 
             <ul className="space-y-4">
