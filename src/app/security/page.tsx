@@ -22,11 +22,10 @@ export default function SecurityPage() {
             <Badge tone="outline">Controls and limits</Badge>
           </div>
           <h1 className="mt-5 max-w-4xl text-5xl leading-[0.96] tracking-[-0.045em] text-text sm:text-6xl lg:text-7xl">
-            Diligence material, handled with a short leash.
+            Security for diligence material.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-            A diligence tool sees sensitive code, architecture, and deal context. The controls
-            should be explicit, the sharing should expire, and the limits should be written down.
+            A diligence tool sees sensitive code and deal context. The controls should be explicit, sharing should expire, and limits should be written down.
           </p>
         </div>
       </section>

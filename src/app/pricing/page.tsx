@@ -7,7 +7,7 @@ import { Card, Rule } from '@/components/ui/Card'
 export const metadata: Metadata = {
   title: 'Pricing — Tarka Sabha',
   description:
-    'Scoped pricing for technical diligence sprints, private workspaces, and portfolio review. No fake self-serve checkout.',
+    'Indicative pricing for technical diligence sprints, private workspaces, and portfolio review.',
 }
 
 const PLANS = [
@@ -83,10 +83,9 @@ export default function PricingPage() {
               Pricing that follows the deal.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
-              Technical diligence is not a seat-count problem. We scope the work around the target,
-              the source material, the review cadence, and the record you need to defend.
+              Scope follows the target, source material, and review cadence — not a seat count.
             </p>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="hero-actions mt-8">
               <Link href="/feedback">
                 <Button variant="primary" size="lg">
                   Request a quote
@@ -221,8 +220,7 @@ export default function PricingPage() {
               You have a deal, a codebase, and a question that needs evidence.
             </h2>
             <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted">
-              Pricing is scoped to the work. Start with the sample dossier, then tell us the target,
-              the decision area, and the timeline. We will come back with a written scope.
+              Start with the sample dossier, then tell us the target and the decision area.
             </p>
           </div>
           <div className="flex flex-wrap items-end gap-2 lg:justify-end">

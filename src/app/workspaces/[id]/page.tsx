@@ -276,7 +276,7 @@ export default function WorkspacePage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-[90rem] px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-10">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -286,7 +286,7 @@ export default function WorkspacePage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Sign in to open this workspace"
           description="Workspace material is private to its members."
@@ -302,7 +302,7 @@ export default function WorkspacePage() {
 
   if (notFound) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Workspace not found"
           description="It may have been removed, or you may not be a member of this room."
@@ -318,7 +318,7 @@ export default function WorkspacePage() {
 
   if (!workspace) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <p role="alert" className="rounded-[4px] border border-line bg-surface p-5 text-sm text-danger">
           {loadError || 'Could not load this workspace.'}
         </p>
@@ -383,7 +383,7 @@ export default function WorkspacePage() {
   }))
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <div className="mb-6">
         <Link
           href="/workspaces"
@@ -453,7 +453,7 @@ export default function WorkspacePage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="eyebrow">Decision status</p>
-              <h2 className="mt-2 font-display text-xl text-text">Where the record stands</h2>
+              <h2 className="mt-2 text-xl text-text">Where the record stands</h2>
             </div>
             <span className="font-mono text-xs text-subtle">{decisionCount}</span>
           </div>
@@ -476,12 +476,12 @@ export default function WorkspacePage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="eyebrow">Risk breakdown</p>
-              <h2 className="mt-2 font-display text-xl text-text">Deal impact by decision</h2>
+              <h2 className="mt-2 text-xl text-text">Deal impact by decision</h2>
             </div>
             <span className="font-mono text-xs text-subtle">{decisionCount}</span>
           </div>
           {decisionCount > 0 ? (
-            <BarList className="mt-5" items={impactItems} />
+            <BarList className="mt-5" items={impactItems} maxValue={Math.max(1, decisionCount)} />
           ) : (
             <p className="mt-5 text-sm leading-relaxed text-muted">
               Impact distribution will appear as decisions are added.
@@ -493,9 +493,9 @@ export default function WorkspacePage() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="eyebrow">Record coverage</p>
-              <h2 className="mt-2 font-display text-xl text-text">What is evidenced</h2>
+              <h2 className="mt-2 text-xl text-text">What is evidenced</h2>
             </div>
-            <span className="font-mono text-xs text-subtle">{approvalCount} approvals</span>
+            <span className="font-mono text-xs text-subtle">{approvalCount} approval{approvalCount === 1 ? '' : 's'}</span>
           </div>
           <div className="mt-5 space-y-4">
             {[
@@ -529,9 +529,9 @@ export default function WorkspacePage() {
                   <span className="text-sm text-muted">{item.label}</span>
                   <span className="font-mono text-xs text-text">{item.value}</span>
                 </div>
-                <div className="mt-1.5 h-2 overflow-hidden bg-surface-3">
+                <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-3">
                   <div
-                    className="h-full"
+                    className="h-full rounded-full"
                     style={{ width: `${item.pct}%`, backgroundColor: item.color }}
                   />
                 </div>
@@ -620,7 +620,7 @@ export default function WorkspacePage() {
                 <span className="flex h-7 w-7 items-center justify-center border border-line bg-surface-2 font-mono text-[0.55rem] text-[var(--chart-2)]">
                   GH
                 </span>
-                <p className="font-display text-lg text-text transition-colors group-hover:text-accent">
+                <p className="text-lg text-text transition-colors group-hover:text-accent">
                   {source.owner}/{source.name}
                 </p>
                 <Badge
@@ -632,7 +632,7 @@ export default function WorkspacePage() {
                         : 'warning'
                   }
                 >
-                  {source.status}
+                  {source.status.charAt(0) + source.status.slice(1).toLowerCase()}
                 </Badge>
                 <span className="font-mono text-[0.62rem] text-subtle">
                   {source.ref}
@@ -659,7 +659,7 @@ export default function WorkspacePage() {
             <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
               <div>
                 <p className="eyebrow">Decision register</p>
-                <h2 className="mt-2 font-display text-2xl text-text">What is under review</h2>
+                <h2 className="mt-2 text-2xl text-text">What is under review</h2>
               </div>
               <span className="font-mono text-xs text-subtle">{decisionCount} decisions</span>
             </div>
@@ -701,7 +701,7 @@ export default function WorkspacePage() {
                             </span>
                             <Link
                               href={`/decisions/${decision.id}`}
-                              className="break-words font-display text-lg leading-tight text-text transition-colors group-hover:text-accent"
+                              className="break-words text-lg leading-tight text-text transition-colors group-hover:text-accent"
                             >
                               {decision.title}
                             </Link>
@@ -763,7 +763,7 @@ export default function WorkspacePage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="eyebrow">New decision</p>
-                      <h2 className="mt-2 font-display text-xl text-text">
+                      <h2 className="mt-2 text-xl text-text">
                         What is under review?
                       </h2>
                     </div>

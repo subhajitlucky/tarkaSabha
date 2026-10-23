@@ -16,12 +16,12 @@ export function EmptyState({
   return (
     <div
       className={cx(
-        'flex flex-col items-center justify-center rounded-[4px] border border-dashed border-line',
-        'px-6 py-12 text-center',
+        'flex flex-col items-center justify-center rounded-[8px] border border-dashed border-line',
+        'px-6 py-10 text-center',
         className
       )}
     >
-      <p className="font-display text-base text-text">{title}</p>
+      <p className="text-sm font-semibold text-text">{title}</p>
       {description && (
         <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">{description}</p>
       )}
@@ -45,23 +45,18 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <header className={cx('mb-8', className)}>
+    <header className={cx('mb-6', className)}>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          {eyebrow && (
-            <p className="eyebrow mb-3 flex items-center gap-2">
-              <span aria-hidden="true" className="h-1.5 w-1.5 bg-accent" />
-              {eyebrow}
-            </p>
-          )}
-          <h1 className="max-w-4xl text-3xl leading-[1.04] tracking-[-0.03em] text-text sm:text-4xl">
+          {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
+          <h1 className="max-w-4xl font-sans text-2xl font-semibold leading-[1.1] tracking-[-0.025em] text-text sm:text-3xl">
             {title}
           </h1>
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
-      {lede && <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted">{lede}</p>}
-      <span className="draw-rule mt-6 block h-px bg-line" />
+      {lede && <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">{lede}</p>}
+      <span className="draw-rule mt-5 block h-px bg-line" />
     </header>
   )
 }

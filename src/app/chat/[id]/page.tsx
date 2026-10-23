@@ -509,7 +509,7 @@ export default function ChatPage() {
       {showUsernameModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="w-full max-w-md rounded-[4px] border border-line bg-surface p-7 shadow-lift">
-            <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-[3px] border border-accent-line bg-accent-soft font-display text-xl text-accent">
+            <span className="mb-5 flex h-12 w-12 items-center justify-center rounded-[3px] border border-accent-line bg-accent-soft text-xl text-accent">
               त
             </span>
             <h2 className="text-xl text-text">Take your seat</h2>
@@ -819,7 +819,7 @@ export default function ChatPage() {
                           return (
                             <li key={message.id} className="rounded-[3px] border border-line p-3">
                               <div className="flex flex-wrap items-center gap-2">
-                                <span className="font-display text-sm text-text">{speaker}</span>
+                                <span className="text-sm text-text">{speaker}</span>
                                 <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-subtle">
                                   {new Date(message.createdAt).toLocaleTimeString([], {
                                     hour: '2-digit',
@@ -1174,7 +1174,7 @@ export default function ChatPage() {
                         {winner === 'council' && <span className="font-mono text-xs uppercase tracking-[0.1em] text-accent">Selected</span>}
                       </div>
                       <div className="mt-2 flex items-baseline gap-2">
-                        <span className="font-display text-3xl text-text">{councilScore?.toFixed(1) ?? '—'}</span>
+                        <span className="text-3xl text-text">{councilScore?.toFixed(1) ?? '—'}</span>
                         <span className="text-xs text-subtle">/ 10</span>
                       </div>
                       <p className="mt-2 text-xs leading-relaxed text-muted">
@@ -1188,7 +1188,7 @@ export default function ChatPage() {
                         {winner === 'single' && <span className="font-mono text-xs uppercase tracking-[0.1em] text-accent">Selected</span>}
                       </div>
                       <div className="mt-2 flex items-baseline gap-2">
-                        <span className="font-display text-3xl text-text">{singleScore?.toFixed(1) ?? '—'}</span>
+                        <span className="text-3xl text-text">{singleScore?.toFixed(1) ?? '—'}</span>
                         <span className="text-xs text-subtle">/ 10</span>
                       </div>
                       <p className="mt-2 text-xs leading-relaxed text-muted">
@@ -1319,7 +1319,7 @@ export default function ChatPage() {
                 </svg>
               </button>
               <div className="min-w-0">
-                <h1 className="mb-1 truncate font-display text-lg leading-tight text-text">
+                <h1 className="mb-1 truncate text-lg leading-tight text-text">
                   {chat.topic || chat.title}
                 </h1>
                 <div className="flex items-center gap-2">
@@ -1525,7 +1525,7 @@ export default function ChatPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="eyebrow">Room brief</p>
-                <h2 className="mt-2 font-display text-xl text-text">
+                <h2 className="mt-2 text-xl text-text">
                   {chat.topic || chat.title}
                 </h2>
               </div>

@@ -176,7 +176,7 @@ export default function PersonasPage() {
 
   if (authLoading) {
     return (
-      <div className="mx-auto max-w-[90rem] px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-10">
         <p className="eyebrow">Loading…</p>
       </div>
     )
@@ -184,7 +184,7 @@ export default function PersonasPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-2xl px-5 py-14">
+      <div className="mx-auto max-w-2xl px-5 py-10">
         <EmptyState
           title="Sign in to manage agents"
           description="Agents are stored against your account."
@@ -199,11 +199,11 @@ export default function PersonasPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <PageHeader
         eyebrow="Agents"
         title="Review-room agents"
-        lede="Each agent has a job and, optionally, tools to check its own claims. Define them once and reuse them inside a decision review room."
+        lede="Agents with a job, a model, and optional tools."
         actions={
           <Button variant="primary" onClick={openCreate}>
             New agent
@@ -272,7 +272,7 @@ export default function PersonasPage() {
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <p className="eyebrow">Council coverage</p>
-                      <h2 className="mt-2 font-display text-2xl text-text">
+                      <h2 className="mt-2 text-2xl text-text">
                         Roles and mandates
                       </h2>
                     </div>
@@ -300,15 +300,15 @@ export default function PersonasPage() {
                       {roleCounts.map((role, roleIndex) => (
                         <tr key={role.value} className="border-b border-line last:border-b-0">
                           <td className="px-5 py-4">
-                            <span className="font-display text-base text-text">{role.label}</span>
+                            <span className="text-base text-text">{role.label}</span>
                           </td>
                           <td className="px-4 py-4 text-sm text-muted">{role.hint}</td>
                           <td className="px-4 py-4 font-mono text-sm text-text">{role.count}</td>
                           <td className="px-5 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="h-2.5 w-24 overflow-hidden bg-surface-3">
+                              <div className="h-2.5 w-24 overflow-hidden rounded-full bg-surface-3">
                                 <div
-                                  className="h-full"
+                                  className="h-full rounded-full"
                                   style={{
                                     width: `${(role.count / maxRoleCount) * 100}%`,
                                     backgroundColor: `var(--chart-${(roleIndex % 5) + 1})`,
@@ -332,7 +332,7 @@ export default function PersonasPage() {
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
                       <p className="eyebrow">Agent library</p>
-                      <h2 className="mt-2 font-display text-2xl text-text">
+                      <h2 className="mt-2 text-2xl text-text">
                         Available to the council
                       </h2>
                     </div>
@@ -343,7 +343,7 @@ export default function PersonasPage() {
                 {personas.length === 0 ? (
                   <div className="p-6">
                     <div className="border border-dashed border-line bg-surface-2/40 px-6 py-10 text-center">
-                      <p className="font-display text-2xl text-text">No agents configured</p>
+                      <p className="text-2xl text-text">No agents configured</p>
                       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
                         Start with a researcher and a critic. Add a synthesizer when the
                         council needs to turn disagreement into a recommendation.
@@ -361,7 +361,7 @@ export default function PersonasPage() {
                           <div className="flex items-start gap-3">
                             <Avatar name={persona.name} size="md" />
                             <div className="min-w-0 flex-1">
-                              <h3 className="break-words font-display text-base text-text">
+                              <h3 className="break-words text-base text-text">
                                 {persona.name}
                               </h3>
                               <p className="mt-0.5 font-mono text-xs uppercase tracking-[0.1em] text-accent">
@@ -438,15 +438,6 @@ export default function PersonasPage() {
                     Keep the transcript attached to the decision record.
                   </li>
                 </ul>
-              </Card>
-
-              <Card>
-                <p className="eyebrow">In the record</p>
-                <p className="mt-3 text-xs leading-relaxed text-muted">
-                  Agents argue inside a review room, but the decision, evidence, and approvals
-                  remain the durable artifact. The transcript is attached to the record — not the
-                  other way around.
-                </p>
               </Card>
             </aside>
           </div>

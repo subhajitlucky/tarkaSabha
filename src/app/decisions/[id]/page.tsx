@@ -420,7 +420,7 @@ export default function DecisionPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-[90rem] px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-10">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -430,7 +430,7 @@ export default function DecisionPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Sign in to open this decision"
           description="Decision records are private to workspace members."
@@ -446,7 +446,7 @@ export default function DecisionPage() {
 
   if (notFound) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Decision not found"
           description="It may have been removed, or you may not be a member of its workspace."
@@ -462,7 +462,7 @@ export default function DecisionPage() {
 
   if (!decision) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <p role="alert" className="rounded-[4px] border border-line bg-surface p-5 text-sm text-danger">
           {loadError || 'Could not load this decision.'}
         </p>
@@ -473,7 +473,7 @@ export default function DecisionPage() {
   const canEdit = canEditDecisions(decision.role)
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs uppercase tracking-[0.12em] text-subtle">
         <Link href="/workspaces" className="transition-colors hover:text-accent">
           Workspaces
@@ -608,7 +608,7 @@ export default function DecisionPage() {
               <p className="eyebrow">Decision debt</p>
               <DebtBadge score={decision.debtScore} />
             </div>
-            <p className="font-display text-2xl text-text">{decision.debtScore}/100</p>
+            <p className="text-2xl text-text">{decision.debtScore}/100</p>
             <p className="whitespace-pre-line text-xs leading-relaxed text-muted">
               {decision.debtRationale || 'No debt rationale recorded yet.'}
             </p>
@@ -698,7 +698,7 @@ export default function DecisionPage() {
             <details className="border border-line bg-surface">
               <summary className="cursor-pointer list-none p-4">
                 <p className="eyebrow">Review state</p>
-                <h2 className="mt-2 font-display text-xl text-text">Move the decision</h2>
+                <h2 className="mt-2 text-xl text-text">Move the decision</h2>
               </summary>
 
               <div className="space-y-4 border-t border-line p-4">
@@ -746,7 +746,7 @@ export default function DecisionPage() {
             <details className="border border-line bg-surface">
               <summary className="cursor-pointer list-none p-4">
                 <p className="eyebrow">Add evidence</p>
-                <h2 className="mt-2 font-display text-xl text-text">Put a source on record</h2>
+                <h2 className="mt-2 text-xl text-text">Put a source on record</h2>
               </summary>
 
               <form onSubmit={handleAddEvidence} className="space-y-4 border-t border-line p-4">

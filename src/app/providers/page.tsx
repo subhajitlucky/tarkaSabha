@@ -215,7 +215,7 @@ export default function ProvidersPage() {
 
   if (authLoading) {
     return (
-      <div className="mx-auto max-w-[90rem] px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-10">
         <p className="eyebrow">Loading…</p>
       </div>
     )
@@ -223,7 +223,7 @@ export default function ProvidersPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-2xl px-5 py-14">
+      <div className="mx-auto max-w-2xl px-5 py-10">
         <EmptyState
           title="Sign in to manage providers"
           description="Keys are encrypted against your account and never leave the server."
@@ -238,11 +238,11 @@ export default function ProvidersPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <PageHeader
         eyebrow="Providers"
         title="Model providers"
-        lede="Bring your own key from any of twelve providers. Keys are encrypted with AES-256-GCM before storage and are never sent to the browser."
+        lede="Bring your own key. Keys are encrypted before storage and never sent to the browser."
         actions={
           <Button variant="primary" onClick={openCreate}>
             New provider
@@ -298,7 +298,7 @@ export default function ProvidersPage() {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div>
                     <p className="eyebrow">Catalog coverage</p>
-                    <h2 className="mt-2 font-display text-2xl text-text">
+                    <h2 className="mt-2 text-2xl text-text">
                       Keys across the provider catalogue
                     </h2>
                   </div>
@@ -335,11 +335,11 @@ export default function ProvidersPage() {
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span className="text-sm text-muted">Connected keys</span>
-                      <span className="font-display text-xl text-text">{providers.length}</span>
+                      <span className="text-xl text-text">{providers.length}</span>
                     </div>
                     <div className="flex items-start justify-between gap-4">
                       <span className="text-sm text-muted">Catalog size</span>
-                      <span className="font-display text-xl text-text">
+                      <span className="text-xl text-text">
                         {PROVIDER_TYPES.length}
                       </span>
                     </div>
@@ -355,7 +355,7 @@ export default function ProvidersPage() {
                 <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
                   <div>
                     <p className="eyebrow">Connected keys</p>
-                    <h2 className="mt-2 font-display text-2xl text-text">
+                    <h2 className="mt-2 text-2xl text-text">
                       Your provider library
                     </h2>
                   </div>
@@ -367,7 +367,7 @@ export default function ProvidersPage() {
                 {providers.length === 0 ? (
                   <div className="p-5">
                     <div className="border border-dashed border-line bg-surface-2/40 px-6 py-8 text-center">
-                      <p className="font-display text-xl text-text">No keys connected</p>
+                      <p className="text-xl text-text">No keys connected</p>
                       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
                         Choose a provider from the catalogue below. Until a key exists, agents
                         cannot run a review room.
@@ -466,7 +466,7 @@ export default function ProvidersPage() {
                 <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
                   <div>
                     <p className="eyebrow">Provider catalogue</p>
-                    <h2 className="mt-2 font-display text-2xl text-text">
+                    <h2 className="mt-2 text-2xl text-text">
                       Supported model providers
                     </h2>
                   </div>
@@ -572,14 +572,6 @@ export default function ProvidersPage() {
                 </p>
                 <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
                   An individual agent can override the default with a specific key.
-                </p>
-              </Card>
-
-              <Card>
-                <p className="eyebrow">Why BYOK</p>
-                <p className="mt-3 text-xs leading-relaxed text-muted">
-                  Your keys stay with your workspace. Provider choice is explicit, spend is visible
-                  to you, and a single account is not shared across every diligence room.
                 </p>
               </Card>
             </aside>

@@ -73,7 +73,7 @@ export default function DossierPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-6xl px-5 py-14">
+      <div className="mx-auto max-w-6xl px-5 py-10">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -83,7 +83,7 @@ export default function DossierPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Sign in to view this dossier"
           description="Deal dossiers are private to their workspace."
@@ -103,7 +103,7 @@ export default function DossierPage() {
 
   if (notFound || !dossier) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title={notFound ? 'Dossier not found' : 'Could not load this dossier'}
           description={error || 'It may have been removed, or you may not be a member of this workspace.'}
@@ -119,12 +119,18 @@ export default function DossierPage() {
 
   const canEdit = canEditDecisions(dossier.role)
 
+  const statusLabel =
+    dossier.status === 'PUBLISHED'
+      ? 'Published'
+      : dossier.status === 'DRAFT'
+        ? 'Draft'
+        : dossier.status
   const sections = Array.from(dossier.content.matchAll(/^##\s+(.+)$/gm)).map((match) =>
     match[1].trim()
   )
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14 print:max-w-none print:px-0">
+    <div className="mx-auto max-w-[90rem] px-5 py-10 print:max-w-none print:px-0">
       <div className="mb-6 print:hidden">
         <Link
           href={`/workspaces/${id}`}
@@ -147,7 +153,7 @@ export default function DossierPage() {
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Badge tone={dossier.status === 'PUBLISHED' ? 'success' : 'warning'}>
-              {dossier.status}
+              {statusLabel}
             </Badge>
             <Badge tone="outline">SHA-256 {dossier.contentHash.slice(0, 16)}…</Badge>
           </div>
@@ -225,7 +231,7 @@ export default function DossierPage() {
                 <dt className="text-muted">Status</dt>
                 <dd>
                   <Badge tone={dossier.status === 'PUBLISHED' ? 'success' : 'warning'}>
-                    {dossier.status}
+                    {statusLabel}
                   </Badge>
                 </dd>
               </div>
@@ -257,9 +263,8 @@ export default function DossierPage() {
           <Card>
             <p className="eyebrow">How to read this</p>
             <p className="mt-3 text-xs leading-relaxed text-muted">
-              Start with the executive summary, then use the contents rail to inspect the decision
-              inventory, evidence, contradictions, and open questions. A source path is a
-              coordinate, not proof of runtime behavior.
+              Use the contents rail to inspect the decision inventory, evidence, contradictions,
+              and open questions. A source path is a coordinate, not proof of runtime behavior.
             </p>
           </Card>
         </aside>

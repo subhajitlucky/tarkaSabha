@@ -54,7 +54,7 @@ export function Shell({ children }: { children: ReactNode }) {
         className={
           app
             ? 'flex-1 pt-[65px] lg:pl-[15.5rem] lg:pt-0 print:pl-0 print:pt-0'
-            : 'flex-1 pt-[65px] print:pt-0'
+            : 'marketing flex-1 pt-[65px] print:pt-0'
         }
       >
         {children}

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useTheme } from './ThemeProvider'
 import { useAuth } from './AuthProvider'
+import { Avatar } from './ui/Avatar'
 import { Button } from './ui/Button'
 import { cx } from './ui/cx'
 
@@ -17,21 +18,64 @@ const PUBLIC_LINKS = [
 ]
 
 const APP_LINKS = [
-  { href: '/workspaces', label: 'Workspaces' },
-  { href: '/history', label: 'Review rooms' },
+  { href: '/workspaces', label: 'Workspaces', icon: 'workspaces' as const },
+  { href: '/history', label: 'Review rooms', icon: 'history' as const },
 ]
 
 const TOOL_LINKS = [
-  { href: '/personas', label: 'Agents' },
-  { href: '/providers', label: 'Providers' },
+  { href: '/personas', label: 'Agents', icon: 'agents' as const },
+  { href: '/providers', label: 'Providers', icon: 'providers' as const },
 ]
+
+function NavIcon({ name }: { name: 'workspaces' | 'history' | 'agents' | 'providers' | 'sample' }) {
+  if (name === 'workspaces') {
+    return (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      </svg>
+    )
+  }
+  if (name === 'history') {
+    return (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+        <path d="M8 9h8M8 13h5" />
+      </svg>
+    )
+  }
+  if (name === 'agents') {
+    return (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <circle cx="9" cy="8" r="3" />
+        <path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M18 20a6 6 0 0 0-2-4.5" />
+      </svg>
+    )
+  }
+  if (name === 'providers') {
+    return (
+      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="14" rx="2" />
+        <path d="M7 9h4M7 13h2M15 12h2v3h-2z" />
+      </svg>
+    )
+  }
+  return (
+    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6M8 13h8M8 17h6" />
+    </svg>
+  )
+}
 
 function Wordmark({ compact = false }: { compact?: boolean }) {
   return (
     <Link href="/" className="group flex items-center gap-3">
       <span
         aria-hidden="true"
-        className="flex h-9 w-9 shrink-0 items-center justify-center border border-accent-line bg-accent-soft font-display text-base text-accent transition-colors group-hover:bg-accent group-hover:text-accent-ink"
+        className="flex h-9 w-9 shrink-0 items-center justify-center border border-accent bg-accent font-display text-base text-accent-ink shadow-sm transition-colors group-hover:border-accent-hover group-hover:bg-accent-hover"
       >
         त
       </span>
@@ -52,7 +96,7 @@ function Wordmark({ compact = false }: { compact?: boolean }) {
 export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
   const pathname = usePathname()
   const { theme, toggleTheme } = useTheme()
-  const { isAuthenticated, signOut } = useAuth()
+  const { isAuthenticated, signOut, user } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   useEffect(() => {
@@ -161,12 +205,13 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
               href={link.href}
               aria-current={isActive(link.href) ? 'page' : undefined}
               className={cx(
-                'block border-l-2 px-3 py-2.5 text-sm transition-colors',
+                'flex items-center gap-2.5 rounded-[6px] px-3 py-2.5 text-sm transition-colors',
                 isActive(link.href)
-                  ? 'border-accent bg-surface-2 font-semibold text-text'
-                  : 'border-transparent text-muted hover:bg-surface-2 hover:text-text'
+                  ? 'bg-nav-active font-semibold text-nav-active-text'
+                  : 'text-muted hover:bg-surface-2 hover:text-text'
               )}
             >
+              <NavIcon name={link.icon} />
               {link.label}
             </Link>
           ))}
@@ -180,12 +225,13 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
               href={link.href}
               aria-current={isActive(link.href) ? 'page' : undefined}
               className={cx(
-                'block px-3 py-2 text-sm transition-colors',
+                'flex items-center gap-2.5 rounded-[6px] px-3 py-2 text-sm transition-colors',
                 isActive(link.href)
-                  ? 'bg-surface-2 font-semibold text-text'
+                  ? 'bg-nav-active font-semibold text-nav-active-text'
                   : 'text-muted hover:bg-surface-2 hover:text-text'
               )}
             >
+              <NavIcon name={link.icon} />
               {link.label}
             </Link>
           ))}
@@ -194,13 +240,25 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
         <p className="eyebrow px-3 pb-2 pt-7">Public</p>
         <Link
           href="/diligence"
-          className="block px-3 py-2 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
+          className="flex items-center gap-2.5 rounded-[6px] px-3 py-2 text-sm text-muted transition-colors hover:bg-surface-2 hover:text-text"
         >
+          <NavIcon name="sample" />
           Sample dossier
         </Link>
       </div>
 
       <div className="border-t border-line p-4">
+        <div className="mb-3 flex items-center gap-3 rounded-[6px] border border-line bg-surface-2/60 px-2.5 py-2">
+          <Avatar name={user?.name || user?.email || 'Account'} size="sm" />
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold text-text">
+              {user?.name || 'Signed in'}
+            </p>
+            <p className="truncate font-mono text-[0.58rem] text-subtle">
+              {user?.email || 'Workspace member'}
+            </p>
+          </div>
+        </div>
         <div className="mb-3 flex items-center gap-2 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-subtle">
           <span className="h-1.5 w-1.5 rounded-full bg-accent" />
           Private by default
@@ -277,12 +335,13 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
                     onClick={() => setIsMenuOpen(false)}
                     aria-current={isActive(link.href) ? 'page' : undefined}
                     className={cx(
-                      'block border-l-2 px-3 py-2.5 text-sm transition-colors',
+                      'flex items-center gap-2.5 rounded-[6px] px-3 py-2.5 text-sm transition-colors',
                       isActive(link.href)
-                        ? 'border-accent bg-surface-2 font-semibold text-text'
-                        : 'border-transparent text-muted hover:bg-surface-2 hover:text-text'
+                        ? 'bg-nav-active font-semibold text-nav-active-text'
+                        : 'text-muted hover:bg-surface-2 hover:text-text'
                     )}
                   >
+                    <NavIcon name={link.icon} />
                     {link.label}
                   </Link>
                 ))}

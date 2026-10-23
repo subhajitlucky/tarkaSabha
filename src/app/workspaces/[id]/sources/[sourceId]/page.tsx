@@ -201,7 +201,7 @@ export default function SourcePage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-[90rem] px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-10">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -211,7 +211,7 @@ export default function SourcePage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Sign in to view this source"
           description="Source snapshots are private to their workspace."
@@ -227,7 +227,7 @@ export default function SourcePage() {
 
   if (notFound || !source) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title={notFound ? 'Source not found' : 'Could not load this source'}
           description={error || 'It may have been removed, or you may not be a member of this workspace.'}
@@ -251,9 +251,10 @@ export default function SourcePage() {
     (snapshot) => snapshot.kind === 'PULL_REQUEST'
   )
   const issues = source.snapshots.filter((snapshot) => snapshot.kind === 'ISSUE')
+  const statusLabel = source.status.charAt(0) + source.status.slice(1).toLowerCase()
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <div className="mb-6">
         <Link
           href={`/workspaces/${id}`}
@@ -286,7 +287,7 @@ export default function SourcePage() {
                 : 'warning'
           }
         >
-          {source.status}
+          {statusLabel}
         </Badge>
         <span className="font-mono text-xs text-subtle">
           {source.fileCount} files indexed · {source.commitCount} commits ·{' '}
@@ -378,7 +379,7 @@ export default function SourcePage() {
               <li key={candidate.id}>
                 <Card className="space-y-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-display text-base leading-snug text-text">
+                    <h3 className="text-base leading-snug text-text">
                       {candidate.title}
                     </h3>
                     <ConfidenceBadge confidence={candidate.confidence} />

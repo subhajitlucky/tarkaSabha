@@ -9,9 +9,9 @@ import {
 import { cx } from './cx'
 
 const control =
-  'w-full rounded-[2px] border border-line bg-surface-2 px-3 py-2 text-sm text-text ' +
+  'w-full rounded-[6px] border border-line bg-surface px-3 py-2 text-sm text-text ' +
   'placeholder:text-subtle transition-colors duration-150 ' +
-  'hover:border-line-strong focus:border-accent focus:outline-none'
+  'hover:border-line-strong focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15'
 
 export function Field({
   label,

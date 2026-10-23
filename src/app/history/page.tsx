@@ -78,7 +78,7 @@ export default function HistoryPage() {
     }))
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <PageHeader
         eyebrow="Review rooms"
         title="Past review rooms"
@@ -143,7 +143,7 @@ export default function HistoryPage() {
               <Card flush className="overflow-hidden">
                 <div className="border-b border-line p-5">
                   <p className="eyebrow">Review room blueprint</p>
-                  <h2 className="mt-2 font-display text-2xl text-text">
+                  <h2 className="mt-2 text-2xl text-text">
                     What a room records
                   </h2>
                 </div>
@@ -189,7 +189,7 @@ export default function HistoryPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="eyebrow">Council composition</p>
-                    <h2 className="mt-2 font-display text-2xl text-text">
+                    <h2 className="mt-2 text-2xl text-text">
                       Agents per review room
                     </h2>
                   </div>
@@ -202,15 +202,15 @@ export default function HistoryPage() {
                     <div className="mt-3 space-y-4 text-sm">
                       <div className="flex items-start justify-between gap-4">
                         <span className="text-muted">Rooms</span>
-                        <span className="font-display text-xl text-text">{chats.length}</span>
+                        <span className="text-xl text-text">{chats.length}</span>
                       </div>
                       <div className="flex items-start justify-between gap-4">
                         <span className="text-muted">Running</span>
-                        <span className="font-display text-xl text-text">{running}</span>
+                        <span className="text-xl text-text">{running}</span>
                       </div>
                       <div className="flex items-start justify-between gap-4">
                         <span className="text-muted">Average council</span>
-                        <span className="font-display text-xl text-text">
+                        <span className="text-xl text-text">
                           {(totalSeats / Math.max(1, chats.length)).toFixed(1)}
                         </span>
                       </div>
@@ -223,7 +223,7 @@ export default function HistoryPage() {
                 <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
                   <div>
                     <p className="eyebrow">Review room register</p>
-                    <h2 className="mt-2 font-display text-2xl text-text">
+                    <h2 className="mt-2 text-2xl text-text">
                       Filed transcripts
                     </h2>
                   </div>
@@ -252,7 +252,7 @@ export default function HistoryPage() {
                             <td className="max-w-[26rem] px-5 py-4">
                               <Link
                                 href={`/chat/${chat.id}`}
-                                className="break-words font-display text-lg leading-tight text-text transition-colors group-hover:text-accent"
+                                className="break-words text-lg leading-tight text-text transition-colors group-hover:text-accent"
                               >
                                 {chat.topic || chat.title}
                               </Link>

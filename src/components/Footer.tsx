@@ -23,7 +23,7 @@ export function Footer() {
           <div className="flex items-center gap-3">
             <span
               aria-hidden="true"
-              className="flex h-9 w-9 items-center justify-center border border-accent-line bg-accent-soft font-display text-sm text-accent"
+              className="flex h-9 w-9 items-center justify-center border border-accent bg-accent font-display text-sm text-accent-ink"
             >
               त
             </span>

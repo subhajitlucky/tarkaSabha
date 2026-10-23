@@ -128,11 +128,11 @@ export default function WorkspacesPage() {
     }))
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <PageHeader
         eyebrow="Decision workspace"
         title="Workspaces"
-        lede="One room per deal or decision. Collect source-backed evidence, keep the open questions visible, and leave an approval record."
+        lede="One room per deal, with evidence, open questions, and an approval record."
         actions={
           isAuthenticated ? (
             <Link href="#new-workspace">
@@ -202,7 +202,7 @@ export default function WorkspacesPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="eyebrow">Portfolio pulse</p>
-                    <h2 className="mt-2 font-display text-2xl text-text">
+                    <h2 className="mt-2 text-2xl text-text">
                       Decision volume by matter
                     </h2>
                   </div>
@@ -217,25 +217,21 @@ export default function WorkspacesPage() {
                       <div className="mt-3 space-y-4 text-sm">
                         <div className="flex items-start justify-between gap-4">
                           <span className="text-muted">Active matters</span>
-                          <span className="font-display text-xl text-text">
+                          <span className="text-xl text-text">
                             {activeMatters}/{workspaces.length}
                           </span>
                         </div>
                         <div className="flex items-start justify-between gap-4">
                           <span className="text-muted">Decisions per matter</span>
-                          <span className="font-display text-xl text-text">
+                          <span className="text-xl text-text">
                             {(totalDecisions / Math.max(1, workspaces.length)).toFixed(1)}
                           </span>
                         </div>
                         <div className="flex items-start justify-between gap-4">
                           <span className="text-muted">Team seats</span>
-                          <span className="font-display text-xl text-text">{totalMembers}</span>
+                          <span className="text-xl text-text">{totalMembers}</span>
                         </div>
                       </div>
-                      <p className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
-                        The portfolio view is a live snapshot. Open a matter to see its evidence
-                        coverage, open questions, and dossier versions.
-                      </p>
                     </div>
                   </div>
                 ) : (
@@ -259,7 +255,7 @@ export default function WorkspacesPage() {
                 <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
                   <div>
                     <p className="eyebrow">Matter register</p>
-                    <h2 className="mt-2 font-display text-2xl text-text">
+                    <h2 className="mt-2 text-2xl text-text">
                       Open diligence rooms
                     </h2>
                   </div>
@@ -305,7 +301,7 @@ export default function WorkspacesPage() {
                                   <div className="min-w-0">
                                     <Link
                                       href={`/workspaces/${workspace.id}`}
-                                      className="break-words font-display text-xl leading-tight text-text transition-colors group-hover:text-accent"
+                                      className="break-words text-xl leading-tight text-text transition-colors group-hover:text-accent"
                                     >
                                       {workspace.name}
                                     </Link>
@@ -340,7 +336,7 @@ export default function WorkspacesPage() {
             <aside className="space-y-6">
               <Card id="new-workspace" className="scroll-mt-24">
                 <p className="eyebrow">New matter</p>
-                <h2 className="mt-2 font-display text-2xl text-text">Open a case file</h2>
+                <h2 className="mt-2 text-2xl text-text">Open a case file</h2>
                 <p className="mt-2 text-sm leading-relaxed text-muted">
                   Name it after the decision under review. Evidence and approvals are scoped to
                   this room.

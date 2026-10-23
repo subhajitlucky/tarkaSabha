@@ -101,7 +101,7 @@ export function WorkspaceDossierPanel({
               key={dossier.id}
               className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-line px-1 py-4 last:border-b-0"
             >
-              <p className="font-display text-lg text-text">Version {dossier.version}</p>
+              <p className="text-lg text-text">Version {dossier.version}</p>
               <Badge tone={dossier.status === 'PUBLISHED' ? 'success' : 'neutral'}>
                 {dossier.status}
               </Badge>

@@ -32,7 +32,10 @@ const confidenceTones: Record<string, Tone> = {
 }
 
 function label(value: string): string {
-  return value.replaceAll('_', ' ')
+  return value
+    .toLowerCase()
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 export function DecisionStatusBadge({ status }: { status: string }) {
@@ -40,7 +43,7 @@ export function DecisionStatusBadge({ status }: { status: string }) {
 }
 
 export function ImpactBadge({ impact }: { impact: string }) {
-  return <Badge tone={impactTones[impact] ?? 'outline'}>{impact}</Badge>
+  return <Badge tone={impactTones[impact] ?? 'outline'}>{label(impact)}</Badge>
 }
 
 export function EvidenceStatusBadge({ status }: { status: string }) {
@@ -48,11 +51,11 @@ export function EvidenceStatusBadge({ status }: { status: string }) {
 }
 
 export function ConfidenceBadge({ confidence }: { confidence: string }) {
-  return <Badge tone={confidenceTones[confidence] ?? 'neutral'}>{confidence}</Badge>
+  return <Badge tone={confidenceTones[confidence] ?? 'neutral'}>{label(confidence)}</Badge>
 }
 
 export function RoleBadge({ role }: { role: string }) {
-  return <Badge tone={role === 'VIEWER' ? 'outline' : 'accent'}>{role}</Badge>
+  return <Badge tone={role === 'VIEWER' ? 'outline' : 'accent'}>{label(role)}</Badge>
 }
 
 export function DebtBadge({ score }: { score: number }) {

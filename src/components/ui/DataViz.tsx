@@ -31,7 +31,7 @@ export function MetricCard({
       <p className="font-mono text-[0.62rem] uppercase tracking-[0.14em] text-subtle">
         {label}
       </p>
-      <p className="mt-2 font-display text-3xl leading-none text-text">{value}</p>
+      <p className="mt-2 text-3xl leading-none text-text">{value}</p>
       {detail && <p className="mt-2 text-xs leading-relaxed text-muted">{detail}</p>}
     </Card>
   )
@@ -58,9 +58,9 @@ export function BarList({
               {item.meta ?? item.value}
             </span>
           </div>
-          <div className="mt-1.5 h-2.5 overflow-hidden bg-surface-3">
+          <div className="mt-1.5 h-2.5 overflow-hidden rounded-full bg-surface-3">
             <div
-              className="h-full transition-[width] duration-500"
+              className="h-full rounded-full transition-[width] duration-500"
               style={{
                 width: `${(item.value / max) * 100}%`,
                 backgroundColor: item.color ?? 'var(--chart-1)',
@@ -129,6 +129,7 @@ export function DonutChart({
                 fill="none"
                 stroke={color}
                 strokeWidth="17"
+                strokeLinecap="round"
                 strokeDasharray={`${arc.length} ${circumference - arc.length}`}
                 strokeDashoffset={-arc.offset}
                 transform="rotate(-90 60 60)"
@@ -137,7 +138,7 @@ export function DonutChart({
           })}
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="font-display text-2xl leading-none text-text">{centerValue}</span>
+          <span className="text-2xl leading-none text-text">{centerValue}</span>
           <span className="mt-1 max-w-16 text-center font-mono text-[0.52rem] uppercase leading-tight tracking-[0.1em] text-subtle">
             {centerLabel}
           </span>
@@ -176,7 +177,7 @@ export function StackedBar({
   )
 
   return (
-    <div className={cx('flex h-2.5 overflow-hidden bg-surface-3', className)}>
+    <div className={cx('flex h-2.5 overflow-hidden rounded-full bg-surface-3', className)}>
       {segments.map((segment, index) => (
         <div
           key={segment.label}

@@ -122,11 +122,9 @@ export default function ProductPage() {
               The decision record is the product.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted">
-              Tarka Sabha gives a technical diligence team one place to capture what was decided,
-              prove it with source evidence, record approvals, and publish a dossier an investment
-              committee can read.
+              One place to capture what was decided, prove it with source evidence, record approvals, and publish a dossier.
             </p>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="hero-actions mt-8">
               <Link href="/workspaces">
                 <Button variant="primary" size="lg">
                   Open a workspace
@@ -175,8 +173,7 @@ export default function ProductPage() {
               A chat tells you what was discussed. A record tells you what was decided.
             </h2>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-              The transcript is useful while the room is open. The decision, evidence, and
-              approvals are what survive the meeting — and what a buyer or board actually needs.
+              The transcript is useful while the room is open. The decision, evidence, and approvals survive it.
             </p>
             <Link href="/diligence" className="mt-6 inline-block">
               <Button variant="secondary" size="sm">
@@ -237,17 +234,17 @@ export default function ProductPage() {
             {
               eyebrow: 'Technical M&A',
               title: 'Pre-sign diligence',
-              body: 'Turn an engineering review into a source-backed record of what the target has chosen, where the evidence is thin, and what to ask before signing.',
+              body: 'Turn an engineering review into a source-backed record of what the target chose and what remains unresolved.',
             },
             {
               eyebrow: 'Portfolio operations',
               title: 'Post-close review',
-              body: 'Keep revisit obligations, decision debt, and unresolved risks visible after the deal closes, when the original deal team has moved on.',
+              body: 'Keep revisit obligations and unresolved risk visible after the deal team moves on.',
             },
             {
               eyebrow: 'Technical advisory',
               title: 'A shared evidence surface',
-              body: 'Give operators, advisors, and investment teams one record to review — without forwarding a chat transcript or a folder of screenshots.',
+              body: 'Give operators, advisors, and investors one record to review.',
             },
           ].map((item) => (
             <Card key={item.title} className="flex h-full flex-col">
@@ -270,12 +267,10 @@ export default function ProductPage() {
           <div>
             <p className="eyebrow">Trust by default</p>
             <h2 className="mt-4 max-w-xl text-4xl leading-[1.02] text-text">
-              Diligence material should not leak through its own tooling.
+              Diligence material stays private.
             </h2>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-              Workspaces are private. Provider keys are bring-your-own and encrypted before
-              storage. Share links are hashed and expire. Reports and dossiers carry a content
-              hash, so the record can be checked later.
+              Private workspaces, encrypted provider keys, expiring share links, and hashed dossiers.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">

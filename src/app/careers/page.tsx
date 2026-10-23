@@ -45,11 +45,9 @@ export default function CareersPage() {
               Work on the record.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
-              Tarka Sabha is a small team building the evidence layer for technical M&A. We care
-              about source-backed reasoning, legible records, and tools that make a reviewer’s job
-              harder to fake.
+              A small team building the evidence layer for technical M&A.
             </p>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="hero-actions mt-8">
               <Link href="/feedback">
                 <Button variant="primary" size="lg">
                   Introduce yourself
@@ -107,34 +105,6 @@ export default function CareersPage() {
             We do not have a public list of open reqs. Send a note with the work you want to do,
             the evidence you can show for it, and the kind of team you want to join.
           </p>
-        </div>
-      </section>
-
-      <section className="bg-bg">
-        <div className="mx-auto grid max-w-[88rem] gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-10">
-          <div>
-            <p className="eyebrow">The bar</p>
-            <h2 className="mt-3 max-w-md text-4xl leading-[1.02] text-text">
-              Evidence over confidence.
-            </h2>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-              We are not looking for the loudest opinion in the room. We are looking for people who
-              can make a claim specific, attach the source, and change their mind when the record
-              says so.
-            </p>
-          </div>
-          <div className="space-y-4">
-            {[
-              ['Show your work', 'A portfolio, a repository, a decision memo, or a real diligence artifact is more useful than a list of adjectives.'],
-              ['Write clearly', 'The product is a record. If you can make a complex decision legible, you will fit.'],
-              ['Respect the limits', 'Knowing what a source cannot prove is part of the job.'],
-            ].map(([title, body]) => (
-              <div key={title} className="border-t border-line pt-4">
-                <h3 className="font-display text-xl text-text">{title}</h3>
-                <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted">{body}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

@@ -161,7 +161,7 @@ export default function DiligencePage() {
       <PageHeader
         eyebrow="Decision diligence"
         title="Know what the code decided before you sign."
-        lede="A decision diligence sprint turns a target’s technical decisions into a source-backed dossier: what was decided, the evidence behind it, what contradicts the story, and what is still unresolved."
+        lede="A source-backed dossier of what the target decided, what proves it, and what remains unresolved."
         actions={
           <Link href="/diligence-sample.md" download>
             <Button variant="primary">Download sample dossier</Button>

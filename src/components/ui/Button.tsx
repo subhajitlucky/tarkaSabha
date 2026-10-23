@@ -16,7 +16,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
  */
 const base =
   'inline-flex items-center justify-center gap-2 font-semibold tracking-[-0.01em] select-none ' +
-  'rounded-[4px] border transition-[background-color,border-color,color,box-shadow,transform] duration-150 ' +
+  'rounded-[6px] border transition-[background-color,border-color,color,box-shadow,transform] duration-150 ' +
   'disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-px'
 
@@ -33,8 +33,8 @@ const variants: Record<Variant, string> = {
 
 const sizes: Record<Size, string> = {
   sm: 'text-[0.8125rem] px-3 py-1.5 tracking-[0.01em]',
-  md: 'text-sm px-4 py-2.5',
-  lg: 'text-[0.9375rem] px-5 py-3',
+  md: 'text-sm px-4 py-2',
+  lg: 'text-[0.9375rem] px-5 py-2.5',
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(

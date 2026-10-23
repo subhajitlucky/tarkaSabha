@@ -204,7 +204,7 @@ export function DecisionPins({
               className="space-y-2 border-b border-line py-5 last:border-b-0"
             >
                 <div className="flex flex-wrap items-center gap-2">
-                  <h3 className="font-display text-lg leading-snug text-text">
+                  <h3 className="text-lg leading-snug text-text">
                     {pin.decisionPoint}
                   </h3>
                   <Badge tone={pin.status === 'ACTIVE' ? 'success' : 'outline'}>

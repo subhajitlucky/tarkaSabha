@@ -72,7 +72,7 @@ export default function ActivityPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto max-w-[90rem] px-5 py-14">
+      <div className="mx-auto max-w-[90rem] px-5 py-10">
         <p className="py-20 text-center font-mono text-xs uppercase tracking-[0.14em] text-subtle">
           Loading…
         </p>
@@ -82,7 +82,7 @@ export default function ActivityPage() {
 
   if (!isAuthenticated) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Sign in to view this activity"
           description="Workspace activity is private to its members."
@@ -98,7 +98,7 @@ export default function ActivityPage() {
 
   if (notFound) {
     return (
-      <div className="mx-auto max-w-3xl px-5 py-14">
+      <div className="mx-auto max-w-3xl px-5 py-10">
         <EmptyState
           title="Workspace not found"
           description="You may not be a member of this workspace."
@@ -120,6 +120,11 @@ export default function ActivityPage() {
     if (!value) return event.createdAt
     return new Date(event.createdAt) > new Date(value) ? event.createdAt : value
   }, null)
+  const actionLabel = (action: string) =>
+    action
+      .split('.')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' · ')
   const actionTone = (action: string) => {
     if (action.includes('approved') || action.includes('published')) return 'success' as const
     if (action.includes('created') || action.includes('added')) return 'info' as const
@@ -128,7 +133,7 @@ export default function ActivityPage() {
   }
 
   return (
-    <div className="mx-auto max-w-[90rem] px-5 py-14">
+    <div className="mx-auto max-w-[90rem] px-5 py-10">
       <div className="mb-6">
         <Link
           href={`/workspaces/${id}`}
@@ -199,7 +204,7 @@ export default function ActivityPage() {
           <div className="flex flex-wrap items-end justify-between gap-3 border-b border-line p-5">
             <div>
               <p className="eyebrow">Event register</p>
-              <h2 className="mt-2 font-display text-2xl text-text">What happened</h2>
+              <h2 className="mt-2 text-2xl text-text">What happened</h2>
             </div>
             <span className="font-mono text-xs text-subtle">{events.length} events</span>
           </div>
@@ -231,7 +236,7 @@ export default function ActivityPage() {
                     </td>
                     <td className="px-3 py-4">
                       <Badge tone={actionTone(event.action)}>
-                        {event.action.replaceAll('.', ' · ')}
+                        {actionLabel(event.action)}
                       </Badge>
                     </td>
                     <td className="px-3 py-4 text-sm text-muted">

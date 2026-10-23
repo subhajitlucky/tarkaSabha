@@ -27,10 +27,9 @@ export default function Home() {
               <span className="text-accent">More evidence.</span>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted">
-              Tarka Sabha turns technical decisions into source-backed evidence and a diligence
-              dossier — built for private-equity teams evaluating software acquisitions.
+              Decision evidence for software M&A.
             </p>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="hero-actions mt-8">
               <Link href="/workspaces">
                 <Button variant="primary" size="lg">
                   Open a workspace
@@ -68,13 +67,11 @@ export default function Home() {
           <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
               <p className="eyebrow">From code to a convincing investment thesis</p>
-              <h2 className="mt-4 max-w-md text-4xl leading-[1.02] text-text">
+              <h2 className="mt-4 max-w-md text-3xl leading-[1.08] text-text">
                 Technical diligence that reads like a financial document.
               </h2>
               <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-                Ingest the repository and docs, identify the decisions already embedded in the
-                code, attach source evidence, and turn the whole record into a dossier an
-                investment committee can read.
+                Ingest the codebase and docs, capture the decisions already made, and publish an evidence-backed dossier.
               </p>
               <Link href="/diligence" className="mt-6 inline-block">
                 <Button variant="secondary" size="sm">
@@ -149,9 +146,7 @@ export default function Home() {
                 Use PostgreSQL as the primary transactional database.
               </h2>
               <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
-                Stronger consistency and transactional guarantees for core payments. Better
-                ecosystem support and operational maturity. Simplifies the data stack and
-                reduces operational complexity.
+                Stronger consistency, better ecosystem support, and a simpler data stack.
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {['Infrastructure', 'Database', 'PostgreSQL'].map((tag) => (
@@ -183,43 +178,9 @@ export default function Home() {
                 ))}
               </div>
               <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
-                Every evidence item is linked to a source path, commit, quote, and where
-                possible, a SHA-256 hash.
+                Every claim carries a path, quote, and hash.
               </p>
             </Card>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-line bg-surface">
-        <div className="mx-auto grid max-w-[88rem] gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-16 lg:px-10">
-          <div>
-            <p className="eyebrow">For deal teams</p>
-            <h2 className="mt-3 max-w-md text-4xl leading-[1.02] text-text">
-              Technical diligence for the people who sign.
-            </h2>
-            <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-              Built for private-equity deal teams, technical advisors, and operating partners who
-              need a record that can survive the investment committee.
-            </p>
-            <Link href="/teams" className="mt-6 inline-block">
-              <Button variant="secondary" size="sm">
-                How we work with teams
-              </Button>
-            </Link>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            {[
-              ['PE deal team', 'A diligence record the investment committee can read without a translator.'],
-              ['Technical advisor', 'A shared evidence surface instead of another exported document.'],
-              ['Operating partner', 'Decision debt and revisit obligations that outlive the deal team.'],
-            ].map(([title, body]) => (
-              <div key={title} className="border border-line bg-bg p-5">
-                <h3 className="font-display text-lg text-text">{title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -232,10 +193,10 @@ export default function Home() {
           </h2>
           <div className="mt-8 max-w-3xl border-y border-line">
             {[
-              ['Is this another code review?', 'No. A code review asks whether a change looks acceptable. A decision record asks what the code has already chosen, who owns that choice, what evidence supports it, and what remains unresolved before signing.'],
-              ['What do we need to start a sprint?', 'A target, access to the repository or source material, the decision area you care about, and the people who can answer questions about production. The output is scoped per deal.'],
-              ['How are shares and private material handled?', 'Workspaces are private by default. Share links are hashed, expiring, and revocable. Provider keys are bring-your-own and encrypted before storage. Dossiers state what they cannot prove.'],
-              ['Does Tarka Sabha replace the data room?', 'No. It gives the deal team a source-backed decision layer alongside the data room, with the open questions attached rather than buried in a thread.'],
+              ['Is this another code review?', 'No. It records what the code has already chosen, who owns the choice, what supports it, and what remains unresolved.'],
+              ['What do we need to start a sprint?', 'A target, source material, the decision area you care about, and the people who can answer production questions.'],
+              ['How is private material handled?', 'Workspaces are private, share links expire, and provider keys are encrypted before storage.'],
+              ['Does this replace the data room?', 'No. It is the decision layer beside the data room, with the open questions attached.'],
             ].map(([question, answer]) => (
               <details key={question} className="group border-b border-line last:border-b-0">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-4 py-4 text-base text-text">

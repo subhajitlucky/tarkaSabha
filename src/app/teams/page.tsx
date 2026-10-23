@@ -53,11 +53,9 @@ export default function TeamsPage() {
               Technical diligence for the people who sign.
             </h1>
             <p className="mt-6 max-w-xl text-base leading-relaxed text-muted">
-              For private-equity deal teams, operating partners, and technical advisors who need
-              more than a code review: a source-backed record of what the target decided, where the
-              evidence is thin, and what to ask before signing.
+              Source-backed technical diligence for private-equity deal teams and their advisors.
             </p>
-            <div className="mt-8 flex flex-wrap gap-2">
+            <div className="hero-actions mt-8">
               <Link href="/feedback">
                 <Button variant="primary" size="lg">
                   Request a diligence sprint
@@ -171,8 +169,7 @@ export default function TeamsPage() {
               A record the other side of the table can read.
             </h2>
             <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
-              The output is not a slide deck with a confidence score. It is a record of what the
-              target has chosen, what supports it, what contradicts it, and what remains unknown.
+              Not a slide deck with a confidence score. A record of what the target chose, what supports it, and what remains unknown.
             </p>
           </div>
           <div className="grid gap-x-8 gap-y-5 sm:grid-cols-2">
@@ -196,10 +193,7 @@ export default function TeamsPage() {
           <Card>
             <p className="eyebrow">What we do not claim</p>
             <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted">
-              A dossier is a record of what the workspace contains at a point in time. It does not
-              prove runtime behavior, key custody, backup encryption, or production configuration,
-              and it is not an audit opinion. The source still has to be verified. The point is to
-              make that verification faster, more legible, and harder to hand-wave.
+              A dossier is a point-in-time record, not an audit opinion. It makes verification faster and more legible.
             </p>
           </Card>
           <Card className="flex flex-col justify-between">
