@@ -21,7 +21,8 @@ const PLANS = [
       'Open questions and residual-risk register',
       'Dossier v1 for the investment committee',
     ],
-    commercial: 'Scoped per deal',
+    price: 'From $7,500',
+    commercial: 'One-time engagement',
     cta: 'Request a sprint',
     href: '/feedback',
   },
@@ -35,7 +36,8 @@ const PLANS = [
       'Review rooms with agent transcripts',
       'Versioned dossiers and expiring share links',
     ],
-    commercial: 'Scoped per team',
+    price: 'From $1,500 / month',
+    commercial: 'Billed monthly',
     cta: 'Open a workspace',
     href: '/workspaces',
     highlighted: true,
@@ -50,7 +52,8 @@ const PLANS = [
       'Decision debt across companies',
       'Audit trail and read-only stakeholder access',
     ],
-    commercial: 'Scoped per portfolio',
+    price: 'From $3,000 / month',
+    commercial: 'Billed monthly',
     cta: 'Talk to us',
     href: '/feedback',
   },
@@ -96,7 +99,7 @@ export default function PricingPage() {
               </Link>
             </div>
             <p className="mt-8 font-mono text-[0.6rem] uppercase tracking-[0.15em] text-subtle">
-              Scoped per engagement · Written scope before work begins
+              Indicative pricing · Written scope before work begins
             </p>
           </div>
 
@@ -140,7 +143,8 @@ export default function PricingPage() {
                   {plan.highlighted && <Badge tone="accent">Recurring</Badge>}
                 </div>
                 <h2 className="mt-5 font-display text-3xl text-text">{plan.name}</h2>
-                <p className="mt-3 text-sm leading-relaxed text-muted">{plan.description}</p>
+                <p className="mt-3 font-display text-2xl text-text">{plan.price}</p>
+                <p className="mt-1 text-sm leading-relaxed text-muted">{plan.description}</p>
                 <ul className="mt-6 flex-1 space-y-3 border-t border-line pt-5">
                   {plan.points.map((point) => (
                     <li key={point} className="flex gap-3 text-sm leading-relaxed text-muted">
@@ -202,9 +206,9 @@ export default function PricingPage() {
             </div>
           </Card>
           <p className="mt-3 max-w-3xl text-xs leading-relaxed text-subtle">
-            A written scope confirms targets, source access, review cadence, and deliverables.
-            Pricing is confirmed before work begins; there is no automated checkout for a
-            diligence engagement.
+            Indicative list prices. A written scope confirms targets, source access, review
+            cadence, and deliverables. Final fees are confirmed before work begins; there is no
+            automated checkout for a diligence engagement.
           </p>
         </div>
       </section>

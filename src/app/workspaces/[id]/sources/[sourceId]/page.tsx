@@ -7,6 +7,7 @@ import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { MetricCard } from '@/components/ui/DataViz'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { ConfidenceBadge } from '@/components/workspaces/badges'
 import { formatDate } from '@/components/workspaces/format'
@@ -275,20 +276,49 @@ export default function SourcePage() {
         }
       />
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { label: 'Files', value: files.length },
-          { label: 'Commits', value: commits.length },
-          { label: 'Pull requests', value: pullRequests.length },
-          { label: 'Issues', value: issues.length },
-        ].map((stat) => (
-          <Card key={stat.label} className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">
-              {stat.label}
-            </p>
-            <p className="mt-1 font-display text-2xl text-text">{stat.value}</p>
-          </Card>
-        ))}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <Badge
+          tone={
+            source.status === 'READY'
+              ? 'success'
+              : source.status === 'FAILED'
+                ? 'danger'
+                : 'warning'
+          }
+        >
+          {source.status}
+        </Badge>
+        <span className="font-mono text-xs text-subtle">
+          {source.fileCount} files indexed · {source.commitCount} commits ·{' '}
+          {source.pullRequestCount} PRs · {source.issueCount} issues
+        </span>
+      </div>
+
+      <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Files"
+          value={files.length}
+          detail="Text snapshots available for review"
+          accent="var(--chart-1)"
+        />
+        <MetricCard
+          label="Commits"
+          value={commits.length}
+          detail="Commit snapshots captured"
+          accent="var(--chart-2)"
+        />
+        <MetricCard
+          label="Pull requests"
+          value={pullRequests.length}
+          detail="Review threads captured"
+          accent="var(--chart-3)"
+        />
+        <MetricCard
+          label="Issues"
+          value={issues.length}
+          detail="Issue snapshots captured"
+          accent="var(--chart-4)"
+        />
       </div>
 
       <section aria-labelledby="candidates-heading" className="mb-8">

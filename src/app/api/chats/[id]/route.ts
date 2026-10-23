@@ -45,6 +45,8 @@ export async function GET(
                 name: true,
                 bio: true,
                 personality: true,
+                role: true,
+                tools: true,
                 avatarUrl: true,
               }
             }

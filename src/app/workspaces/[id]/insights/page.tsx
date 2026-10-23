@@ -7,48 +7,47 @@ import { useAuth } from '@/components/AuthProvider'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { MetricCard } from '@/components/ui/DataViz'
 import { EmptyState, PageHeader } from '@/components/ui/EmptyState'
 import { formatDate } from '@/components/workspaces/format'
 import { WorkspaceInsights } from '@/lib/workspace-insights'
 
-type Tone = 'success' | 'accent' | 'danger' | 'neutral' | 'outline'
-
 const DEBT_ORDER = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'] as const
-const DEBT_TONES: Record<string, Tone> = {
-  LOW: 'success',
-  MEDIUM: 'neutral',
-  HIGH: 'accent',
-  CRITICAL: 'danger',
+const DEBT_COLORS: Record<string, string> = {
+  LOW: 'var(--chart-1)',
+  MEDIUM: 'var(--chart-3)',
+  HIGH: 'var(--chart-4)',
+  CRITICAL: 'var(--danger)',
 }
 
 const OUTCOME_ORDER = ['VALIDATED', 'PARTIAL', 'PENDING', 'INVALIDATED', 'NOT_RECORDED']
-const OUTCOME_TONES: Record<string, Tone> = {
-  VALIDATED: 'success',
-  PARTIAL: 'accent',
-  PENDING: 'neutral',
-  INVALIDATED: 'danger',
-  NOT_RECORDED: 'outline',
+const OUTCOME_COLORS: Record<string, string> = {
+  VALIDATED: 'var(--chart-1)',
+  PARTIAL: 'var(--chart-3)',
+  PENDING: 'var(--chart-2)',
+  INVALIDATED: 'var(--chart-4)',
+  NOT_RECORDED: 'var(--text-subtle)',
 }
 
 const EVIDENCE_ORDER = ['VERIFIED', 'INFERRED', 'OPEN', 'DISPUTED', 'UNSUPPORTED']
-const EVIDENCE_TONES: Record<string, Tone> = {
-  VERIFIED: 'success',
-  INFERRED: 'accent',
-  OPEN: 'neutral',
-  DISPUTED: 'danger',
-  UNSUPPORTED: 'danger',
+const EVIDENCE_COLORS: Record<string, string> = {
+  VERIFIED: 'var(--chart-1)',
+  INFERRED: 'var(--chart-2)',
+  OPEN: 'var(--chart-3)',
+  DISPUTED: 'var(--chart-4)',
+  UNSUPPORTED: 'var(--danger)',
 }
 
 function Distribution({
   title,
   counts,
   order,
-  tones,
+  colors,
 }: {
   title: string
   counts: Record<string, number>
   order: readonly string[]
-  tones: Record<string, Tone>
+  colors: Record<string, string>
 }) {
   const total = order.reduce((sum, key) => sum + (counts[key] ?? 0), 0)
 
@@ -59,14 +58,7 @@ function Distribution({
         {order.map((key) => {
           const count = counts[key] ?? 0
           const pct = total > 0 ? Math.round((count / total) * 100) : 0
-          const bar =
-            tones[key] === 'success'
-              ? 'bg-success'
-              : tones[key] === 'danger'
-                ? 'bg-danger'
-                : tones[key] === 'accent'
-                  ? 'bg-accent'
-                  : 'bg-line-strong'
+          const color = colors[key] ?? 'var(--chart-1)'
 
           return (
             <li key={key}>
@@ -76,8 +68,8 @@ function Distribution({
                 </span>
                 <span className="text-subtle">{count}</span>
               </div>
-              <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2">
-                <div className={`h-full ${bar}`} style={{ width: `${pct}%` }} />
+              <div className="mt-1.5 h-2.5 overflow-hidden bg-surface-3">
+                <div className="h-full" style={{ width: `${pct}%`, backgroundColor: color }} />
               </div>
             </li>
           )
@@ -203,13 +195,13 @@ export default function InsightsPage() {
           { label: 'Average debt', value: `${insights.averageDebt}/100` },
           { label: 'Evidence coverage', value: `${insights.evidenceCoverage}%` },
           { label: 'Overdue revisits', value: insights.overdueRevisits },
-        ].map((stat) => (
-          <Card key={stat.label} className="py-4">
-            <p className="font-mono text-xs uppercase tracking-[0.12em] text-subtle">
-              {stat.label}
-            </p>
-            <p className="mt-1 font-display text-2xl text-text">{stat.value}</p>
-          </Card>
+        ].map((stat, index) => (
+          <MetricCard
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            accent={`var(--chart-${(index % 4) + 1})`}
+          />
         ))}
       </div>
 
@@ -230,19 +222,19 @@ export default function InsightsPage() {
               title="Decision debt"
               counts={insights.debtBands}
               order={DEBT_ORDER}
-              tones={DEBT_TONES}
+              colors={DEBT_COLORS}
             />
             <Distribution
               title="Outcomes"
               counts={insights.outcomes}
               order={OUTCOME_ORDER}
-              tones={OUTCOME_TONES}
+              colors={OUTCOME_COLORS}
             />
             <Distribution
               title="Evidence status"
               counts={insights.evidenceStatuses}
               order={EVIDENCE_ORDER}
-              tones={EVIDENCE_TONES}
+              colors={EVIDENCE_COLORS}
             />
             <Card className="space-y-3">
               <p className="eyebrow">Coverage and sources</p>
@@ -309,9 +301,9 @@ export default function InsightsPage() {
                           decision.debtScore >= 70
                             ? 'danger'
                             : decision.debtScore >= 45
-                              ? 'accent'
+                              ? 'warning'
                               : decision.debtScore >= 20
-                                ? 'neutral'
+                                ? 'info'
                                 : 'success'
                         }
                       >

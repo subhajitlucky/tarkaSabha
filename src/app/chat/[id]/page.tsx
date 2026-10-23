@@ -7,7 +7,9 @@ import type { HeadToHeadResult } from '@/lib/head-to-head'
 import type { EvidenceMap } from '@/lib/evidence-map'
 import type { RunInspection } from '@/lib/run-inspection'
 import { getRubricPreset } from '@/lib/synthesis-rubric'
-import { Avatar } from '@/components/ui/Avatar'
+import { Avatar, avatarTone } from '@/components/ui/Avatar'
+import { Badge } from '@/components/ui/Badge'
+import { Card } from '@/components/ui/Card'
 import { useAuth } from '@/components/AuthProvider'
 
 function getErrorMessage(error: unknown, fallback: string) {
@@ -1519,6 +1521,55 @@ export default function ChatPage() {
       {/* Chat Messages */}
       <main className="flex-1 overflow-y-auto px-6 py-8 bg-inherit">
         <div className="max-w-3xl mx-auto space-y-8">
+          <Card className="mb-2">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="eyebrow">Room brief</p>
+                <h2 className="mt-2 font-display text-xl text-text">
+                  {chat.topic || chat.title}
+                </h2>
+              </div>
+              <Badge tone={chat.isAutoMode ? 'success' : 'outline'}>
+                {chat.isAutoMode ? 'Running' : 'Manual review'}
+              </Badge>
+            </div>
+
+            <div className="mt-4 grid gap-4 sm:grid-cols-3">
+              {[
+                ['Objective', chat.objective || 'No objective recorded.'],
+                ['Deliverable', chat.deliverableSpec || 'No deliverable specified.'],
+                ['Audience', chat.audience || 'Not recorded.'],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <p className="eyebrow">{label}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-muted">{value}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-line pt-4">
+              <span className="font-mono text-[0.58rem] uppercase tracking-[0.12em] text-subtle">
+                Council
+              </span>
+              {chat.participants?.length ? (
+                chat.participants.map((participant) => (
+                  <span
+                    key={participant.id}
+                    className="inline-flex items-center gap-2 border border-line bg-surface-2 px-2 py-1"
+                  >
+                    <Avatar name={participant.persona?.name ?? 'Agent'} size="xs" />
+                    <span className="text-xs text-text">{participant.persona?.name ?? 'Agent'}</span>
+                    <span className="font-mono text-[0.55rem] uppercase tracking-[0.08em] text-subtle">
+                      {(participant.persona?.role || 'agent').replaceAll('_', ' ')}
+                    </span>
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-muted">No agents seated.</span>
+              )}
+            </div>
+          </Card>
+
           {messages.length === 0 && (
             <div className="py-20 text-center space-y-6">
               <span className="eyebrow mb-4 block">The floor is open</span>
@@ -1544,23 +1595,36 @@ export default function ChatPage() {
                   <div className={`space-y-1.5 ${isUser ? 'items-end' : 'items-start'} flex flex-col`}>
                     {!isUser && (
                       <div className="flex items-center gap-2 px-1">
-                        <span className="font-mono text-xs uppercase tracking-[0.12em] text-muted">{persona?.name || 'Agent'}</span>
+                        <span
+                          className="font-mono text-xs uppercase tracking-[0.12em]"
+                          style={{ color: avatarTone(persona?.name || message.personaName || 'Agent') }}
+                        >
+                          {persona?.name || message.personaName || 'Agent'}
+                        </span>
+                        {persona?.role && (
+                          <span className="font-mono text-[0.55rem] uppercase tracking-[0.08em] text-subtle">
+                            {persona.role.replaceAll('_', ' ')}
+                          </span>
+                        )}
                         <span className="font-mono text-xs text-subtle">{formatTime(message.createdAt)}</span>
                       </div>
                     )}
                     
-                    <div className={`prose-ledger rounded-[4px] px-4 py-3 text-[0.9375rem] ${
-                      isUser
-                        ? 'glow-accent bg-accent text-accent-ink'
-                        : 'raised border border-line bg-surface-2 text-text'
-                    }`}>
+                    <div
+                      className={`prose-ledger rounded-[4px] px-4 py-3 text-[0.9375rem] ${
+                        isUser
+                          ? 'bg-text text-surface shadow-[0_1px_2px_rgba(18,28,23,0.16)]'
+                          : 'border border-line border-l-2 bg-surface text-text shadow-[0_1px_2px_rgba(18,28,23,0.06)]'
+                      }`}
+                      style={!isUser ? { borderLeftColor: avatarTone(persona?.name || message.personaName || 'Agent') } : undefined}
+                    >
                       {message.content}
                     </div>
 
                     {isUser && (
                       <div className="flex items-center gap-2 px-1">
                         <span className="font-mono text-xs text-subtle">{formatTime(message.createdAt)}</span>
-                        <span className="font-mono text-xs uppercase tracking-[0.14em] text-accent">You</span>
+                        <span className="font-mono text-xs uppercase tracking-[0.14em] text-subtle">You</span>
                       </div>
                     )}
                   </div>
@@ -1643,7 +1707,7 @@ export default function ChatPage() {
               <p className="eyebrow">Read-only — only the creator can post</p>
             </div>
           )}
-          <p className="eyebrow mt-4 text-center">Brahmodya Protocol</p>
+          <p className="eyebrow mt-4 text-center">Private review room · transcript attached to the record</p>
         </div>
       </footer>
     </div>

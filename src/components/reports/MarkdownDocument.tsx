@@ -34,6 +34,17 @@ function renderInline(text: string, keyPrefix: string): ReactNode[] {
   })
 }
 
+/** Stable heading anchor shared by the document renderer and the dossier TOC. */
+export function headingSlug(text: string): string {
+  return (
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-') || 'section'
+  )
+}
+
 /** Renders generated report content as a safe, styled document. */
 export function MarkdownDocument({ content }: { content: string }) {
   const blocks = parseReportMarkdown(content)
@@ -46,7 +57,11 @@ export function MarkdownDocument({ content }: { content: string }) {
         if (block.type === 'heading') {
           if (block.level === 1) {
             return (
-              <h1 key={key} className="font-display text-3xl leading-tight text-text">
+              <h1
+                key={key}
+                id={headingSlug(block.text)}
+                className="scroll-mt-24 font-display text-3xl leading-tight text-text"
+              >
                 {renderInline(block.text, key)}
               </h1>
             )
@@ -55,7 +70,8 @@ export function MarkdownDocument({ content }: { content: string }) {
             return (
               <h2
                 key={key}
-                className="border-b border-line pb-2 pt-4 font-display text-xl text-text"
+                id={headingSlug(block.text)}
+                className="scroll-mt-24 border-b border-line pb-2 pt-4 font-display text-xl text-text"
               >
                 {renderInline(block.text, key)}
               </h2>
@@ -63,13 +79,21 @@ export function MarkdownDocument({ content }: { content: string }) {
           }
           if (block.level === 3) {
             return (
-              <h3 key={key} className="pt-2 font-display text-base text-text">
+              <h3
+                key={key}
+                id={headingSlug(block.text)}
+                className="scroll-mt-24 pt-2 font-display text-base text-text"
+              >
                 {renderInline(block.text, key)}
               </h3>
             )
           }
           return (
-            <h4 key={key} className="pt-1 font-display text-sm text-text">
+            <h4
+              key={key}
+              id={headingSlug(block.text)}
+              className="scroll-mt-24 pt-1 font-display text-sm text-text"
+            >
               {renderInline(block.text, key)}
             </h4>
           )
