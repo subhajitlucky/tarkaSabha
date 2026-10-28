@@ -205,6 +205,12 @@ body {
   display: block;
   width: 100%;
 }
+/* A link dressed as a button is its own flex container. */
+.hero-actions a.hero-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .hero-actions button {
   width: 100%;
 }
@@ -217,6 +223,9 @@ body {
   .hero-actions a {
     display: inline-block;
     width: auto;
+  }
+  .hero-actions a.hero-action {
+    display: inline-flex;
   }
   .hero-actions button {
     width: auto;

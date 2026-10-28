@@ -1,12 +1,12 @@
 import { ButtonHTMLAttributes, forwardRef } from 'react'
 import { cx } from './cx'
 
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
-type Size = 'sm' | 'md' | 'lg'
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant
-  size?: Size
+  variant?: ButtonVariant
+  size?: ButtonSize
 }
 
 /**
@@ -20,7 +20,7 @@ const base =
   'disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none ' +
   'focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-px'
 
-const variants: Record<Variant, string> = {
+const variants: Record<ButtonVariant, string> = {
   primary:
     'bg-accent text-accent-ink border-accent shadow-[0_1px_2px_rgba(18,28,23,0.18)] hover:bg-accent-hover hover:border-accent-hover hover:shadow-[0_2px_4px_rgba(18,28,23,0.2)]',
   secondary:
@@ -31,10 +31,22 @@ const variants: Record<Variant, string> = {
     'bg-danger text-white border-danger hover:bg-danger/90 hover:border-danger/90',
 }
 
-const sizes: Record<Size, string> = {
+const sizes: Record<ButtonSize, string> = {
   sm: 'text-[0.8125rem] px-3 py-1.5 tracking-[0.01em]',
   md: 'text-sm px-4 py-2',
   lg: 'text-[0.9375rem] px-5 py-2.5',
+}
+
+export function buttonClasses({
+  variant = 'secondary',
+  size = 'md',
+  className,
+}: {
+  variant?: ButtonVariant
+  size?: ButtonSize
+  className?: string
+} = {}) {
+  return cx(base, variants[variant], sizes[size], className)
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
@@ -45,7 +57,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
     <button
       ref={ref}
       type={type}
-      className={cx(base, variants[variant], sizes[size], className)}
+      className={buttonClasses({ variant, size, className })}
       {...rest}
     />
   )
