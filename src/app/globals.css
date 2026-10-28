@@ -28,7 +28,7 @@
 
   --text: #e9f1ec;
   --text-muted: #a4b5ab;
-  --text-subtle: #7d9085;
+  --text-subtle: #84978c;
 
   --accent: #5fbf91;
   --accent-hover: #7fd3a8;
@@ -45,9 +45,9 @@
   --chart-3: #d7a24a;
   --chart-4: #d97a72;
   --chart-5: #61b7ae;
-  --risk-high: rgb(191 74 67 / 0.16);
-  --risk-managed: rgb(95 191 145 / 0.14);
-  --risk-neutral: #141d18;
+  --risk-high: rgb(191 74 67 / 0.24);
+  --risk-managed: rgb(95 191 145 / 0.2);
+  --risk-neutral: #111a15;
   --nav-active-bg: rgb(95 191 145 / 0.14);
   --nav-active-text: #7fd3a8;
 
@@ -86,7 +86,7 @@ html.light {
 
   --text: #0f172a;
   --text-muted: #475569;
-  --text-subtle: #64748b;
+  --text-subtle: #5b6b80;
 
   --accent: #0f5b43;
   --accent-hover: #0a4634;
@@ -94,7 +94,7 @@ html.light {
   --accent-soft: #e8f5ef;
   --accent-line: #b7d9c9;
   --accent-glow: rgb(15 91 67 / 0.12);
-  --warning: #a96708;
+  --warning: #8a5405;
   --warning-soft: #fef3e2;
   --info: #2563a8;
   --info-soft: #e8f1fb;
@@ -109,10 +109,10 @@ html.light {
   --nav-active-bg: #0f172a;
   --nav-active-text: #ffffff;
 
-  --danger: #bf4a43;
+  --danger: #a63f39;
   --danger-soft: #fbeeed;
   --danger-glow: rgb(191 74 67 / 0.14);
-  --success: #1f8a5b;
+  --success: #177a4f;
   --success-soft: #e8f5ee;
 
   --inset-top: inset 0 1px 0 0 rgb(255 255 255 / 0.8);
@@ -305,6 +305,7 @@ h4 {
 /* ============================ risk cells ================================ */
 .risk-high { background: var(--risk-high); }
 .risk-managed { background: var(--risk-managed); }
+.risk-watch { background: var(--warning-soft); }
 .risk-neutral { background: var(--risk-neutral); }
 
 /* ============================ surfaces ================================== */

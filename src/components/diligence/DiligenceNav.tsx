@@ -66,7 +66,7 @@ export function DiligenceNav() {
   return (
     <div className="sticky top-[65px] z-40 border-b border-line bg-bg/90 backdrop-blur-xl print:hidden">
       <div className="mx-auto flex max-w-[88rem] items-center gap-3 px-5 sm:px-8 lg:px-10">
-        <span className="hidden shrink-0 py-3 font-mono text-[0.56rem] uppercase tracking-[0.16em] text-subtle xl:block">
+        <span className="hidden shrink-0 py-3 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-muted xl:block">
           Dossier index
         </span>
 
@@ -90,8 +90,8 @@ export function DiligenceNav() {
                 <span
                   aria-hidden="true"
                   className={cx(
-                    'font-mono text-[0.56rem] tracking-[0.08em]',
-                    isActive ? 'text-accent' : 'text-subtle'
+                    'font-mono text-[0.72rem] tracking-[0.08em]',
+                    isActive ? 'text-accent' : 'text-muted'
                   )}
                 >
                   {section.number}
@@ -112,7 +112,7 @@ export function DiligenceNav() {
         <a
           href="/diligence-sample.md"
           download
-          className="hidden shrink-0 items-center gap-2 border-l border-line py-2 pl-4 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-subtle transition-colors hover:text-accent sm:flex"
+          className="hidden shrink-0 items-center gap-2 border-l border-line py-2 pl-4 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted transition-colors hover:text-accent sm:flex"
         >
           Download .md
           <span aria-hidden="true">↓</span>

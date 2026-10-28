@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/Badge'
 import { buttonClasses } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
-import { DonutChart } from '@/components/ui/DataViz'
 import { cx } from '@/components/ui/cx'
 import { DiligenceNav } from '@/components/diligence/DiligenceNav'
 
@@ -162,6 +161,28 @@ const EVIDENCE: EvidenceItem[] = [
   },
 ]
 
+const EVIDENCE_MIX = [
+  {
+    label: 'Implementation',
+    detail: 'crypto · routes · adapter',
+    value: 5,
+    color: 'var(--chart-1)',
+  },
+  { label: 'Tests', detail: 'crypto suite', value: 1, color: 'var(--chart-2)' },
+  {
+    label: 'Public claim',
+    detail: 'README',
+    value: 1,
+    color: 'var(--chart-3)',
+  },
+  {
+    label: 'Storage schema',
+    detail: 'Prisma model',
+    value: 1,
+    color: 'var(--chart-5)',
+  },
+]
+
 const OPTIONS = [
   {
     name: 'Plaintext storage',
@@ -291,6 +312,12 @@ const DILIGENCE_REQUESTS = [
   },
 ]
 
+const REQUEST_PRIORITY = [
+  { label: 'High', count: 2, bar: 'bg-danger' },
+  { label: 'Medium', count: 2, bar: 'bg-warning' },
+  { label: 'Low', count: 1, bar: 'bg-line-strong' },
+]
+
 const ALSO_ASK = [
   'Is there an incident history for credential exposure?',
   'Are provider keys scoped or restricted at the provider side?',
@@ -362,13 +389,31 @@ const STATS = [
 ]
 
 const RISK_DECISIONS = [
-  { id: 'D-001', short: 'Key encryption', row: 0, col: 2 },
-  { id: 'D-003', short: 'Server runner', row: 1, col: 0 },
-  { id: 'D-002', short: 'Speaker order', row: 2, col: 0 },
+  {
+    id: 'D-001',
+    short: 'Key encryption',
+    evidence: '6 ev.',
+    row: 0,
+    col: 2,
+  },
+  {
+    id: 'D-003',
+    short: 'Server runner',
+    evidence: '0 ev.',
+    row: 1,
+    col: 0,
+  },
+  {
+    id: 'D-002',
+    short: 'Speaker order',
+    evidence: '0 ev.',
+    row: 2,
+    col: 0,
+  },
 ]
 
 const RISK_ROWS = ['High', 'Medium', 'Low']
-const RISK_COLS = ['Thin evidence', 'Partial evidence', 'Strong evidence']
+const RISK_COLS = ['Thin', 'Partial', 'Strong']
 
 function LockIcon() {
   return (
@@ -402,7 +447,7 @@ function SectionHeading({
   return (
     <div className="mb-7 flex flex-wrap items-start justify-between gap-4 sm:mb-9">
       <div className="max-w-3xl">
-        <p className="flex items-center gap-3 font-mono text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-subtle">
+        <p className="flex items-center gap-3 font-mono text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted">
           <span className="text-accent">{number}</span>
           <span aria-hidden="true" className="h-px w-7 bg-line-strong" />
           {eyebrow}
@@ -417,7 +462,7 @@ function SectionHeading({
         )}
       </div>
       {meta && (
-        <p className="shrink-0 pt-1 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-subtle">
+        <p className="shrink-0 pt-1 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
           {meta}
         </p>
       )}
@@ -429,10 +474,10 @@ function CoverSheet() {
   return (
     <article className="border border-line border-t-2 border-t-accent bg-bg shadow-[var(--shadow-lift)]">
       <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3">
-        <span className="font-mono text-[0.56rem] uppercase tracking-[0.16em] text-subtle">
+        <span className="font-mono text-[0.72rem] uppercase tracking-[0.16em] text-muted">
           Dossier / 001
         </span>
-        <span className="font-mono text-[0.56rem] text-subtle">v0.1</span>
+        <span className="font-mono text-[0.72rem] text-muted">v0.1</span>
       </div>
 
       <div className="flex items-start justify-between gap-4 px-5 pb-5 pt-6 sm:px-6">
@@ -445,22 +490,22 @@ function CoverSheet() {
             A static review of decisions already embedded in the code.
           </p>
         </div>
-        <span className="mt-1 shrink-0 -rotate-3 border-2 border-accent/50 px-2.5 py-1 font-mono text-[0.54rem] font-bold uppercase tracking-[0.18em] text-accent">
+        <span className="mt-1 shrink-0 -rotate-3 border-2 border-accent/50 px-2.5 py-1 font-mono text-[0.66rem] font-bold uppercase tracking-[0.18em] text-accent">
           Sample
         </span>
       </div>
 
       <dl className="mx-5 grid grid-cols-2 gap-x-4 gap-y-4 border-y border-line py-5 sm:mx-6">
         <div className="col-span-2">
-          <dt className="font-mono text-[0.54rem] uppercase tracking-[0.12em] text-subtle">
+          <dt className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
             Target
           </dt>
-          <dd className="mt-1 break-all font-mono text-[0.66rem] leading-relaxed text-text">
+          <dd className="mt-1 break-all font-mono text-[0.72rem] leading-relaxed text-text">
             github.com/subhajitlucky/tarkaSabha
           </dd>
         </div>
         <div>
-          <dt className="font-mono text-[0.54rem] uppercase tracking-[0.12em] text-subtle">
+          <dt className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
             Snapshot
           </dt>
           <dd
@@ -471,19 +516,19 @@ function CoverSheet() {
           </dd>
         </div>
         <div>
-          <dt className="font-mono text-[0.54rem] uppercase tracking-[0.12em] text-subtle">
+          <dt className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
             Reviewed
           </dt>
           <dd className="mt-1 text-xs text-text">21 Oct 2026</dd>
         </div>
         <div>
-          <dt className="font-mono text-[0.54rem] uppercase tracking-[0.12em] text-subtle">
+          <dt className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
             Scope
           </dt>
           <dd className="mt-1 text-xs text-text">Provider credentials</dd>
         </div>
         <div>
-          <dt className="font-mono text-[0.54rem] uppercase tracking-[0.12em] text-subtle">
+          <dt className="font-mono text-[0.66rem] uppercase tracking-[0.12em] text-muted">
             Artifact
           </dt>
           <dd className="mt-1 text-xs text-text">Sample self-audit</dd>
@@ -491,14 +536,14 @@ function CoverSheet() {
       </dl>
 
       <div className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 sm:px-6">
-        <span className="flex items-center gap-2 font-mono text-[0.56rem] uppercase tracking-[0.1em] text-text">
+        <span className="flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-text">
           <span
             aria-hidden="true"
             className="h-1.5 w-1.5 rounded-full bg-success"
           />
           1 of 3 analyzed
         </span>
-        <span className="font-mono text-[0.56rem] text-subtle">
+        <span className="font-mono text-[0.72rem] text-muted">
           8 evidence items
         </span>
       </div>
@@ -520,7 +565,7 @@ function Fact({
       <dt className="eyebrow">{label}</dt>
       <dd className="mt-1 text-sm font-semibold text-text">{value}</dd>
       {detail && (
-        <dd className="mt-1 text-xs leading-relaxed text-subtle">{detail}</dd>
+        <dd className="mt-1 text-xs leading-relaxed text-muted">{detail}</dd>
       )}
     </div>
   )
@@ -541,18 +586,161 @@ function RecordBlock({
   )
 }
 
+function CoverageCard() {
+  const totalEvidence = EVIDENCE_MIX.reduce((sum, item) => sum + item.value, 0)
+
+  return (
+    <Card className="flex flex-col p-5 sm:p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="eyebrow">Coverage</p>
+          <h3 className="mt-2 font-display text-2xl leading-tight text-text">
+            One record in full.
+          </h3>
+        </div>
+        <span className="font-display text-3xl leading-none text-accent">
+          1<span className="text-xl text-muted"> / 3</span>
+        </span>
+      </div>
+
+      <div className="mt-5">
+        <div
+          className="flex h-12 gap-1"
+          role="img"
+          aria-label="Coverage: D-001 is verified and analyzed; D-002 and D-003 are unanalyzed candidates."
+        >
+          <div className="flex flex-1 flex-col justify-center border border-accent-line bg-accent-soft px-2">
+            <span className="font-mono text-[0.72rem] font-semibold text-accent">
+              D-001
+            </span>
+            <span className="font-mono text-[0.66rem] uppercase tracking-[0.08em] text-muted">
+              Verified
+            </span>
+          </div>
+          {['D-002', 'D-003'].map((id) => (
+            <div
+              key={id}
+              className="flex flex-1 flex-col justify-center border border-dashed border-line-strong bg-surface-2 px-2"
+            >
+              <span className="font-mono text-[0.72rem] font-semibold text-muted">
+                {id}
+              </span>
+              <span className="font-mono text-[0.66rem] uppercase tracking-[0.08em] text-muted">
+                Candidate
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <dl className="mt-4 divide-y divide-line border-y border-line">
+          {[
+            ['Core evidence for D-001', '6 items'],
+            ['Supporting artifacts', '2 items'],
+            ['Candidates without evidence', '2'],
+          ].map(([label, value]) => (
+            <div
+              key={label}
+              className="flex items-center justify-between gap-3 py-2.5"
+            >
+              <dt className="text-xs leading-relaxed text-muted">{label}</dt>
+              <dd className="shrink-0 font-mono text-xs text-text">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <div className="mt-5">
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="eyebrow">Evidence mix</p>
+          <span className="font-mono text-[0.72rem] text-muted">
+            {String(totalEvidence).padStart(2, '0')} items
+          </span>
+        </div>
+
+        <div
+          className="mt-3 flex h-3 gap-[2px] overflow-hidden"
+          role="img"
+          aria-label="Evidence composition: five implementation items, one test, one public claim, and one storage schema item."
+        >
+          {EVIDENCE_MIX.map((item) => (
+            <span
+              key={item.label}
+              className="h-full"
+              style={{
+                width: `${(item.value / totalEvidence) * 100}%`,
+                backgroundColor: item.color,
+              }}
+            />
+          ))}
+        </div>
+
+        <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+          {EVIDENCE_MIX.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-start justify-between gap-2"
+            >
+              <dt className="flex min-w-0 items-start gap-1.5 text-[0.72rem] leading-snug text-muted">
+                <span
+                  aria-hidden="true"
+                  className="mt-1 h-2 w-2 shrink-0"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="min-w-0">
+                  {item.label}
+                  <span className="mt-0.5 block text-[0.66rem] leading-tight text-muted">
+                    {item.detail}
+                  </span>
+                </span>
+              </dt>
+              <dd className="shrink-0 font-mono text-[0.72rem] text-text">
+                {item.value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+
+      <div className="mt-5 grid grid-cols-2 gap-3 border-t border-line pt-4">
+        <div>
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted">
+            Snapshot
+          </p>
+          <p
+            className="mt-1 font-mono text-xs text-text"
+            title={SNAPSHOT.full}
+          >
+            {SNAPSHOT.short}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted">
+            Evidence pinned
+          </p>
+          <p className="mt-1 font-mono text-xs text-text">8 / 8 items</p>
+        </div>
+      </div>
+
+      <p className="mt-auto border-t border-line pt-4 text-xs leading-relaxed text-muted">
+        Coverage measures analysis, not cleanliness. Two candidates have no
+        evidence attached.
+      </p>
+    </Card>
+  )
+}
+
 function RiskMatrix() {
   return (
     <figure>
       <table className="w-full table-fixed border-collapse">
-        <caption className="sr-only">
-          Decision risk map: deal impact by evidence strength.
+        <caption className="pb-2 text-left font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted">
+          Impact × evidence strength
         </caption>
         <thead>
           <tr>
             <th
               scope="col"
-              className="w-12 border border-line bg-surface-2 p-1.5"
+              className="w-[3.7rem] border border-line-strong bg-surface-2 p-1.5 sm:w-20"
             >
               <span className="sr-only">Deal impact</span>
             </th>
@@ -560,7 +748,7 @@ function RiskMatrix() {
               <th
                 key={col}
                 scope="col"
-                className="border border-line bg-surface-2 px-1.5 py-2 text-left font-mono text-[0.5rem] font-semibold uppercase leading-tight tracking-[0.08em] text-subtle sm:text-[0.56rem]"
+                className="border border-line-strong bg-surface-2 px-1.5 py-2 text-left font-mono text-[0.66rem] font-semibold uppercase leading-tight tracking-[0.08em] text-muted sm:text-[0.68rem]"
               >
                 {col}
               </th>
@@ -572,9 +760,14 @@ function RiskMatrix() {
             <tr key={row}>
               <th
                 scope="row"
-                className="border border-line bg-surface-2 px-1.5 py-2 text-left font-mono text-[0.5rem] font-semibold uppercase leading-tight tracking-[0.08em] text-subtle sm:text-[0.56rem]"
+                className="border border-line-strong bg-surface-2 px-1.5 py-2 text-left align-middle"
               >
-                {row}
+                <span className="block font-mono text-[0.72rem] font-semibold leading-tight text-text">
+                  {row}
+                </span>
+                <span className="mt-0.5 block font-mono text-[0.66rem] font-normal uppercase leading-tight tracking-[0.06em] text-muted">
+                  impact
+                </span>
               </th>
               {RISK_COLS.map((col, colIndex) => {
                 const items = RISK_DECISIONS.filter(
@@ -582,34 +775,41 @@ function RiskMatrix() {
                     decision.row === rowIndex && decision.col === colIndex
                 )
                 const tone =
-                  rowIndex === 0 && colIndex < 2
-                    ? 'risk-high'
-                    : rowIndex === 0 && colIndex === 2
-                      ? 'risk-managed'
+                  rowIndex === 0
+                    ? colIndex === 0
+                      ? 'risk-high'
+                      : colIndex === 1
+                        ? 'risk-watch'
+                        : 'risk-managed'
+                    : rowIndex === 1 && colIndex === 0
+                      ? 'risk-watch'
                       : 'risk-neutral'
 
                 return (
                   <td
                     key={col}
                     className={cx(
-                      'h-[88px] border border-line p-1.5 align-top sm:h-[96px] sm:p-2',
+                      'h-[80px] border border-line-strong p-1.5 align-top sm:h-[88px] sm:p-2',
                       tone
                     )}
                   >
-                    <div className="flex flex-col items-start gap-1">
+                    <div className="flex h-full flex-col gap-1">
                       {items.map((decision) => (
-                        <span
+                        <div
                           key={decision.id}
-                          title={`${decision.id} — ${decision.short}`}
-                          className="max-w-full border border-line bg-surface px-1 py-0.5 sm:px-1.5 sm:py-1"
+                          title={`${decision.id} — ${decision.short} — ${decision.evidence}`}
+                          className="border border-line-strong bg-surface p-1 shadow-[var(--shadow-lift)] sm:p-1.5"
                         >
-                          <span className="block font-mono text-[0.52rem] font-semibold text-accent">
+                          <span className="block font-mono text-[0.66rem] font-semibold text-accent sm:text-[0.68rem]">
                             {decision.id}
                           </span>
-                          <span className="mt-0.5 hidden truncate text-[0.58rem] leading-tight text-text sm:block">
+                          <p className="mt-0.5 text-[0.68rem] font-medium leading-tight text-text sm:text-[0.72rem]">
                             {decision.short}
+                          </p>
+                          <span className="mt-0.5 block font-mono text-[0.66rem] uppercase tracking-[0.04em] text-muted">
+                            {decision.evidence}
                           </span>
-                        </span>
+                        </div>
                       ))}
                     </div>
                   </td>
@@ -619,19 +819,42 @@ function RiskMatrix() {
           ))}
         </tbody>
       </table>
-      <figcaption className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[0.65rem] text-muted">
-        <span className="flex items-center gap-2">
-          <span className="h-2 w-2 risk-high ring-1 ring-danger/30" />
-          High impact, thin evidence
-        </span>
-        <span className="flex items-center gap-2">
-          <span className="h-2 w-2 risk-managed ring-1 ring-accent/30" />
-          High impact, strong evidence
-        </span>
-        <span className="flex items-center gap-2">
-          <span className="h-2 w-2 risk-neutral ring-1 ring-line-strong" />
-          Candidate, no evidence attached
-        </span>
+
+      <figcaption className="mt-3 space-y-2">
+        <div className="grid gap-1.5 text-[0.72rem] leading-snug text-muted sm:grid-cols-2">
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 shrink-0 risk-high ring-1 ring-danger/30"
+            />
+            High impact, thin evidence
+          </span>
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 shrink-0 risk-watch ring-1 ring-warning/30"
+            />
+            Partial evidence or medium impact
+          </span>
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 shrink-0 risk-managed ring-1 ring-accent/30"
+            />
+            High impact, evidenced
+          </span>
+          <span className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 shrink-0 risk-neutral ring-1 ring-line-strong"
+            />
+            Low impact, no evidence
+          </span>
+        </div>
+        <p className="text-xs leading-relaxed text-muted">
+          Placement is a diligence judgement from impact and evidence strength,
+          not a probability.
+        </p>
       </figcaption>
     </figure>
   )
@@ -650,7 +873,7 @@ function ScopeList({
     <div>
       <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
         <p className="eyebrow">{label}</p>
-        <span className="font-mono text-[0.56rem] text-subtle">{count}</span>
+        <span className="font-mono text-[0.72rem] text-muted">{count}</span>
       </div>
       <ul className="mt-3 space-y-2.5">{children}</ul>
     </div>
@@ -681,7 +904,7 @@ export default function DiligencePage() {
 
         <div className="relative mx-auto max-w-[88rem] px-5 py-10 sm:px-8 lg:px-10 lg:py-16">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line pb-4">
-            <p className="flex items-center gap-2 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-subtle">
+            <p className="flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-muted">
               <span aria-hidden="true" className="h-1.5 w-1.5 bg-accent" />
               Tarka Sabha
               <span aria-hidden="true" className="text-line-strong">
@@ -693,14 +916,14 @@ export default function DiligencePage() {
               </span>
               Sample 01
             </p>
-            <p className="font-mono text-[0.58rem] uppercase tracking-[0.12em] text-subtle">
+            <p className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
               Public artifact · No customer data
             </p>
           </div>
 
           <div className="grid gap-10 pt-9 lg:grid-cols-[1.12fr_0.88fr] lg:items-start lg:gap-14 lg:pt-14">
             <div className="rise">
-              <p className="font-mono text-[0.62rem] font-semibold uppercase tracking-[0.2em] text-accent">
+              <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.2em] text-accent">
                 Decision diligence · Public sample dossier
               </p>
               <h1 className="mt-5 max-w-2xl text-balance text-[2.9rem] leading-[0.96] text-text sm:text-6xl lg:text-[4.7rem]">
@@ -738,7 +961,7 @@ export default function DiligencePage() {
                 </a>
               </div>
 
-              <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-subtle">
+              <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-muted">
                 <LockIcon />
                 <span>
                   Sample self-audit. No customer data, personal data, or real
@@ -758,10 +981,10 @@ export default function DiligencePage() {
                 <p className="font-display text-3xl leading-none text-text sm:text-4xl">
                   {stat.value}
                 </p>
-                <p className="mt-2 font-mono text-[0.56rem] uppercase tracking-[0.14em] text-subtle">
+                <p className="mt-2 font-mono text-[0.72rem] uppercase tracking-[0.14em] text-muted">
                   {stat.label}
                 </p>
-                <p className="mt-1 text-[0.7rem] leading-relaxed text-muted">
+                <p className="mt-1 text-[0.72rem] leading-relaxed text-muted">
                   {stat.detail}
                 </p>
               </div>
@@ -816,7 +1039,7 @@ export default function DiligencePage() {
             </div>
           </div>
 
-          <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-line py-4 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-subtle">
+          <div className="mt-10 flex flex-wrap items-center gap-x-3 gap-y-2 border-y border-line py-4 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
             <span>08 evidence items</span>
             <span aria-hidden="true" className="text-line-strong">
               →
@@ -876,7 +1099,7 @@ export default function DiligencePage() {
                   <p className="mt-2 text-sm leading-relaxed text-muted">
                     {decision.summary}
                   </p>
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[0.58rem] uppercase tracking-[0.1em] text-subtle">
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-muted">
                     <span>{decision.area}</span>
                     <span>Impact {decision.impact}</span>
                     <span>Evidence {decision.evidence}</span>
@@ -887,13 +1110,13 @@ export default function DiligencePage() {
                   {decision.href ? (
                     <a
                       href={decision.href}
-                      className="inline-flex items-center gap-2 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-text transition-colors hover:text-accent"
+                      className="inline-flex items-center gap-2 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-text transition-colors hover:text-accent"
                     >
                       Open record
                       <span aria-hidden="true">→</span>
                     </a>
                   ) : (
-                    <span className="font-mono text-[0.58rem] uppercase tracking-[0.12em] text-subtle">
+                    <span className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
                       Not analyzed
                     </span>
                   )}
@@ -902,54 +1125,13 @@ export default function DiligencePage() {
             ))}
           </div>
 
-          <p className="mt-4 text-xs leading-relaxed text-subtle">
+          <p className="mt-4 text-xs leading-relaxed text-muted">
             D-002 and D-003 are listed to show the inventory format. They are not
             analyzed in this sample.
           </p>
 
           <div className="mt-8 grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
-            <Card className="flex flex-col p-5 sm:p-6">
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <p className="eyebrow">Coverage</p>
-                  <h3 className="mt-2 font-display text-2xl leading-tight text-text">
-                    One record in full.
-                  </h3>
-                </div>
-                <span className="font-display text-3xl leading-none text-accent">
-                  1 / 3
-                </span>
-              </div>
-
-              <DonutChart
-                className="mt-6"
-                segments={[
-                  { label: 'Analyzed', value: 1, color: 'var(--chart-1)' },
-                  { label: 'Candidate', value: 2, color: 'var(--chart-3)' },
-                ]}
-                centerValue="3"
-                centerLabel="decisions"
-              />
-
-              <div className="mt-6 space-y-2 border-t border-line pt-4 text-xs">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted">Core evidence for D-001</span>
-                  <span className="font-mono text-text">6 items</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted">Supporting artifacts</span>
-                  <span className="font-mono text-text">2 items</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted">D-002 / D-003 evidence</span>
-                  <span className="font-mono text-subtle">—</span>
-                </div>
-              </div>
-              <p className="mt-auto pt-6 text-xs leading-relaxed text-subtle">
-                Coverage measures analysis, not cleanliness. Two candidates have
-                no evidence attached.
-              </p>
-            </Card>
+            <CoverageCard />
 
             <Card className="flex flex-col p-5 sm:p-6">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -959,7 +1141,7 @@ export default function DiligencePage() {
                     Where the evidence is thin
                   </h3>
                 </div>
-                <span className="font-mono text-[0.56rem] uppercase tracking-[0.1em] text-subtle">
+                <span className="font-mono text-[0.72rem] uppercase tracking-[0.1em] text-muted">
                   Deal impact × evidence
                 </span>
               </div>
@@ -968,7 +1150,7 @@ export default function DiligencePage() {
                 <RiskMatrix />
               </div>
 
-              <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-subtle">
+              <p className="mt-4 border-t border-line pt-4 text-xs leading-relaxed text-muted">
                 D-002 and D-003 have no evidence attached. They sit in the
                 thin-evidence column until analyzed.
               </p>
@@ -1000,7 +1182,7 @@ export default function DiligencePage() {
                 <Badge tone="outline">Security</Badge>
                 <Badge tone="warning">Medium–High impact</Badge>
               </div>
-              <span className="font-mono text-[0.56rem] uppercase tracking-[0.12em] text-subtle">
+              <span className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
                 E-01 – E-06
               </span>
             </div>
@@ -1042,7 +1224,7 @@ export default function DiligencePage() {
             </div>
 
             <div className="grid border-t border-line lg:grid-cols-[1.4fr_0.6fr]">
-              <div className="space-y-6 p-5 sm:p-7 lg:border-r lg:border-line">
+              <div className="min-w-0 space-y-6 p-5 sm:p-7 lg:border-r lg:border-line">
                 <RecordBlock label="Context">
                   <p className="text-sm leading-relaxed text-muted">
                     Tarka lets users bring their own LLM provider credentials.
@@ -1063,7 +1245,7 @@ export default function DiligencePage() {
                     Store provider keys encrypted with AES-256-GCM. New
                     ciphertext uses a versioned format:
                   </p>
-                  <pre className="mt-3 overflow-x-auto border border-line bg-bg px-4 py-3 font-mono text-[0.7rem] leading-relaxed text-text">
+                  <pre className="mt-3 overflow-x-auto border border-line bg-bg px-4 py-3 font-mono text-[0.72rem] leading-relaxed text-text">
                     <code>enc:v2:&lt;salt&gt;:&lt;iv&gt;:&lt;authTag&gt;:&lt;ciphertext&gt;</code>
                   </pre>
 
@@ -1073,7 +1255,7 @@ export default function DiligencePage() {
                         key={label}
                         className="rounded-[6px] border border-line bg-bg p-3"
                       >
-                        <dt className="font-mono text-[0.54rem] uppercase tracking-[0.1em] text-subtle">
+                        <dt className="font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted">
                           {label}
                         </dt>
                         <dd className="mt-1 text-xs leading-relaxed text-text">
@@ -1153,19 +1335,40 @@ export default function DiligencePage() {
                 </div>
 
                 <div className="mt-6 border-t border-line pt-5">
-                  <p className="eyebrow">Record trail</p>
-                  <ol className="mt-3 space-y-3">
-                    {TRAIL.map(([commit, event, date]) => (
-                      <li key={commit}>
-                        <p className="font-mono text-[0.68rem] text-text">
-                          {commit}
-                        </p>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <p className="eyebrow">Record trail</p>
+                    <span className="font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted">
+                      4 commits
+                    </span>
+                  </div>
+                  <ol className="relative mt-4 space-y-4 border-l border-line-strong pl-4">
+                    {TRAIL.map(([commit, event, date], index) => (
+                      <li key={commit} className="relative">
+                        <span
+                          aria-hidden="true"
+                          className={cx(
+                            'absolute -left-5 top-1 h-2 w-2 rounded-full',
+                            index === TRAIL.length - 1
+                              ? 'bg-accent'
+                              : 'bg-line-strong'
+                          )}
+                        />
+                        <div className="flex flex-wrap items-baseline justify-between gap-x-2">
+                          <p className="font-mono text-[0.72rem] font-semibold text-text">
+                            {commit}
+                          </p>
+                          <p className="font-mono text-[0.66rem] uppercase tracking-[0.08em] text-muted">
+                            {date}
+                          </p>
+                        </div>
                         <p className="mt-0.5 text-xs leading-relaxed text-muted">
                           {event}
                         </p>
-                        <p className="mt-0.5 font-mono text-[0.54rem] uppercase tracking-[0.1em] text-subtle">
-                          {date}
-                        </p>
+                        {index === TRAIL.length - 1 && (
+                          <span className="mt-1 inline-block border border-accent-line bg-accent-soft px-1.5 py-0.5 font-mono text-[0.66rem] uppercase tracking-[0.1em] text-accent">
+                            Snapshot
+                          </span>
+                        )}
                       </li>
                     ))}
                   </ol>
@@ -1200,10 +1403,10 @@ export default function DiligencePage() {
                 </span>
 
                 <div className="min-w-0">
-                  <p className="break-all font-mono text-[0.7rem] leading-relaxed text-text">
+                  <p className="break-all font-mono text-[0.72rem] leading-relaxed text-text">
                     {item.source}
                   </p>
-                  <p className="mt-1 font-mono text-[0.56rem] uppercase tracking-[0.08em] text-subtle">
+                  <p className="mt-1 font-mono text-[0.72rem] uppercase tracking-[0.08em] text-muted">
                     {item.lines} · {SNAPSHOT.short}
                   </p>
                 </div>
@@ -1213,11 +1416,11 @@ export default function DiligencePage() {
                 </p>
 
                 <div className="col-start-2 min-w-0 lg:col-start-4 lg:text-right">
-                  <p className="hidden font-mono text-[0.52rem] uppercase tracking-[0.1em] text-subtle lg:block">
+                  <p className="hidden font-mono text-[0.66rem] uppercase tracking-[0.1em] text-muted lg:block">
                     SHA-256
                   </p>
                   <p
-                    className="break-all font-mono text-[0.58rem] leading-relaxed text-muted lg:mt-0.5"
+                    className="break-all font-mono text-[0.72rem] leading-relaxed text-muted lg:mt-0.5"
                     title={item.hashTitle}
                   >
                     {item.hashLabel}
@@ -1227,7 +1430,7 @@ export default function DiligencePage() {
             ))}
           </ol>
 
-          <p className="mt-4 text-xs leading-relaxed text-subtle">
+          <p className="mt-4 text-xs leading-relaxed text-muted">
             Evidence hashes are SHA-256 of the file at snapshot{' '}
             <span className="font-mono">{SNAPSHOT.short}</span>. Line numbers are
             from that snapshot.
@@ -1243,6 +1446,50 @@ export default function DiligencePage() {
                 No contradiction with the README claim was found. The claim is
                 supported by the code and tests.
               </p>
+
+              <div className="mt-6 border border-line bg-bg p-4">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="eyebrow">Claim support</p>
+                  <span className="font-mono text-xs text-text">3 / 4</span>
+                </div>
+                <div
+                  className="mt-3 flex h-3 gap-[2px] overflow-hidden"
+                  role="img"
+                  aria-label="Claim support: three of four claims are verified, one is unsupported."
+                >
+                  {CLAIMS.map((item) => (
+                    <span
+                      key={item.claim}
+                      className={cx(
+                        'h-full flex-1',
+                        item.verified ? 'bg-success' : 'bg-warning'
+                      )}
+                    />
+                  ))}
+                </div>
+                <dl className="mt-3 space-y-2 text-xs">
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="flex items-center gap-2 text-muted">
+                      <span
+                        aria-hidden="true"
+                        className="h-2 w-2 bg-success"
+                      />
+                      Verified by code
+                    </dt>
+                    <dd className="font-mono text-text">3</dd>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <dt className="flex items-center gap-2 text-muted">
+                      <span
+                        aria-hidden="true"
+                        className="h-2 w-2 bg-warning"
+                      />
+                      Not supported or not claimed
+                    </dt>
+                    <dd className="font-mono text-text">1</dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
             <div className="border-t border-line">
@@ -1255,7 +1502,7 @@ export default function DiligencePage() {
                     <p className="text-sm font-semibold text-text">
                       {item.claim}
                     </p>
-                    <p className="mt-1 font-mono text-[0.56rem] uppercase tracking-[0.1em] text-subtle">
+                    <p className="mt-1 font-mono text-[0.72rem] uppercase tracking-[0.1em] text-muted">
                       {item.where}
                     </p>
                     <p className="mt-1 text-xs leading-relaxed text-muted">
@@ -1289,10 +1536,10 @@ export default function DiligencePage() {
           />
 
           <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:gap-14">
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
                 <p className="eyebrow">Residual risk register</p>
-                <span className="font-mono text-[0.56rem] text-subtle">
+                <span className="font-mono text-[0.72rem] text-muted">
                   05 items
                 </span>
               </div>
@@ -1303,14 +1550,14 @@ export default function DiligencePage() {
                     key={risk.title}
                     className="grid grid-cols-[2rem_1fr] gap-3 border-b border-line py-4"
                   >
-                    <span className="font-mono text-[0.6rem] text-subtle">
+                    <span className="font-mono text-[0.72rem] text-muted">
                       {String(index + 1).padStart(2, '0')}
                     </span>
-                    <div>
-                      <h3 className="text-sm font-semibold text-text">
+                    <div className="min-w-0">
+                      <h3 className="break-words text-sm font-semibold text-text">
                         {risk.title}
                       </h3>
-                      <p className="mt-1 text-sm leading-relaxed text-muted">
+                      <p className="mt-1 break-words text-sm leading-relaxed text-muted">
                         {risk.body}
                       </p>
                     </div>
@@ -1319,31 +1566,42 @@ export default function DiligencePage() {
               </ol>
             </div>
 
-            <aside className="space-y-4">
+            <aside className="min-w-0 space-y-4">
               <Card className="p-5">
                 <p className="eyebrow">Request priority</p>
-                <div className="mt-4 divide-y divide-line border-y border-line">
-                  {[
-                    ['High', '2', 'bg-danger'],
-                    ['Medium', '2', 'bg-warning'],
-                    ['Low', '1', 'bg-subtle'],
-                  ].map(([label, count, color]) => (
-                    <div
-                      key={label}
-                      className="flex items-center justify-between gap-3 py-3"
-                    >
-                      <span className="flex items-center gap-2 text-sm text-muted">
-                        <span
-                          aria-hidden="true"
-                          className={cx('h-1.5 w-1.5', color)}
-                        />
-                        {label}
-                      </span>
-                      <span className="font-mono text-lg text-text">{count}</span>
-                    </div>
+                <div
+                  className="mt-4 flex h-2.5 gap-[2px] overflow-hidden"
+                  role="img"
+                  aria-label="Diligence request priority: two high, two medium, and one low."
+                >
+                  {REQUEST_PRIORITY.map((item) => (
+                    <span
+                      key={item.label}
+                      className={cx('h-full', item.bar)}
+                      style={{ width: `${(item.count / 5) * 100}%` }}
+                    />
                   ))}
                 </div>
-                <p className="mt-4 font-mono text-[0.56rem] uppercase tracking-[0.12em] text-subtle">
+                <dl className="mt-4 space-y-2.5">
+                  {REQUEST_PRIORITY.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between gap-3"
+                    >
+                      <dt className="flex items-center gap-2 text-sm text-muted">
+                        <span
+                          aria-hidden="true"
+                          className={cx('h-2 w-2', item.bar)}
+                        />
+                        {item.label}
+                      </dt>
+                      <dd className="font-mono text-sm text-text">
+                        {item.count}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-4 border-t border-line pt-3 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
                   5 requests · 6 questions
                 </p>
               </Card>
@@ -1375,7 +1633,7 @@ export default function DiligencePage() {
                   Five requests for the data room.
                 </h3>
               </div>
-              <span className="font-mono text-[0.56rem] uppercase tracking-[0.12em] text-subtle">
+              <span className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
                 High → Low
               </span>
             </div>
@@ -1386,7 +1644,7 @@ export default function DiligencePage() {
                   key={request.question}
                   className="grid gap-3 border-b border-line py-4 md:grid-cols-[2rem_1.1fr_1fr_0.9fr] md:items-start"
                 >
-                  <span className="hidden pt-1 font-mono text-[0.6rem] text-subtle md:block">
+                  <span className="hidden pt-1 font-mono text-[0.72rem] text-muted md:block">
                     {String(index + 1).padStart(2, '0')}
                   </span>
 
@@ -1406,7 +1664,7 @@ export default function DiligencePage() {
 
                   <div>
                     <p className="eyebrow md:hidden">Request</p>
-                    <p className="mt-1 font-mono text-[0.62rem] leading-relaxed text-subtle md:mt-0 md:text-right">
+                    <p className="mt-1 font-mono text-[0.72rem] leading-relaxed text-muted md:mt-0 md:text-right">
                       {request.request}
                     </p>
                   </div>
@@ -1418,7 +1676,7 @@ export default function DiligencePage() {
           <div className="mt-10 border-t border-line pt-5">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p className="eyebrow">Revisit D-001 when</p>
-              <span className="font-mono text-[0.56rem] uppercase tracking-[0.12em] text-subtle">
+              <span className="font-mono text-[0.72rem] uppercase tracking-[0.12em] text-muted">
                 5 triggers
               </span>
             </div>
@@ -1454,7 +1712,7 @@ export default function DiligencePage() {
               {IN_SCOPE.map((item) => (
                 <li
                   key={item}
-                  className="break-all font-mono text-[0.68rem] leading-relaxed text-muted"
+                  className="break-all font-mono text-[0.72rem] leading-relaxed text-muted"
                 >
                   {item}
                 </li>
@@ -1470,7 +1728,7 @@ export default function DiligencePage() {
                   key={item}
                   className="flex gap-2.5 text-sm leading-relaxed text-muted"
                 >
-                  <span aria-hidden="true" className="text-subtle">
+                  <span aria-hidden="true" className="text-muted">
                     —
                   </span>
                   {item}
@@ -1481,7 +1739,7 @@ export default function DiligencePage() {
             <div>
               <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
                 <p className="eyebrow">Method</p>
-                <span className="font-mono text-[0.56rem] text-subtle">
+                <span className="font-mono text-[0.72rem] text-muted">
                   Static
                 </span>
               </div>
@@ -1515,7 +1773,7 @@ export default function DiligencePage() {
             <Card className="flex flex-col p-5 sm:p-6">
               <div className="flex items-center justify-between gap-3">
                 <p className="eyebrow">Redaction & sharing</p>
-                <span className="font-mono text-[0.56rem] text-subtle">
+                <span className="font-mono text-[0.72rem] text-muted">
                   03 rules
                 </span>
               </div>
@@ -1532,9 +1790,9 @@ export default function DiligencePage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-auto border-t border-line pt-4 text-xs leading-relaxed text-subtle">
+              <p className="mt-auto border-t border-line pt-4 text-xs leading-relaxed text-muted">
                 The sample uses the public test string{' '}
-                <code className="break-all font-mono text-[0.66rem]">
+                <code className="break-all font-mono text-[0.72rem]">
                   sk-live-super-secret-api-key
                 </code>{' '}
                 from the test suite. It is not a real credential.
@@ -1589,7 +1847,7 @@ export default function DiligencePage() {
       <section className="bg-accent text-accent-ink print:bg-transparent print:text-text">
         <div className="mx-auto grid max-w-[88rem] gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-end lg:px-10 lg:py-20">
           <div>
-            <p className="font-mono text-[0.6rem] font-semibold uppercase tracking-[0.18em] text-accent-ink/70 print:text-subtle">
+            <p className="font-mono text-[0.72rem] font-semibold uppercase tracking-[0.18em] text-accent-ink/70 print:text-muted">
               Next deal
             </p>
             <h2 className="mt-4 max-w-2xl font-display text-[2.4rem] leading-[1.02] sm:text-5xl">
