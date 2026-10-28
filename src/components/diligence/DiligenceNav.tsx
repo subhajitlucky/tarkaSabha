@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Link from 'next/link'
 import { cx } from '@/components/ui/cx'
 
 const SECTIONS = [
@@ -110,14 +109,14 @@ export function DiligenceNav() {
           })}
         </nav>
 
-        <Link
+        <a
           href="/diligence-sample.md"
           download
           className="hidden shrink-0 items-center gap-2 border-l border-line py-2 pl-4 font-mono text-[0.58rem] uppercase tracking-[0.12em] text-subtle transition-colors hover:text-accent sm:flex"
         >
           Download .md
           <span aria-hidden="true">↓</span>
-        </Link>
+        </a>
       </div>
     </div>
   )

@@ -714,7 +714,7 @@ export default function DiligencePage() {
               </p>
 
               <div className="hero-actions mt-8">
-                <Link
+                <a
                   href="/diligence-sample.md"
                   download
                   className={buttonClasses({
@@ -724,7 +724,7 @@ export default function DiligencePage() {
                   })}
                 >
                   Download sample dossier
-                </Link>
+                </a>
                 <a
                   href="#d-001"
                   className={buttonClasses({
@@ -1573,14 +1573,14 @@ export default function DiligencePage() {
                   </dd>
                 </div>
               </dl>
-              <Link
+              <a
                 href="/diligence-sample.md"
                 download
                 className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-accent transition-opacity hover:opacity-80"
               >
                 Download the full Markdown dossier
                 <span aria-hidden="true">↓</span>
-              </Link>
+              </a>
             </Card>
           </div>
         </div>
@@ -1612,13 +1612,13 @@ export default function DiligencePage() {
               Request a sprint
               <span aria-hidden="true">→</span>
             </Link>
-            <Link
+            <a
               href="/diligence-sample.md"
               download
               className="inline-flex items-center justify-center gap-2 rounded-[6px] border border-accent-ink/40 px-5 py-2.5 text-[0.9375rem] font-semibold text-accent-ink transition-colors hover:bg-accent-ink/10 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-ink"
             >
               Download sample
-            </Link>
+            </a>
           </div>
         </div>
       </section>
