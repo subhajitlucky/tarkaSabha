@@ -125,11 +125,16 @@ export async function POST(
       return (order[a.kind] ?? 4) - (order[b.kind] ?? 4) || a.path.localeCompare(b.path)
     })
 
+    const body = (await request.json().catch(() => null)) as { focus?: unknown } | null
+    const focus =
+      typeof body?.focus === 'string' ? body.focus.replace(/\s+/g, ' ').trim().slice(0, 200) : undefined
+
     const promptSnapshots = ordered.slice(0, 23)
     const prompt = buildExtractionPrompt({
       repo: `${source.owner}/${source.name}`,
       ref: source.ref,
       snapshots: promptSnapshots,
+      focus: focus || undefined,
     })
 
     const response = await withTimeout(
@@ -150,7 +155,8 @@ export async function POST(
 
     const parsed = parseCandidateResponse(
       response.content,
-      new Set(promptSnapshots.map((snapshot) => snapshot.id))
+      new Set(promptSnapshots.map((snapshot) => snapshot.id)),
+      new Map(promptSnapshots.map((snapshot) => [snapshot.id, snapshot.content ?? '']))
     )
 
     if (parsed === null) {

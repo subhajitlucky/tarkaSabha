@@ -72,6 +72,7 @@ export default function SourcePage() {
   const [notFound, setNotFound] = useState(false)
   const [error, setError] = useState('')
   const [extracting, setExtracting] = useState(false)
+  const [focus, setFocus] = useState('')
   const [candidateError, setCandidateError] = useState('')
   const [candidateNotice, setCandidateNotice] = useState('')
   const [reviewingCandidate, setReviewingCandidate] = useState<string | null>(null)
@@ -130,7 +131,11 @@ export default function SourcePage() {
     try {
       const res = await fetch(
         `/api/workspaces/${id}/sources/${sourceId}/extract`,
-        { method: 'POST' }
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ focus: focus.trim() || undefined }),
+        }
       )
       const data = await res.json().catch(() => null)
 
@@ -336,24 +341,39 @@ export default function SourcePage() {
         </div>
 
         {canEdit && (
-          <div className="mb-3 flex flex-wrap items-center gap-3">
-            <Button
-              type="button"
-              size="sm"
-              variant="secondary"
-              onClick={extractCandidates}
-              disabled={extracting || pendingCandidates.length > 0}
-            >
-              {extracting
-                ? 'Extracting…'
-                : pendingCandidates.length > 0
-                  ? 'Review pending first'
-                  : 'Extract candidate decisions'}
-            </Button>
-            <p className="text-xs leading-relaxed text-subtle">
-              Uses your default provider. The model proposes; you confirm before anything
-              becomes a decision.
-            </p>
+          <div className="mb-3">
+            <label className="mb-3 block max-w-md">
+              <span className="font-mono text-[0.6rem] uppercase tracking-[0.12em] text-subtle">
+                Focus (optional)
+              </span>
+              <input
+                type="text"
+                value={focus}
+                onChange={(event) => setFocus(event.target.value)}
+                maxLength={200}
+                placeholder="e.g. authentication and tenant isolation"
+                className="mt-1 w-full border border-line bg-surface px-3 py-2 text-sm text-text placeholder:text-subtle focus-visible:border-accent focus-visible:outline-none"
+              />
+            </label>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button
+                type="button"
+                size="sm"
+                variant="secondary"
+                onClick={extractCandidates}
+                disabled={extracting || pendingCandidates.length > 0}
+              >
+                {extracting
+                  ? 'Extracting…'
+                  : pendingCandidates.length > 0
+                    ? 'Review pending first'
+                    : 'Extract candidate decisions'}
+              </Button>
+              <p className="text-xs leading-relaxed text-subtle">
+                Uses your default provider. The model proposes; you confirm before anything
+                becomes a decision.
+              </p>
+            </div>
           </div>
         )}
 

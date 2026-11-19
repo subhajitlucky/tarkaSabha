@@ -33,11 +33,25 @@ describe('buildExtractionPrompt', () => {
 
     expect(prompt).toContain('Repository: acme/kestrel')
     expect(prompt).toContain('Ref: main')
-    expect(prompt).toContain('SNAPSHOT snap-file')
+    expect(prompt).toContain('SNAPSHOT_ID: snap-file')
     expect(prompt).toContain('Sessions are validated on every request.')
     expect(prompt).toContain('Do NOT propose recommendations')
     expect(prompt).toContain('untrusted data')
     expect(prompt).toContain(`at most ${MAX_CANDIDATES}`)
+    expect(prompt).toContain('copied verbatim')
+  })
+
+  it('scopes extraction when a focus is provided', () => {
+    const prompt = buildExtractionPrompt({
+      repo: 'acme/kestrel',
+      ref: 'main',
+      snapshots,
+      focus: 'authentication and tenant isolation',
+    })
+
+    expect(prompt).toContain('Focus: authentication and tenant isolation')
+    expect(prompt).toContain('Only extract decisions that fall within this focus')
+    expect(prompt).toContain('Do not extract migration notes')
   })
 })
 
@@ -83,6 +97,50 @@ describe('parseCandidateResponse', () => {
     })
 
     expect(parseCandidateResponse(text, new Set(['snap-file']))).toEqual([])
+  })
+
+  it('drops paraphrased quotes when snapshot content is provided', () => {
+    const text = JSON.stringify({
+      candidates: [
+        {
+          title: 'Validate sessions on every request',
+          confidence: 'HIGH',
+          evidence: [
+            {
+              snapshotId: 'snap-file',
+              quote: 'Session validation happens on every request.',
+            },
+          ],
+        },
+      ],
+    })
+
+    const content = new Map([['snap-file', 'Sessions are validated on every request.']])
+    expect(
+      parseCandidateResponse(text, new Set(['snap-file']), content)
+    ).toEqual([])
+  })
+
+  it('keeps an exact quote when snapshot content is provided', () => {
+    const text = JSON.stringify({
+      candidates: [
+        {
+          title: 'Validate sessions on every request',
+          confidence: 'HIGH',
+          evidence: [
+            {
+              snapshotId: 'snap-file',
+              quote: 'Sessions are validated on every request.',
+            },
+          ],
+        },
+      ],
+    })
+
+    const content = new Map([['snap-file', 'Sessions are validated on every request.']])
+    expect(
+      parseCandidateResponse(text, new Set(['snap-file']), content)
+    ).toHaveLength(1)
   })
 
   it('returns null for malformed output', () => {
