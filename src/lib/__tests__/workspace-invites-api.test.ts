@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { sha256 } from '../decision-report'
 
+const FUTURE = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+
 const { prismaMock, authMock } = vi.hoisted(() => ({
   prismaMock: {
     membership: { findUnique: vi.fn(), upsert: vi.fn() },
@@ -52,7 +54,7 @@ describe('POST /api/workspaces/[id]/invites', () => {
       id: 'i1',
       email: 'new@example.com',
       role: 'REVIEWER',
-      expiresAt: new Date('2026-10-28T12:00:00.000Z'),
+      expiresAt: FUTURE,
       createdAt: new Date('2026-10-21T12:00:00.000Z'),
     })
   })
@@ -118,7 +120,7 @@ describe('POST /api/invites/[token]/accept', () => {
     workspaceId: 'w1',
     email: 'new@example.com',
     role: 'REVIEWER',
-    expiresAt: new Date('2026-10-28T12:00:00.000Z'),
+    expiresAt: FUTURE,
     acceptedAt: null,
     revokedAt: null,
     workspace: { name: 'Project Kestrel' },
