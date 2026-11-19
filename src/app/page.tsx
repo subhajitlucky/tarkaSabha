@@ -5,10 +5,10 @@ import { Card } from '@/components/ui/Card'
 import { ProductPreview } from '@/components/marketing/ProductPreview'
 
 const EVIDENCE = [
-  { id: 'E-01', source: 'architecture/infra.md', note: 'Data access and reliability decisions', kind: 'GitHub' },
-  { id: 'E-02', source: 'ADR-003-aws.md', note: 'Cloud infrastructure trade-offs', kind: 'Docs' },
-  { id: 'E-03', source: 'ENG-421', note: 'Decision discussion and rationale', kind: 'Jira' },
-  { id: 'E-04', source: '#infrastructure', note: 'Operational constraints and risks', kind: 'Slack' },
+  { id: 'E-01', source: 'README.md', note: 'Product intent and constraints', kind: 'File' },
+  { id: 'E-02', source: 'docs/architecture.md', note: 'System boundaries and trade-offs', kind: 'File' },
+  { id: 'E-03', source: 'src/lib/crypto.ts', note: 'Key handling and cipher format', kind: 'File' },
+  { id: 'E-04', source: 'PR #184', note: 'Auth boundary change and review', kind: 'Pull request' },
 ]
 
 
@@ -95,6 +95,11 @@ export default function Home() {
               ))}
             </div>
           </div>
+          <p className="mt-8 max-w-3xl border-l-2 border-accent pl-4 text-sm leading-relaxed text-muted">
+            The model proposes candidates. Every candidate needs a snapshot citation; unknown
+            sources and uncited candidates are dropped. A human confirms or rejects each one
+            before it enters the record.
+          </p>
         </div>
       </section>
 
@@ -208,29 +213,6 @@ export default function Home() {
                 <p className="max-w-2xl pb-5 text-sm leading-relaxed text-muted">{answer}</p>
               </details>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-line bg-surface">
-        <div className="mx-auto flex max-w-[88rem] flex-col gap-8 px-5 sm:px-8 lg:px-10 py-14 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="eyebrow">Before the next signature</p>
-            <h2 className="mt-3 max-w-2xl text-4xl leading-[1.02] text-text">
-              Bring the evidence pack, not just the code review.
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/diligence">
-              <Button variant="primary" size="lg">
-                Read the sample
-              </Button>
-            </Link>
-            <Link href="/workspaces">
-              <Button variant="secondary" size="lg">
-                Open a workspace
-              </Button>
-            </Link>
           </div>
         </div>
       </section>

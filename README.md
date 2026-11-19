@@ -4,6 +4,14 @@ Tarka Sabha is a decision evidence workspace for technical diligence. Teams fram
 
 The original multi-agent council is still here as an optional **review room** inside the record. The primary product object is the decision, not the chat.
 
+## Scope and limits
+
+- The model proposes candidates from bounded snapshots. It does not make the decision.
+- Every candidate needs at least one cited snapshot. Unknown source IDs and uncited candidates are dropped.
+- A human confirms or rejects each candidate before it enters the decision record.
+- The workspace cannot prove runtime behavior, hosted platform settings, or code that was not ingested.
+- Decision debt is a prioritization heuristic, not a validated risk rating.
+
 ## Decision Workspace
 
 - **Workspaces** scope decisions, evidence, members, sources, and reports.
@@ -109,9 +117,8 @@ When `EXPORT_SIGNING_KEY` is set, a dossier can be exported as a signed JSON bun
 
 - Live: https://tarkasabha.vercel.app
 - Decision diligence sample: https://tarkasabha.vercel.app/diligence
-- Sample council: https://tarkasabha.vercel.app/demo
 - Portfolio case study: https://subhajitpradhan.vercel.app/projects/tarka-sabha
-- Status: Live platform
+- Status: Live product
 
 ## Product Problem
 
@@ -133,15 +140,8 @@ Most AI chat demos are single-user, single-model conversations. Tarka Sabha expl
 - Public `/diligence` sample page with a downloadable decision dossier.
 - Append-only workspace audit trail with a read-only activity feed.
 - Workspace decision-health insights for debt, outcomes, coverage, and overdue revisits.
-- Custom persona creation with name, bio, personality, provider, model, and temperature.
-- Topic-based debate sessions with multiple persona participants.
-- Sequential speaker orchestration with mention-aware priority.
-- Multi-provider LLM adapter layer for OpenAI, Anthropic, Google-compatible, Groq, Ollama, DeepSeek, Mistral, Together, OpenRouter, Perplexity, Hugging Face, and custom endpoints.
-- Encrypted API key storage using AES-256-GCM.
-- Provider-specific validation and clearer error handling.
-- Conversation history shaping so each persona receives recent context with speaker names.
-- Rate limit persistence through the database.
-- Auth-backed user, provider, persona, chat, message, and feedback models.
+
+The original multi-agent review room remains in the codebase as a legacy surface, but it is not part of the primary decision-evidence workflow.
 
 ## Architecture
 

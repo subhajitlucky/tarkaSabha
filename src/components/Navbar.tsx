@@ -12,22 +12,15 @@ import { cx } from './ui/cx'
 const PUBLIC_LINKS = [
   { href: '/product', label: 'Product' },
   { href: '/diligence', label: 'Diligence' },
-  { href: '/teams', label: 'For teams' },
-  { href: '/pricing', label: 'Pricing' },
+  { href: '/security', label: 'Security' },
   { href: '/about', label: 'About' },
 ]
 
 const APP_LINKS = [
   { href: '/workspaces', label: 'Workspaces', icon: 'workspaces' as const },
-  { href: '/history', label: 'Review rooms', icon: 'history' as const },
 ]
 
-const TOOL_LINKS = [
-  { href: '/personas', label: 'Agents', icon: 'agents' as const },
-  { href: '/providers', label: 'Providers', icon: 'providers' as const },
-]
-
-function NavIcon({ name }: { name: 'workspaces' | 'history' | 'agents' | 'providers' | 'sample' }) {
+function NavIcon({ name }: { name: 'workspaces' | 'sample' }) {
   if (name === 'workspaces') {
     return (
       <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
@@ -35,30 +28,6 @@ function NavIcon({ name }: { name: 'workspaces' | 'history' | 'agents' | 'provid
         <rect x="14" y="3" width="7" height="7" rx="1.5" />
         <rect x="3" y="14" width="7" height="7" rx="1.5" />
         <rect x="14" y="14" width="7" height="7" rx="1.5" />
-      </svg>
-    )
-  }
-  if (name === 'history') {
-    return (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-        <path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
-        <path d="M8 9h8M8 13h5" />
-      </svg>
-    )
-  }
-  if (name === 'agents') {
-    return (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3 20a6 6 0 0 1 12 0M16 5a3 3 0 0 1 0 6M18 20a6 6 0 0 0-2-4.5" />
-      </svg>
-    )
-  }
-  if (name === 'providers') {
-    return (
-      <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="M7 9h4M7 13h2M15 12h2v3h-2z" />
       </svg>
     )
   }
@@ -217,26 +186,6 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
           ))}
         </nav>
 
-        <p className="eyebrow px-3 pb-2 pt-7">Tools</p>
-        <nav aria-label="Tools" className="space-y-0.5">
-          {TOOL_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              aria-current={isActive(link.href) ? 'page' : undefined}
-              className={cx(
-                'flex items-center gap-2.5 rounded-[6px] px-3 py-2 text-sm transition-colors',
-                isActive(link.href)
-                  ? 'bg-nav-active font-semibold text-nav-active-text'
-                  : 'text-muted hover:bg-surface-2 hover:text-text'
-              )}
-            >
-              <NavIcon name={link.icon} />
-              {link.label}
-            </Link>
-          ))}
-        </nav>
-
         <p className="eyebrow px-3 pb-2 pt-7">Public</p>
         <Link
           href="/diligence"
@@ -328,7 +277,7 @@ export default function Navbar({ mode }: { mode: 'app' | 'marketing' }) {
             <>
               <p className="eyebrow px-3 pb-2 pt-6">Workspace</p>
               <div className="space-y-0.5">
-                {[...APP_LINKS, ...TOOL_LINKS].map((link) => (
+                {APP_LINKS.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}

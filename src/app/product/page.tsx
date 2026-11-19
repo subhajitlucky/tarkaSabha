@@ -102,10 +102,9 @@ const SURFACES = [
 ]
 
 const STEPS = [
-  ['Ingest', 'Repository, docs, tickets, and architecture notes.'],
+  ['Ingest', 'Repository, docs, commits, pull requests, and issues.'],
   ['Extract', 'Find the decisions already embedded in the code.'],
   ['Attach', 'Link each claim to a source coordinate and hash.'],
-  ['Review', 'Pressure-test the reasoning in a review room.'],
   ['Publish', 'Generate a dossier that can travel without the chat.'],
 ]
 
@@ -214,7 +213,7 @@ export default function ProductPage() {
       <section className="border-y border-line bg-surface">
         <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 lg:px-10">
           <Rule label="From source to dossier" className="mb-8" />
-          <div className="grid gap-3 md:grid-cols-5">
+          <div className="grid gap-3 md:grid-cols-4">
             {STEPS.map(([title, body], index) => (
               <div key={title} className="border border-line bg-bg p-5">
                 <p className="font-mono text-[0.62rem] text-accent">
@@ -229,36 +228,45 @@ export default function ProductPage() {
       </section>
 
       <section className="bg-bg">
-        <div className="mx-auto grid max-w-[88rem] gap-6 px-5 py-16 sm:px-8 lg:grid-cols-3 lg:px-10">
-          {[
-            {
-              eyebrow: 'Technical M&A',
-              title: 'Pre-sign diligence',
-              body: 'Turn an engineering review into a source-backed record of what the target chose and what remains unresolved.',
-            },
-            {
-              eyebrow: 'Portfolio operations',
-              title: 'Post-close review',
-              body: 'Keep revisit obligations and unresolved risk visible after the deal team moves on.',
-            },
-            {
-              eyebrow: 'Technical advisory',
-              title: 'A shared evidence surface',
-              body: 'Give operators, advisors, and investors one record to review.',
-            },
-          ].map((item) => (
-            <Card key={item.title} className="flex h-full flex-col">
-              <p className="eyebrow">{item.eyebrow}</p>
-              <h2 className="mt-4 font-display text-2xl text-text">{item.title}</h2>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-muted">{item.body}</p>
-              <Link
-                href="/teams"
-                className="mt-5 inline-block font-mono text-xs text-accent transition-colors hover:text-accent-hover"
-              >
-                How we work together →
-              </Link>
-            </Card>
-          ))}
+        <div className="mx-auto max-w-[88rem] px-5 py-16 sm:px-8 lg:px-10">
+          <div className="grid gap-10 lg:grid-cols-[0.7fr_1.3fr]">
+            <div>
+              <p className="eyebrow">Model contract</p>
+              <h2 className="mt-4 max-w-md text-4xl leading-[1.02] text-text">
+                The model proposes. The evidence decides.
+              </h2>
+              <p className="mt-4 max-w-md text-sm leading-relaxed text-muted">
+                Extraction is bounded and citation-constrained. A candidate that cannot point to a
+                snapshot does not enter the record.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                [
+                  'Bounded input',
+                  'Snapshots are capped by count and size; the prompt is capped at 45k characters.',
+                ],
+                [
+                  'Cited output',
+                  'Each candidate needs 1–3 snapshot citations. Unknown source IDs and uncited candidates are dropped.',
+                ],
+                [
+                  'Human decision',
+                  'The model only proposes. A reviewer confirms or rejects each candidate before it enters the record.',
+                ],
+              ].map(([title, body]) => (
+                <div key={title} className="border border-line bg-surface p-5">
+                  <h3 className="text-sm font-semibold text-text">{title}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="mt-8 max-w-3xl border-l-2 border-accent pl-4 text-sm leading-relaxed text-muted">
+            It cannot prove runtime behavior, hosted platform settings, or code that was not
+            ingested. Snapshot coverage and decision debt are visible limits, not hidden
+            assumptions.
+          </p>
         </div>
       </section>
 
@@ -285,29 +293,6 @@ export default function ProductPage() {
                 <p className="mt-1 text-xs leading-relaxed text-muted">{body}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-t border-line bg-bg">
-        <div className="mx-auto flex max-w-[88rem] flex-col gap-6 px-5 py-12 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:px-10">
-          <div>
-            <p className="eyebrow">Next</p>
-            <h2 className="mt-3 max-w-2xl text-3xl leading-tight text-text">
-              Read the sample record, then bring a live deal.
-            </h2>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link href="/diligence">
-              <Button variant="primary" size="lg">
-                Read the sample dossier
-              </Button>
-            </Link>
-            <Link href="/teams">
-              <Button variant="secondary" size="lg">
-                For deal teams
-              </Button>
-            </Link>
           </div>
         </div>
       </section>

@@ -3,16 +3,11 @@ import Link from 'next/link'
 const FOOTER_LINKS = [
   ['/product', 'Product'],
   ['/diligence', 'Diligence'],
-  ['/teams', 'For teams'],
-  ['/pricing', 'Pricing'],
   ['/security', 'Security'],
   ['/privacy', 'Privacy'],
   ['/terms', 'Terms'],
   ['/about', 'About'],
-  ['/demo', 'Sample review'],
-  ['/careers', 'Careers'],
   ['/workspaces', 'Open workspace'],
-  ['/feedback', 'Feedback'],
 ]
 
 export function Footer() {
@@ -30,8 +25,7 @@ export function Footer() {
             <span className="font-display text-lg">Tarka Sabha</span>
           </div>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            Decision evidence for technical M&A. Frame the decision, attach the source, keep the
-            approval trail, and share a dossier that can be read without the chat.
+            Source-backed decision records and diligence dossiers for technical M&A.
           </p>
           <p className="mt-6 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-subtle">
             Private by default · Source-backed · Expiring shares
