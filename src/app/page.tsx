@@ -82,7 +82,7 @@ export default function Home() {
 
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                ['01', 'Ingest sources', 'Repositories, docs, tickets, and architecture notes.'],
+                ['01', 'Ingest sources', 'Repositories, docs, commits, pull requests, and issues.'],
                 ['02', 'Extract decisions', 'Find and structure the choices already made.'],
                 ['03', 'Verify with evidence', 'Link every claim to source material and a hash.'],
                 ['04', 'Generate dossier', 'Produce a board-ready report with open questions.'],
