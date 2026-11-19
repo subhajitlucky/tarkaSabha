@@ -49,6 +49,16 @@ On a source snapshot page, a reviewer can extract candidate decisions. The serve
 - Pending candidates must be reviewed before another extraction can run.
 - Configure a default provider under `/providers` before extracting.
 
+## Decision Extraction Benchmark
+
+A small public eval lives at `/benchmark`. It runs the extraction prompt against three public repositories: 18 labeled decisions and three negative sources. It reports label recall, accepted precision, raw and accepted citation validity, and refusal accuracy.
+
+- Dataset: `benchmarks/decision-extraction/dataset.json`
+- Results: `benchmarks/decision-extraction/results.json`
+- Run: `npm run eval:decisions` with `EVAL_OPENROUTER_API_KEY` set.
+
+The parser verifies every quote against the snapshot and drops paraphrases. Accepted citation validity is 100% by construction; raw citation validity measures the model before enforcement.
+
 ## Decision Debt
 
 Every decision stores a 0–100 debt score and a rationale. The score is recomputed after evidence, approval, state, or impact changes:

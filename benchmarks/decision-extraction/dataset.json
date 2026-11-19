@@ -1,0 +1,349 @@
+{
+  "version": 1,
+  "generatedAt": "2026-11-19",
+  "model": "openai/gpt-4o-mini",
+  "provider": "openrouter",
+  "notes": "Small, directional eval. 18 labeled decisions plus 3 negative cases. Matching is lexical. See README.md for method and limits.",
+  "repos": [
+    {
+      "id": "hono",
+      "repo": "honojs/hono",
+      "ref": "75ff8e3ea18485589816881c6278bc9783e56602",
+      "snapshots": [
+        {
+          "id": "hono-readme",
+          "kind": "FILE",
+          "path": "README.md",
+          "content": "<div align=\"center\">\n  <a href=\"https://hono.dev\">\n    <img src=\"https://raw.githubusercontent.com/honojs/hono/main/docs/images/hono-title.png\" width=\"500\" height=\"auto\" alt=\"Hono\"/>\n  </a>\n</div>\n\n<hr />\n\n[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/honojs/hono/ci.yml?branch=main)](https://github.com/honojs/hono/actions)\n[![GitHub](https://img.shields.io/github/license/honojs/hono)](https://github.com/honojs/hono/blob/main/LICENSE)\n[![npm](https://img.shields.io/npm/v/hono)](https://www.npmjs.com/package/hono)\n[![npm](https://img.shields.io/npm/dm/hono)](https://www.npmjs.com/package/hono)\n[![JSR](https://jsr.io/badges/@hono/hono)](https://jsr.io/@hono/hono)\n[![Bundle Size](https://img.shields.io/bundlephobia/min/hono)](https://bundlephobia.com/result?p=hono)\n[![Bundle Size](https://img.shields.io/bundlephobia/minzip/hono)](https://bundlephobia.com/result?p=hono)\n[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/honojs/hono)](https://github.com/honojs/hono/pulse)\n[![GitHub last commit](https://img.shields.io/github/last-commit/honojs/hono)](https://github.com/honojs/hono/commits/main)\n[![codecov](https://codecov.io/github/honojs/hono/graph/badge.svg)](https://codecov.io/github/honojs/hono)\n[![Discord badge](https://img.shields.io/discord/1011308539819597844?label=Discord&logo=Discord)](https://discord.gg/KMh2eNSdxV)\n\nHono - _**means flame🔥 in Japanese**_ - is a small, simple, and ultrafast web framework built on Web Standards. It works on any JavaScript runtime: Cloudflare Workers, Fastly Compute, Deno, Bun, Vercel, AWS Lambda, Lambda@Edge, and Node.js.\n\nFast, but not only fast.\n\n```ts\nimport { Hono } from 'hono'\nconst app = new Hono()\n\napp.get('/', (c) => c.text('Hono!'))\n\nexport default app\n```\n\n## Quick Start\n\n```bash\nnpm create hono@latest\n```\n\n## Features\n\n- **Ultrafast** 🚀 - The router `RegExpRouter` is really fast. Not using linear loops. Fast.\n- **Lightweight** 🪶 - The `hono/tiny` preset is under 12kB. Hono has zero dependencies and uses only the Web Standard API.\n- **Multi-runtime** 🌍 - Works on Cloudflare Workers, Fastly Compute, Deno, Bun, AWS Lambda, Lambda@Edge, or Node.js. The same code runs on all platforms.\n- **Batteries Included** 🔋 - Hono has built-in middleware, custom middleware, and third-party middleware. Batteries included.\n- **Delightful DX** 😃 - Super clean APIs. First-class TypeScript support. Now, we've got \"Types\".\n\n## Documentation\n\nThe documentation is available on [hono.dev](https://hono.dev).\n\n## Migration\n\nThe migration guide is available on [docs/MIGRATION.md](docs/MIGRATION.md).\n\n## Communication\n\n[X](https://x.com/honojs) and [Discord channel](https://discord.gg/KMh2eNSdxV) are available.\n\n## Contributing\n\nContributions Welcome! You can contribute in the following ways.\n\n- Create an Issue - Propose a new feature. Report a bug.\n- Build middleware and libraries - Grow the Hono ecosystem.\n- Share - Share your thoughts on the Blog, X, and others.\n- Sponsor - Support the maintainers through GitHub Sponsors: [@yusukebe](https://github.com/sponsors/yusukebe) and [@usualoma](https://github.com/sponsors/usualoma).\n- Make your application - Please try to use Hono.\n\nFor more details, see [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md).\n\n## Contributors\n\nThanks to [all contributors](https://github.com/honojs/hono/graphs/contributors)!\n\n## Authors\n\nYusuke Wada <https://github.com/yusukebe>\n\n_RegExpRouter_, _SmartRouter_, _LinearRouter_, and _PatternRouter_ are created by Taku Amano <https://github.com/usualoma>\n\n## License\n\nDistributed under the MIT License. See [LICENSE](LICENSE) for more information.\n"
+        },
+        {
+          "id": "hono-migration",
+          "kind": "FILE",
+          "path": "docs/MIGRATION.md",
+          "content": "# Migration Guide\n\n## v4.3.11 to v4.4.0\n\n### `deno.land/x` to JSR\n\nThere is no breaking change, but we no longer publish the module from `deno.land/x`. If you want to use Hono on Deno, use JSR instead of it.\n\nIf you migrate, replace the path `deno.land/x` with JSR's.\n\n```ts\n// From\nimport { Hono } from 'https://deno.land/x/hono/mod.ts'\n\n// To\nimport { Hono } from 'jsr:@hono/hono'\n```\n\nYou can see more details on our website: https://hono.dev/getting-started/deno\n\n## v3.12.x to v4.0.0\n\nThere are some breaking changes.\n\n### Removal of deprecated features\n\n- AWS Lambda Adapter - `LambdaFunctionUrlRequestContext` is obsolete. Use `ApiGatewayRequestContextV2` instead.\n- Next.js Adapter - `hono/nextjs` is obsolete. Use `hono/vercel` instead.\n- Context - `c.jsonT()` is obsolete. Use `c.json()` instead.\n- Context - `c.stream()` and `c.streamText()` are obsolete. Use `stream()` and `streamText()` in `hono/streaming` instead.\n- Context - `c.env()` is obsolete. Use `getRuntimeKey()` in `hono/adapter` instead.\n- Hono - `app.showRoutes()` is obsolete. Use `showRoutes()` in `hono/dev` instead.\n- Hono - `app.routerName` is obsolete. Use `getRouterName()` in `hono/dev` instead.\n- Hono - `app.head()` is no longer used. `app.get()` implicitly handles the HEAD method.\n- Hono - `app.handleEvent()` is obsolete. Use `app.fetch()` instead.\n- HonoRequest - `req.cookie()` is obsolete. Use `getCookie()` in `hono/cookie` instead.\n- HonoRequest - `headers()`, `body()`, `bodyUsed()`, `integrity()`, `keepalive()`, `referrer()`, and `signal()` are obsolete. Use the equivalent properties on `req.raw` such as `req.raw.headers`.\n\n### `serveStatic` in Cloudflare Workers Adapter requires `manifest`\n\nIf you use the Cloudflare Workers adapter's `serve-static`, you should specify the `manifest` option.\n\n```ts\nimport manifest from '__STATIC_CONTENT_MANIFEST'\n\n// ...\n\napp.use('/static/*', serveStatic({ root: './assets', manifest }))\n```\n\n### Others\n\n- The default value of the `docType` option in JSX Renderer Middleware is now `true`.\n- `FC` in `hono/jsx` does not pass `children`. Use `PropsWithChildren`.\n- Some Mime Types are removed https://github.com/honojs/hono/pull/2119.\n- Types for chaining routes with middleware matter: https://github.com/honojs/hono/pull/2046.\n- Types for the validator matter: https://github.com/honojs/hono/pull/2130.\n\n## v2.7.8 to v3.0.0\n\nThere are some breaking changes.\nIn addition to the following, type mismatches may occur.\n\n### `c.req` is now `HonoRequest`\n\n`c.req` becomes `HonoRequest`, not `Request`.\nAlthough APIs are almost the same, if you want to access `Request`, use `c.req.raw`.\n\n```ts\napp.post('/', async (c) => {\n  const metadata = c.req.raw.cf?.hostMetadata?\n  ...\n})\n```\n\n### StaticRouter is obsolete\n\nYou can't use `StaticRouter`.\n\n### Validator has been changed\n\nPrevious Validator Middleware is obsolete.\nYou can still use `hono/validator`, but the API has been changed.\nSee [the document](https://hono.dev).\n\n### `serveStatic` is provided from the Adapter\n\nServe Static Middleware is obsolete. Use Adapters instead.\n\n```ts\n// For Cloudflare Workers\nimport { serveStatic } from 'hono/cloudflare-workers'\n\n// For Bun\n// import { serveStatic } from 'hono/bun'\n\n// For Deno\n// import { serveStatic } from 'npm:hono/deno'\n\n// ...\n\napp.get('/static/*', serveStatic({ root: './' }))\n```\n\n### `serveStatic` for Cloudflare Workers \"Service Worker mode\" is obsolete\n\nFor Cloudflare Workers, the `serveStatic` is obsolete in Service Worker mode.\n\nNote: Service Worker mode is that using `app.fire()`.\nWe recommend use \"Module Worker\" mode with `export default app`.\n\n### Use `type` to define the Generics for `new Hono`\n\nYou must use `type` to define the Generics for `new Hono`. Do not use `interface`.\n\n```ts\n// Should use `type`\ntype Bindings = {\n  TOKEN: string\n}\n\nconst app = new Hono<{ Bindings: Bindings }>()\n```\n\n## v2.7.1 - v2.x.x\n\n### Current Validator Middleware is deprecated\n\nAt the next major version, Validator Middleware will be changed with \"breaking changes\". Therefore, the current Validator Middleware will be deprecated; please use 3rd-party Validator libraries such as [Zod](https://zod.dev) or [TypeBox](https://github.com/sinclairzx81/typebox).\n\n```ts\nimport * as z from 'zod'\n\n//...\n\nconst schema = z.object({\n  title: z.string().max(100),\n})\n\napp.post('/posts', async (c) => {\n  const body = await c.req.parseBody()\n  const res = schema.safeParse(body)\n  if (!res.success) {\n    return c.text('Invalid!', 400)\n  }\n  return c.text('Valid!')\n})\n```\n\n## v2.2.5 to v2.3.0\n\nThere is a breaking change associated with the security update.\n\n### Basic Auth Middleware and Bearer Auth Middleware\n\nIf you are using Basic Auth and Bearer Auth in your Handler (nested), change as follows:\n\n```ts\napp.use('/auth/*', async (c, next) => {\n  const auth = basicAuth({ username: c.env.USERNAME, password: c.env.PASSWORD })\n  return auth(c, next) // Older: `await auth(c, next)`\n})\n```\n\n## v2.0.9 to v2.1.0\n\nThere are two BREAKING CHANGES.\n\n### `c.req.parseBody` does not parse JSON, text, and ArrayBuffer\n\n**DO NOT** use `c.req.parseBody` for parsing **JSON**, **text**, or **ArrayBuffer**.\n\n`c.req.parseBody` now only parses FormData with content type `multipart/form` or `application/x-www-form-urlencoded`. If you want to parse JSON, text, or ArrayBuffer, use `c.req.json()`, `c.req.text()`, or `c.req.arrayBuffer()`.\n\n```ts\n// `multipart/form` or `application/x-www-form-urlencoded`\nconst data = await c.req.parseBody()\n\nconst jsonData = await c.req.json() // for JSON body\nconst text = await c.req.text() // for text body\nconst arrayBuffer = await c.req.arrayBuffer() // for ArrayBuffer\n```\n\n### The arguments of Generics for `new Hono` have been changed\n\nNow, the constructor of \"Hono\" receives `Variables` and `Bindings`.\n\"Bindings\" is for types of environment variables for Cloudflare Workers. \"Variables\" is for types of `c.set`/`c.get`\n\n```ts\ntype Bindings = {\n  KV: KVNamespace\n  Storage: R2Bucket\n}\n\ntype WebClient = {\n  user: string\n  pass: string\n}\n\ntype Variables = {\n  client: WebClient\n}\n\nconst app = new Hono<{ Variables: Variables; Bindings: Bindings }>()\n\napp.get('/foo', (c) => {\n  const client = c.get('client') // client is WebClient\n  const kv = c.env.KV // kv is KVNamespace\n  //...\n})\n```\n\n## v1.6.4 to v2.0.0\n\nThere are many BREAKING CHANGES. Please follow the instructions below.\n\n### The way to import Middleware on Deno has been changed\n\n**DO NOT** import middleware from `hono/mod.ts`.\n\n```ts\nimport { Hono, poweredBy } from 'https://deno.land/x/hono/mod.ts' // <--- NG\n```\n\n`hono/mod.ts` does not export middleware.\nTo import middleware, use `hono/middleware.ts`:\n\n```ts\nimport { Hono } from 'https://deno.land/x/hono/mod.ts'\nimport { poweredBy, basicAuth } from 'https://deno.land/x/hono/middleware.ts'\n```\n\n### Cookie middleware is obsolete\n\n**DO NOT** use `cookie` middleware.\n\n```ts\nimport { cookie } from 'hono/cookie' // <--- Obsolete!\n```\n\nYou do not have to use Cookie middleware to parse or set cookies.\nThey become default functions:\n\n```ts\n// Parse cookie\napp.get('/entry/:id', (c) => {\n  const value = c.req.cookie('name')\n  ...\n})\n```\n\n```ts\napp.get('/', (c) => {\n  c.cookie('delicious_cookie', 'choco')\n  return c.text('Do you like cookie?')\n})\n```\n\n### Body parse middleware is obsolete\n\n**DO NOT** use `body-parse` middleware.\n\n```ts\nimport { bodyParse } from 'hono/body-parse' // <--- Obsolete!\n```\n\nYou do not have to use Body parse middleware to parse the request body. Use `c.req.parseBody()` method instead.\n\n```ts\n// Parse Request body\napp.post('', (c) => {\n  const body = c.req.parseBody()\n  ...\n})\n```\n\n### GraphQL Server middleware is obsolete\n\n**DO NOT** use `graphql-server` middleware.\n\n```ts\nimport { graphqlServer } from 'hono/graphql-server' // <--- Obsolete!\n```\n\nIt might be distributed as third-party middleware.\n\n### Mustache middleware is obsolete\n\n**DO NOT** use `mustache` middleware.\n\n```ts\nimport { mustache } from 'hono/mustache' // <--- Obsolete!\n```\n\nIt will no longer be implemented.\n"
+        }
+      ],
+      "gold": [
+        {
+          "id": "hono-01",
+          "title": "Build on Web Standards",
+          "matchTerms": [
+            "web standards"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "hono-readme",
+              "quote": "built on Web Standards"
+            }
+          ]
+        },
+        {
+          "id": "hono-02",
+          "title": "Run the same code on multiple JavaScript runtimes",
+          "matchTerms": [
+            "multi-runtime",
+            "javascript runtime",
+            "cloudflare workers"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "hono-readme",
+              "quote": "It works on any JavaScript runtime: Cloudflare Workers, Fastly Compute, Deno, Bun, Vercel, AWS Lambda, Lambda@Edge, and Node.js."
+            }
+          ]
+        },
+        {
+          "id": "hono-03",
+          "title": "Use RegExpRouter instead of linear routing loops",
+          "matchTerms": [
+            "regexprouter",
+            "linear loops"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "hono-readme",
+              "quote": "The router `RegExpRouter` is really fast. Not using linear loops."
+            }
+          ]
+        },
+        {
+          "id": "hono-04",
+          "title": "Keep zero runtime dependencies",
+          "matchTerms": [
+            "zero dependencies",
+            "no dependencies"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "hono-readme",
+              "quote": "Hono has zero dependencies and uses only the Web Standard API."
+            }
+          ]
+        },
+        {
+          "id": "hono-06",
+          "title": "Provide built-in, custom, and third-party middleware",
+          "matchTerms": [
+            "middleware"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "hono-readme",
+              "quote": "Hono has built-in middleware, custom middleware, and third-party middleware."
+            }
+          ]
+        },
+        {
+          "id": "hono-07",
+          "title": "Make TypeScript a first-class interface",
+          "matchTerms": [
+            "typescript"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "hono-readme",
+              "quote": "First-class TypeScript support."
+            }
+          ]
+        }
+      ],
+      "negative": {
+        "id": "hono-negative",
+        "snapshots": [
+          {
+            "id": "hono-negative-install",
+            "kind": "FILE",
+            "path": "docs/install.md",
+            "content": "## Quick Start\n\n```bash\nnpm create hono@latest\n```\n\n## Contributing\n\nContributions Welcome! You can contribute in the following ways.\n\n- Create an Issue - Propose a new feature. Report a bug.\n- Build middleware and libraries - Grow the Hono ecosystem.\n- Share - Share your thoughts on the Blog, X, and others.\n\n## License\n\nDistributed under the MIT License. See [LICENSE](LICENSE) for more information.\n"
+          }
+        ]
+      },
+      "focus": "runtime portability, routing, dependencies, middleware, and TypeScript."
+    },
+    {
+      "id": "drizzle",
+      "repo": "drizzle-team/drizzle-orm",
+      "ref": "3bcb6a27ec1f4f1602aeeb0af2f5aec61010d72d",
+      "snapshots": [
+        {
+          "id": "drizzle-readme",
+          "kind": "FILE",
+          "path": "README.md",
+          "content": "<div align=\"center\">\n  <img src=\"./misc/readme/logo-github-sq-dark.svg#gh-dark-mode-only\" />\n  <img src=\"./misc/readme/logo-github-sq-light.svg#gh-light-mode-only\" />\n</div>\n\n<br/>\n<div align=\"center\">\n  <h3>Headless ORM for NodeJS, TypeScript and JavaScript 🚀</h3>\n  <a href=\"https://orm.drizzle.team\">Website</a> •\n  <a href=\"https://orm.drizzle.team/docs/overview\">Documentation</a> •\n  <a href=\"https://x.com/drizzleorm\">Twitter</a> •\n  <a href=\"https://driz.link/discord\">Discord</a>\n</div>\n\n<br/>\n<br/>\n\n### What's Drizzle?\nDrizzle is a modern TypeScript ORM developers [wanna use in their next project](https://stateofdb.com/tools/drizzle). \nIt is [lightweight](https://bundlephobia.com/package/drizzle-orm) at only ~7.4kb minified+gzipped, and it's tree shakeable with exactly 0 dependencies. \n\n**Drizzle supports every PostgreSQL, MySQL and SQLite database**, including serverless ones like [Turso](https://orm.drizzle.team/docs/get-started-sqlite#turso), [Neon](https://orm.drizzle.team/docs/get-started-postgresql#neon), [Xata](https://orm.drizzle.team/docs/connect-xata), [PlanetScale](https://orm.drizzle.team/docs/get-started-mysql#planetscale), [Cloudflare D1](https://orm.drizzle.team/docs/get-started-sqlite#cloudflare-d1), [FlyIO LiteFS](https://fly.io/docs/litefs/), [Vercel Postgres](https://orm.drizzle.team/docs/get-started-postgresql#vercel-postgres), [Supabase](https://orm.drizzle.team/docs/get-started-postgresql#supabase) and [AWS Data API](https://orm.drizzle.team/docs/get-started-postgresql#aws-data-api). No bells and whistles, no Rust binaries, no serverless adapters, everything just works out of the box.\n\n**Drizzle is serverless-ready by design**. It works in every major JavaScript runtime like NodeJS, Bun, Deno, Cloudflare Workers, Supabase functions, any Edge runtime, and even in browsers.  \nWith Drizzle you can be [**fast out of the box**](https://orm.drizzle.team/benchmarks) and save time and costs while never introducing any data proxies into your infrastructure. \n\nWhile you can use Drizzle as a JavaScript library, it shines with TypeScript. It lets you [**declare SQL schemas**](https://orm.drizzle.team/docs/sql-schema-declaration) and build both [**relational**](https://orm.drizzle.team/docs/rqb) and [**SQL-like queries**](https://orm.drizzle.team/docs/select), while keeping the balance between type-safety and extensibility for toolmakers to build on top.  \n\n### Ecosystem\nWhile Drizzle ORM remains a thin typed layer on top of SQL, we made a set of tools for people to have best possible developer experience.  \n  \nDrizzle comes with a powerful [**Drizzle Kit**](https://orm.drizzle.team/kit-docs/overview) CLI companion for you to have hassle-free migrations. It can generate SQL migration files for you or apply schema changes directly to the database.  \n  \nWe also have [**Drizzle Studio**](https://orm.drizzle.team/drizzle-studio/overview) for you to effortlessly browse and manipulate data in your database of choice.\n\n### Documentation\nCheck out the full documentation on [the website](https://orm.drizzle.team/docs/overview).\n\n### Our sponsors ❤️\n<p align=\"center\">\n<a href=\"https://drizzle.team\" target=\"_blank\">\n<img src='https://api.drizzle.team/v2/sponsors/svg'/>\n</a>\n</p>\n"
+        }
+      ],
+      "gold": [
+        {
+          "id": "drizzle-01",
+          "title": "Stay a headless ORM",
+          "matchTerms": [
+            "headless orm",
+            "headless"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "drizzle-readme",
+              "quote": "Headless ORM for NodeJS, TypeScript and JavaScript"
+            }
+          ]
+        },
+        {
+          "id": "drizzle-02",
+          "title": "Keep zero dependencies and a ~7.4kB bundle",
+          "matchTerms": [
+            "0 dependencies",
+            "zero dependencies",
+            "7.4kb",
+            "tree shakeable"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "drizzle-readme",
+              "quote": "lightweight at only ~7.4kb minified+gzipped, and it's tree shakeable with exactly 0 dependencies."
+            }
+          ]
+        },
+        {
+          "id": "drizzle-03",
+          "title": "Support PostgreSQL, MySQL, and SQLite",
+          "matchTerms": [
+            "postgresql",
+            "mysql",
+            "sqlite"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "drizzle-readme",
+              "quote": "Drizzle supports every PostgreSQL, MySQL and SQLite database"
+            }
+          ]
+        },
+        {
+          "id": "drizzle-04",
+          "title": "Be serverless-ready without data proxies",
+          "matchTerms": [
+            "serverless-ready",
+            "serverless",
+            "data proxies"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "drizzle-readme",
+              "quote": "Drizzle is serverless-ready by design"
+            }
+          ]
+        },
+        {
+          "id": "drizzle-05",
+          "title": "Declare SQL schemas in TypeScript",
+          "matchTerms": [
+            "sql schema",
+            "declare sql"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "drizzle-readme",
+              "quote": "declare SQL schemas"
+            }
+          ]
+        },
+        {
+          "id": "drizzle-07",
+          "title": "Use Drizzle Kit for migrations",
+          "matchTerms": [
+            "drizzle kit",
+            "migrations"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "drizzle-readme",
+              "quote": "Drizzle Kit CLI companion for you to have hassle-free migrations"
+            }
+          ]
+        }
+      ],
+      "negative": {
+        "id": "drizzle-negative",
+        "snapshots": [
+          {
+            "id": "drizzle-negative-docs",
+            "kind": "FILE",
+            "path": "docs/readme.md",
+            "content": "## Documentation\n\nCheck out the full documentation on [the website](https://orm.drizzle.team/docs/overview).\n\n## Our sponsors\n\n<p align=\"center\">\n<a href=\"https://drizzle.team\" target=\"_blank\">\n<img src='https://api.drizzle.team/v2/sponsors/svg'/>\n</a>\n</p>\n"
+          }
+        ]
+      },
+      "focus": "ORM architecture, database support, serverless deployment, schema declaration, and migrations."
+    },
+    {
+      "id": "fastapi",
+      "repo": "fastapi/fastapi",
+      "ref": "05e6df7e906c3decba377c37548019973f40bf15",
+      "snapshots": [
+        {
+          "id": "fastapi-features",
+          "kind": "FILE",
+          "path": "docs/en/docs/features.md",
+          "content": "# Features { #features }\n\n## FastAPI features { #fastapi-features }\n\n**FastAPI** gives you the following:\n\n### Based on open standards { #based-on-open-standards }\n\n* [**OpenAPI**](https://github.com/OAI/OpenAPI-Specification) for API creation, including declarations of <dfn title=\"also known as: endpoints, routes\">path</dfn> <dfn title=\"also known as HTTP methods, as POST, GET, PUT, DELETE\">operations</dfn>, parameters, request bodies, security, etc.\n* Automatic data model documentation with [**JSON Schema**](https://json-schema.org/) (as OpenAPI itself is based on JSON Schema).\n* Designed around these standards, after a meticulous study. Instead of an afterthought layer on top.\n* This also allows using automatic **client code generation** in many languages.\n\n### Automatic docs { #automatic-docs }\n\nInteractive API documentation and exploration web user interfaces. As the framework is based on OpenAPI, there are multiple options, 2 included by default.\n\n* [**Swagger UI**](https://github.com/swagger-api/swagger-ui), with interactive exploration, call and test your API directly from the browser.\n\n![Swagger UI interaction](https://fastapi.tiangolo.com/img/index/index-03-swagger-02.png)\n\n* Alternative API documentation with [**ReDoc**](https://github.com/Redocly/redoc).\n\n![ReDoc](https://fastapi.tiangolo.com/img/index/index-06-redoc-02.png)\n\n### Just Modern Python { #just-modern-python }\n\nIt's all based on standard **Python type** declarations (thanks to Pydantic). No new syntax to learn. Just standard modern Python.\n\nIf you need a 2 minute refresher of how to use Python types (even if you don't use FastAPI), check the short tutorial: [Python Types](python-types.md).\n\nYou write standard Python with types:\n\n```Python\nfrom datetime import date\n\nfrom pydantic import BaseModel\n\n\n# Declare a variable as a str\n# and get editor support inside the function\ndef main(user_id: str):\n    return user_id\n\n\n# A Pydantic model\nclass User(BaseModel):\n    id: int\n    name: str\n    joined: date\n```\n\nThat can then be used like:\n\n```Python\nmy_user: User = User(id=3, name=\"John Doe\", joined=\"2018-07-19\")\n\nsecond_user_data = {\n    \"id\": 4,\n    \"name\": \"Mary\",\n    \"joined\": \"2018-11-30\",\n}\n\nmy_second_user: User = User(**second_user_data)\n```\n\n/// note\n\n`**second_user_data` means:\n\nPass the keys and values of the `second_user_data` dict directly as key-value arguments, equivalent to: `User(id=4, name=\"Mary\", joined=\"2018-11-30\")`\n\n///\n\n### Editor support { #editor-support }\n\nThe whole framework was designed to be easy and intuitive to use, all the decisions were tested on multiple editors even before starting development, to ensure the best development experience.\n\nIn the Python developer surveys, it's clear [that one of the most used features is \"autocompletion\"](https://www.jetbrains.com/research/python-developers-survey-2017/#tools-and-features).\n\nThe whole **FastAPI** framework is designed to satisfy that. Autocompletion works everywhere.\n\nYou will rarely need to come back to the docs.\n\nHere's how your editor might help you:\n\n* in [Visual Studio Code](https://code.visualstudio.com/):\n\n![editor support](https://fastapi.tiangolo.com/img/vscode-completion.png)\n\n* in [PyCharm](https://www.jetbrains.com/pycharm/):\n\n![editor support](https://fastapi.tiangolo.com/img/pycharm-completion.png)\n\nYou will get completion in code you might even consider impossible before. As for example, the `price` key inside a JSON body (that could have been nested) that comes from a request.\n\nNo more typing the wrong key names, coming back and forth between docs, or scrolling up and down to find if you finally used `username` or `user_name`.\n\n### Short { #short }\n\nIt has sensible **defaults** for everything, with optional configurations everywhere. All the parameters can be fine-tuned to do what you need and to define the API you need.\n\nBut by default, it all **\"just works\"**.\n\n### Validation { #validation }\n\n* Validation for most (or all?) Python **data types**, including:\n    * JSON objects (`dict`).\n    * JSON array (`list`) defining item types.\n    * String (`str`) fields, defining min and max lengths.\n    * Numbers (`int`, `float`) with min and max values, etc.\n\n* Validation for more exotic types, like:\n    * URL.\n    * Email.\n    * UUID.\n    * ...and others.\n\nAll the validation is handled by the well-established and robust **Pydantic**.\n\n### Security and authentication { #security-and-authentication }\n\nSecurity and authentication integrated. Without any compromise with databases or data models.\n\nAll the security schemes defined in OpenAPI, including:\n\n* HTTP Basic.\n* **OAuth2** (also with **JWT tokens**). Check the tutorial on [OAuth2 with JWT](tutorial/security/oauth2-jwt.md).\n* API keys in:\n    * Headers.\n    * Query parameters.\n    * Cookies, etc.\n\nPlus all the security features from Starlette (including **session cookies**).\n\nAll built as reusable tools and components that are easy to integrate with your systems, data stores, relational and NoSQL databases, etc.\n\n### Dependency Injection { #dependency-injection }\n\nFastAPI includes an extremely easy to use, but extremely powerful <dfn title='also known as \"components\", \"resources\", \"services\", \"providers\"'><strong>Dependency Injection</strong></dfn> system.\n\n* Even dependencies can have dependencies, creating a hierarchy or **\"graph\" of dependencies**.\n* All **automatically handled** by the framework.\n* All the dependencies can require data from requests and **augment the path operation** constraints and automatic documentation.\n* **Automatic validation** even for *path operation* parameters defined in dependencies.\n* Support for complex user authentication systems, **database connections**, etc.\n* **No compromise** with databases, frontends, etc. But easy integration with all of them.\n\n### Unlimited \"plug-ins\" { #unlimited-plug-ins }\n\nOr, in other words, no need for them, import and use the code you need.\n\nAny integration is designed to be so simple to use (with dependencies) that you can create a \"plug-in\" for your application in 2 lines of code using the same structure and syntax used for your *path operations*.\n\n### Tested { #tested }\n\n* 100% <dfn title=\"The amount of code that is automatically tested\">test coverage</dfn>.\n* 100% <dfn title=\"Python type annotations, with this your editor and external tools can give you better support\">type annotated</dfn> code base.\n* Used in production applications.\n\n## Starlette features { #starlette-features }\n\n**FastAPI** is fully compatible with (and based on) [**Starlette**](https://starlette.dev/). So, any additional Starlette code you have, will also work.\n\n`FastAPI` is actually a sub-class of `Starlette`. So, if you already know or use Starlette, most of the functionality will work the same way.\n\nWith **FastAPI** you get all of **Starlette**'s features (as FastAPI is just Starlette on steroids):\n\n* Seriously impressive performance. It is [one of the fastest Python frameworks available, on par with **NodeJS** and **Go**](https://github.com/encode/starlette#performance).\n* **WebSocket** support.\n* In-process background tasks.\n* Startup and shutdown events.\n* Test client built on HTTPX.\n* **CORS**, GZip, Static Files, Streaming responses.\n* **Session and Cookie** support.\n* 100% test coverage.\n* 100% type annotated codebase.\n\n## Pydantic features { #pydantic-features }\n\n**FastAPI** is fully compatible with (and based on) [**Pydantic**](https://pydantic.dev/docs/). So, any additional Pydantic code you have, will also work.\n\nIncluding external libraries also based on Pydantic, such as <abbr title=\"Object-Relational Mapper\">ORM</abbr>s and <abbr title=\"Object-Document Mapper\">ODM</abbr>s for databases.\n\nThis also means that in many cases you can pass the same object you get from a request **directly to the database**, as everything is validated automatically.\n\nThe same applies the other way around, in many cases you can just pass the object you get from the database **directly to the client**.\n\nWith **FastAPI** you get all of **Pydantic**'s features (as FastAPI is based on Pydantic for all the data handling):\n\n* **No brainfuck**:\n    * No new schema definition micro-language to learn.\n    * If you know Python types you know how to use Pydantic.\n* Plays nicely with your **<abbr title=\"Integrated Development Environment: similar to a code editor\">IDE</abbr>/<dfn title=\"A program that checks for code errors\">linter</dfn>/brain**:\n    * Because pydantic data structures are just instances of classes you define; auto-completion, linting, mypy and your intuition should all work properly with your validated data.\n* Validate **complex structures**:\n    * Use of hierarchical Pydantic models, Python `typing`’s `List` and `Dict`, etc.\n    * And validators allow complex data schemas to be clearly and easily defined, checked and documented as JSON Schema.\n    * You can have deeply **nested JSON** objects and have them all validated and annotated.\n* **Extensible**:\n    * Pydantic allows custom data types to be defined or you can extend validation with methods on a model decorated with the validator decorator.\n* 100% test coverage.\n"
+        }
+      ],
+      "gold": [
+        {
+          "id": "fastapi-01",
+          "title": "Base the API on standard Python type declarations",
+          "matchTerms": [
+            "type declarations",
+            "python types",
+            "type hints"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "fastapi-features",
+              "quote": "It's all based on standard **Python type** declarations"
+            }
+          ]
+        },
+        {
+          "id": "fastapi-02",
+          "title": "Use OpenAPI for API creation",
+          "matchTerms": [
+            "openapi"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "fastapi-features",
+              "quote": "OpenAPI for API creation"
+            }
+          ]
+        },
+        {
+          "id": "fastapi-03",
+          "title": "Document data models with JSON Schema",
+          "matchTerms": [
+            "json schema"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "fastapi-features",
+              "quote": "Automatic data model documentation with **JSON Schema**"
+            }
+          ]
+        },
+        {
+          "id": "fastapi-05",
+          "title": "Include Swagger UI and ReDoc by default",
+          "matchTerms": [
+            "swagger",
+            "redoc"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "fastapi-features",
+              "quote": "2 included by default"
+            }
+          ]
+        },
+        {
+          "id": "fastapi-06",
+          "title": "Delegate validation to Pydantic",
+          "matchTerms": [
+            "pydantic",
+            "validation"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "fastapi-features",
+              "quote": "All the validation is handled by the well-established and robust **Pydantic**."
+            }
+          ]
+        },
+        {
+          "id": "fastapi-08",
+          "title": "Provide a dependency injection graph",
+          "matchTerms": [
+            "dependency injection",
+            "dependencies"
+          ],
+          "evidence": [
+            {
+              "snapshotId": "fastapi-features",
+              "quote": "creating a hierarchy or **\"graph\" of dependencies**"
+            }
+          ]
+        }
+      ],
+      "negative": {
+        "id": "fastapi-negative",
+        "snapshots": [
+          {
+            "id": "fastapi-negative-install",
+            "kind": "FILE",
+            "path": "docs/install.md",
+            "content": "## Installation\n\nFirst, install `uv`, and then add FastAPI to your project:\n\n```console\n$ uv add \"fastapi[standard]\"\n```\n\n**Note**: Make sure you put `\"fastapi[standard]\"` in quotes to ensure it works in all terminals.\n\nIf you prefer to use `pip`, install `fastapi[standard]` inside a virtual environment.\n"
+          }
+        ]
+      },
+      "focus": "type-driven schemas, OpenAPI documentation, validation, and dependency injection."
+    }
+  ]
+}

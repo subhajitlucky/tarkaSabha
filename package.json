@@ -13,7 +13,8 @@
     "prisma:validate": "prisma validate",
     "postinstall": "prisma generate",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval:decisions": "tsx scripts/run-decision-eval.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
@@ -38,6 +39,7 @@
     "eslint-config-next": "^16.4.6",
     "prisma": "^7.10.1",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.5"
   }

@@ -1,0 +1,182 @@
+{
+  "generatedAt": "2026-11-19T13:42:22.980Z",
+  "model": "openai/gpt-4o-mini",
+  "provider": "openrouter",
+  "dataset": {
+    "repos": 3,
+    "decisions": 18,
+    "negatives": 3,
+    "version": 1
+  },
+  "metrics": {
+    "precision": 1,
+    "recall": 0.6666666666666666,
+    "rawCitationValidity": 0.8,
+    "acceptedCitationValidity": 1,
+    "candidateSurvivalRate": 0.8,
+    "unsupportedClaimRate": 0,
+    "rawUnsupportedRate": 0.2,
+    "refusalAccuracy": 1,
+    "candidates": 12,
+    "rawCandidates": 15,
+    "droppedCandidates": 3,
+    "matchedCandidates": 12,
+    "unmatchedCandidates": 0,
+    "matchedDecisions": 12,
+    "decisions": 18,
+    "rawCitations": 15,
+    "rawValidCitations": 12,
+    "acceptedCitations": 12,
+    "acceptedValidCitations": 12,
+    "refusalCorrect": 3,
+    "refusalTotal": 3
+  },
+  "repos": [
+    {
+      "id": "hono",
+      "repo": "honojs/hono",
+      "ref": "75ff8e3ea18485589816881c6278bc9783e56602",
+      "focus": "runtime portability, routing, dependencies, middleware, and TypeScript.",
+      "snapshots": 2,
+      "gold": 6,
+      "rawCandidates": 5,
+      "candidates": 4,
+      "droppedCandidates": 1,
+      "candidateSurvivalRate": 0.8,
+      "matchedCandidates": 4,
+      "matchedGold": 4,
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "rawCitations": 5,
+      "rawValidCitations": 4,
+      "rawCitationValidity": 0.8,
+      "rawUnsupportedCandidates": 1,
+      "rawUnsupportedRate": 0.2,
+      "acceptedCitations": 4,
+      "acceptedValidCitations": 4,
+      "citationValidity": 1,
+      "unmatchedCandidates": 0,
+      "unsupportedCandidates": 0,
+      "candidateTitles": [
+        "Multi-runtime support",
+        "Use of RegExpRouter",
+        "Zero dependencies",
+        "Middleware architecture"
+      ],
+      "droppedTitles": [
+        "First-class TypeScript support"
+      ],
+      "matches": {
+        "hono-02": "Multi-runtime support",
+        "hono-03": "Use of RegExpRouter",
+        "hono-04": "Zero dependencies",
+        "hono-06": "Middleware architecture"
+      },
+      "rawOutput": "{\n  \"candidates\": [\n    {\n      \"title\": \"Multi-runtime support\",\n      \"context\": \"The need for a framework that can operate across various JavaScript environments.\",\n      \"proposal\": \"Hono works on Cloudflare Workers, Fastly Compute, Deno, Bun, AWS Lambda, Lambda@Edge, or Node.js.\",\n      \"rationale\": \"This decision allows developers to use the same codebase across different platforms, enhancing portability.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"hono-readme\",\n          \"quote\": \"Hono has zero dependencies and uses only the Web Standard API.\"\n        },\n        {\n          \"snapshotId\": \"hono-readme\",\n          \"quote\": \"The same code runs on all platforms.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"First-class TypeScript support\",\n      \"context\": \"The desire to provide a robust development experience for TypeScript users.\",\n      \"proposal\": \"Hono offers first-class TypeScript support.\",\n      \"rationale\": \"This decision caters to TypeScript developers, ensuring type safety and better tooling.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"hono-readme\",\n          \"quote\": \"Delightful DX - Super clean APIs. First-class TypeScript support.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Use of RegExpRouter\",\n      \"context\": \"The need for an efficient routing mechanism.\",\n      \"proposal\": \"The router `RegExpRouter` is used for routing.\",\n      \"rationale\": \"This choice enhances performance by avoiding linear loops in routing.\",\n      \"confidence\": \"MEDIUM\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"hono-readme\",\n          \"quote\": \"The router `RegExpRouter` is really fast. Not using linear loops.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Zero dependencies\",\n      \"context\": \"The goal of keeping the framework lightweight and efficient.\",\n      \"proposal\": \"Hono has zero dependencies.\",\n      \"rationale\": \"This decision simplifies installation and reduces potential conflicts with other libraries.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"hono-readme\",\n          \"quote\": \"Hono has zero dependencies and uses only the Web Standard API.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Middleware architecture\",\n      \"context\": \"The need for extensibility and modularity in handling requests.\",\n      \"proposal\": \"Hono has built-in middleware, custom middleware, and third-party middleware.\",\n      \"rationale\": \"This decision allows developers to easily extend functionality and integrate with other tools.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"hono-readme\",\n          \"quote\": \"Hono has built-in middleware, custom middleware, and third-party middleware.\"\n        }\n      ]\n    }\n  ]\n}"
+    },
+    {
+      "id": "drizzle",
+      "repo": "drizzle-team/drizzle-orm",
+      "ref": "3bcb6a27ec1f4f1602aeeb0af2f5aec61010d72d",
+      "focus": "ORM architecture, database support, serverless deployment, schema declaration, and migrations.",
+      "snapshots": 1,
+      "gold": 6,
+      "rawCandidates": 5,
+      "candidates": 4,
+      "droppedCandidates": 1,
+      "candidateSurvivalRate": 0.8,
+      "matchedCandidates": 4,
+      "matchedGold": 4,
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "rawCitations": 5,
+      "rawValidCitations": 4,
+      "rawCitationValidity": 0.8,
+      "rawUnsupportedCandidates": 1,
+      "rawUnsupportedRate": 0.2,
+      "acceptedCitations": 4,
+      "acceptedValidCitations": 4,
+      "citationValidity": 1,
+      "unmatchedCandidates": 0,
+      "unsupportedCandidates": 0,
+      "candidateTitles": [
+        "Database Support",
+        "Serverless Deployment",
+        "Schema Declaration",
+        "Migration Management"
+      ],
+      "droppedTitles": [
+        "Zero Dependencies"
+      ],
+      "matches": {
+        "drizzle-03": "Database Support",
+        "drizzle-04": "Serverless Deployment",
+        "drizzle-05": "Schema Declaration",
+        "drizzle-07": "Migration Management"
+      },
+      "rawOutput": "{\n  \"candidates\": [\n    {\n      \"title\": \"Database Support\",\n      \"context\": \"Need for compatibility with various database systems.\",\n      \"proposal\": \"Drizzle supports every PostgreSQL, MySQL and SQLite database.\",\n      \"rationale\": \"This decision ensures broad compatibility with popular databases, enhancing usability.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"drizzle-readme\",\n          \"quote\": \"Drizzle supports every PostgreSQL, MySQL and SQLite database.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Serverless Deployment\",\n      \"context\": \"Requirement for modern applications to operate in serverless environments.\",\n      \"proposal\": \"Drizzle is serverless-ready by design.\",\n      \"rationale\": \"This choice allows Drizzle to function seamlessly in various serverless platforms, catering to modern development needs.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"drizzle-readme\",\n          \"quote\": \"Drizzle is serverless-ready by design.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Schema Declaration\",\n      \"context\": \"Need for type safety and extensibility in schema management.\",\n      \"proposal\": \"Drizzle lets you declare SQL schemas.\",\n      \"rationale\": \"This decision supports both type safety and extensibility, making it easier for developers to manage database schemas.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"drizzle-readme\",\n          \"quote\": \"It lets you declare SQL schemas.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Migration Management\",\n      \"context\": \"Need for efficient database schema migrations.\",\n      \"proposal\": \"Drizzle comes with a powerful Drizzle Kit CLI companion for hassle-free migrations.\",\n      \"rationale\": \"This decision simplifies the migration process, allowing developers to generate SQL migration files or apply schema changes directly.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"drizzle-readme\",\n          \"quote\": \"Drizzle comes with a powerful Drizzle Kit CLI companion for you to have hassle-free migrations.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Zero Dependencies\",\n      \"context\": \"Desire for a lightweight ORM solution.\",\n      \"proposal\": \"Drizzle is lightweight at only ~7.4kb minified+gzipped, and it's tree shakeable with exactly 0 dependencies.\",\n      \"rationale\": \"This decision enhances performance and reduces the footprint of the ORM, making it more appealing for developers.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"drizzle-readme\",\n          \"quote\": \"Drizzle is lightweight at only ~7.4kb minified+gzipped, and it's tree shakeable with exactly 0 dependencies.\"\n        }\n      ]\n    }\n  ]\n}"
+    },
+    {
+      "id": "fastapi",
+      "repo": "fastapi/fastapi",
+      "ref": "05e6df7e906c3decba377c37548019973f40bf15",
+      "focus": "type-driven schemas, OpenAPI documentation, validation, and dependency injection.",
+      "snapshots": 1,
+      "gold": 6,
+      "rawCandidates": 5,
+      "candidates": 4,
+      "droppedCandidates": 1,
+      "candidateSurvivalRate": 0.8,
+      "matchedCandidates": 4,
+      "matchedGold": 4,
+      "precision": 1,
+      "recall": 0.6666666666666666,
+      "rawCitations": 5,
+      "rawValidCitations": 4,
+      "rawCitationValidity": 0.8,
+      "rawUnsupportedCandidates": 1,
+      "rawUnsupportedRate": 0.2,
+      "acceptedCitations": 4,
+      "acceptedValidCitations": 4,
+      "citationValidity": 1,
+      "unmatchedCandidates": 0,
+      "unsupportedCandidates": 0,
+      "candidateTitles": [
+        "Automatic data model documentation",
+        "Type-driven schemas with Pydantic",
+        "Validation for Python data types",
+        "Interactive API documentation"
+      ],
+      "droppedTitles": [
+        "OpenAPI for API creation"
+      ],
+      "matches": {
+        "fastapi-03": "Automatic data model documentation",
+        "fastapi-01": "Type-driven schemas with Pydantic",
+        "fastapi-06": "Validation for Python data types",
+        "fastapi-05": "Interactive API documentation"
+      },
+      "rawOutput": "{\n  \"candidates\": [\n    {\n      \"title\": \"OpenAPI for API creation\",\n      \"context\": \"The need for a standardized way to define APIs.\",\n      \"proposal\": \"FastAPI uses OpenAPI for API creation, including declarations of path operations, parameters, request bodies, and security.\",\n      \"rationale\": \"This decision ensures that APIs are well-defined and adhere to open standards.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"fastapi-features\",\n          \"quote\": \"FastAPI gives you the following: OpenAPI for API creation, including declarations of path operations, parameters, request bodies, security, etc.\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Automatic data model documentation\",\n      \"context\": \"The need for clear and automatic documentation of data models.\",\n      \"proposal\": \"FastAPI provides automatic data model documentation with JSON Schema.\",\n      \"rationale\": \"This choice allows for better understanding and usage of data models in APIs.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"fastapi-features\",\n          \"quote\": \"Automatic data model documentation with JSON Schema (as OpenAPI itself is based on JSON Schema).\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Type-driven schemas with Pydantic\",\n      \"context\": \"The need for type validation and data integrity in APIs.\",\n      \"proposal\": \"FastAPI is designed around standard Python type declarations using Pydantic.\",\n      \"rationale\": \"This decision leverages Python's type system for validation and improves developer experience.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"fastapi-features\",\n          \"quote\": \"It's all based on standard Python type declarations (thanks to Pydantic).\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Validation for Python data types\",\n      \"context\": \"Ensuring data integrity and correctness in API requests.\",\n      \"proposal\": \"FastAPI provides validation for most (or all?) Python data types.\",\n      \"rationale\": \"This decision enhances the robustness of the API by ensuring that incoming data adheres to expected formats.\",\n      \"confidence\": \"MEDIUM\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"fastapi-features\",\n          \"quote\": \"Validation for most (or all?) Python data types, including:\"\n        }\n      ]\n    },\n    {\n      \"title\": \"Interactive API documentation\",\n      \"context\": \"The need for user-friendly API exploration and testing.\",\n      \"proposal\": \"FastAPI includes interactive API documentation with Swagger UI and ReDoc by default.\",\n      \"rationale\": \"This decision facilitates easier testing and understanding of the API for developers.\",\n      \"confidence\": \"HIGH\",\n      \"evidence\": [\n        {\n          \"snapshotId\": \"fastapi-features\",\n          \"quote\": \"Interactive API documentation and exploration web user interfaces. As the framework is based on OpenAPI, there are multiple options, 2 included by default.\"\n        }\n      ]\n    }\n  ]\n}"
+    }
+  ],
+  "negatives": [
+    {
+      "id": "hono-negative",
+      "candidates": 0,
+      "refused": true,
+      "candidateTitles": []
+    },
+    {
+      "id": "drizzle-negative",
+      "candidates": 0,
+      "refused": true,
+      "candidateTitles": []
+    },
+    {
+      "id": "fastapi-negative",
+      "candidates": 0,
+      "refused": true,
+      "candidateTitles": []
+    }
+  ]
+}

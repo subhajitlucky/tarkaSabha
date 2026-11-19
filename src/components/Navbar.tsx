@@ -11,6 +11,7 @@ import { cx } from './ui/cx'
 
 const PUBLIC_LINKS = [
   { href: '/product', label: 'Product' },
+  { href: '/benchmark', label: 'Benchmark' },
   { href: '/diligence', label: 'Diligence' },
   { href: '/security', label: 'Security' },
   { href: '/about', label: 'About' },
